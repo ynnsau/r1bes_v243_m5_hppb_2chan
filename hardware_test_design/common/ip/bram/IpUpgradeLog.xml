@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ip name="RAM: 2-PORT Intel FPGA IP">
+ <timestamp>2024-11-06T22:46:19.575950778</timestamp>
+ <file></file>
+ <old_version>20.4.1</old_version>
+ <new_version>20.5.0</new_version>
+ <changes>
+  <change>20.5.0</change>
+ </changes>
+</ip>
+
+<ip name="RAM: 2-PORT Intel FPGA IP">
+ <timestamp>2024-11-06T22:46:19.829031184</timestamp>
+ <file></file>
+ <old_version>20.4.1</old_version>
+ <new_version>20.5.0</new_version>
+ <changes>
+  <change>20.5.0</change>
+ </changes>
+</ip>

@@ -1,0 +1,12 @@
+# **************************************************
+# Quartus Prime Version 24.3.0
+# Process ID 2847515
+# Start logging UI actions
+# Sun Feb 16 19:12:42 2025
+# **************************************************
+[Sun Feb 16 19:13:18 2025] Window title: 'Quartus Prime' | QPushButton '&Yes' pressed!
+[Sun Feb 16 19:13:19 2025] [Action triggered] Window title: 'Quartus Prime Pro Edition - /mnt/raid0/yans3/FPGA_projects/r1bex_type2_2chan_24_3/intel_rtile_cxl_top_0_ed/hardware_test_design/cxltyp2_ed - cxltyp2_ed [*]' | P&rocessing > 'Compilation Dashboard' was pressed
+# **************************************************
+# Sun Feb 16 19:13:35 2025
+# End of logging UI actions
+# **************************************************
