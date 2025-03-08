@@ -1,0 +1,11 @@
+module w64_d8192 (
+		input  wire [63:0] data,      //      data.datain,    Data input of the memory.The data port is required for all RAM operation modes:SINGLE_PORT,DUAL_PORT,BIDIR_DUAL_PORT,QUAD_PORT
+		output wire [63:0] q,         //         q.dataout,   Data output from the memory
+		input  wire [12:0] wraddress, // wraddress.wraddress, Write address input to the memory.
+		input  wire [12:0] rdaddress, // rdaddress.rdaddress, Read address input to the memory.
+		input  wire        wren,      //      wren.wren,      Write enable input for address port.The wren signal is required for all RAM operation modes:SINGLE_PORT,DUAL_PORT,BIDIR_DUAL_PORT,QUAD_PORT
+		input  wire        clock,     //     clock.clk,       Memory clock, refer to user guide for specific details
+		input  wire        sclr       //      sclr.reset,     Synchronously clear the output ports. The synchronous clear effect on the registered ports can be controlled through their corresponding parameter, such as outdata_sclr_a and outdata_sclr_b.
+	);
+endmodule
+

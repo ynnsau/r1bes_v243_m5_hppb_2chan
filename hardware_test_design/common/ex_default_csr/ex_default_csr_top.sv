@@ -28,7 +28,7 @@
 //
 
 module ex_default_csr_top
-import mig_params::*;
+// import mig_params::*;
 (
     input  logic        csr_avmm_clk,
     input  logic        csr_avmm_rstn,  
@@ -72,28 +72,28 @@ import mig_params::*;
 
 
     // HPPB Performance
-        // input logic [63:0] csr_hppb_min_mig_time,
-        // input logic [63:0] csr_hppb_max_mig_time,
-        // input logic [63:0] csr_hppb_total_curr_mig_time,
-        // input logic [63:0] csr_hppb_min_pg0_mig_time,
-        // input logic [63:0] csr_hppb_max_pg0_mig_time,
-        // input logic [63:0] csr_hppb_min_pgn_mig_time,
-        // input logic [63:0] csr_hppb_max_pgn_mig_time,
-        // input logic [63:0] csr_hppb_max_fifo_full_cnt,
-        // input logic [63:0] csr_hppb_max_fifo_empty_cnt,
-        // input logic [63:0] csr_hppb_max_total_read_cnt,
-        // input logic [63:0] csr_hppb_max_total_write_cnt,
-        // input logic [63:0] csr_hppb_rresp_err_cnt,
-        // input logic [63:0] csr_hppb_bresp_err_cnt,
-        // input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-        // input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
+    input logic [63:0] csr_hppb_min_mig_time,
+    input logic [63:0] csr_hppb_max_mig_time,
+    input logic [63:0] csr_hppb_total_curr_mig_time,
+    input logic [63:0] csr_hppb_min_pg0_mig_time,
+    input logic [63:0] csr_hppb_max_pg0_mig_time,
+    input logic [63:0] csr_hppb_min_pgn_mig_time,
+    input logic [63:0] csr_hppb_max_pgn_mig_time,
+    input logic [63:0] csr_hppb_max_fifo_full_cnt,
+    input logic [63:0] csr_hppb_max_fifo_empty_cnt,
+    input logic [63:0] csr_hppb_max_total_read_cnt,
+    input logic [63:0] csr_hppb_max_total_write_cnt,
+    input logic [63:0] csr_hppb_rresp_err_cnt,
+    input logic [63:0] csr_hppb_bresp_err_cnt,
+    input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
+    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
 
-   output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
-   output logic [63:0] csr_ahppb_dst_addr_head,
-   input logic [63:0]  csr_need_new_base_cnt,
+//    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
+//    output logic [63:0] csr_ahppb_dst_addr_head,
+//    input logic [63:0]  csr_need_new_base_cnt,
 
-   output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
-   output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
+//    output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
+//    output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
 
 );
 
@@ -133,33 +133,33 @@ import mig_params::*;
         .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),
 
         // HPPB Performance
-            // .csr_hppb_min_mig_time(csr_hppb_min_mig_time),
-            // .csr_hppb_max_mig_time(csr_hppb_max_mig_time),
-            // .csr_hppb_total_curr_mig_time(csr_hppb_total_curr_mig_time),
-            // .csr_hppb_min_pg0_mig_time(csr_hppb_min_pg0_mig_time),
-            // .csr_hppb_max_pg0_mig_time(csr_hppb_max_pg0_mig_time),
-            // .csr_hppb_min_pgn_mig_time(csr_hppb_min_pgn_mig_time),
-            // .csr_hppb_max_pgn_mig_time(csr_hppb_max_pgn_mig_time),
-            // .csr_hppb_max_fifo_full_cnt(csr_hppb_max_fifo_full_cnt),
-            // .csr_hppb_max_fifo_empty_cnt(csr_hppb_max_fifo_empty_cnt),
-            // .csr_hppb_max_total_read_cnt(csr_hppb_max_total_read_cnt),
-            // .csr_hppb_max_total_write_cnt(csr_hppb_max_total_write_cnt),
-            // .csr_hppb_rresp_err_cnt(csr_hppb_rresp_err_cnt),
-            // .csr_hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
-            // .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
-            // .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
+        .csr_hppb_min_mig_time(csr_hppb_min_mig_time),
+        .csr_hppb_max_mig_time(csr_hppb_max_mig_time),
+        .csr_hppb_total_curr_mig_time(csr_hppb_total_curr_mig_time),
+        .csr_hppb_min_pg0_mig_time(csr_hppb_min_pg0_mig_time),
+        .csr_hppb_max_pg0_mig_time(csr_hppb_max_pg0_mig_time),
+        .csr_hppb_min_pgn_mig_time(csr_hppb_min_pgn_mig_time),
+        .csr_hppb_max_pgn_mig_time(csr_hppb_max_pgn_mig_time),
+        .csr_hppb_max_fifo_full_cnt(csr_hppb_max_fifo_full_cnt),
+        .csr_hppb_max_fifo_empty_cnt(csr_hppb_max_fifo_empty_cnt),
+        .csr_hppb_max_total_read_cnt(csr_hppb_max_total_read_cnt),
+        .csr_hppb_max_total_write_cnt(csr_hppb_max_total_write_cnt),
+        .csr_hppb_rresp_err_cnt(csr_hppb_rresp_err_cnt),
+        .csr_hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
+        .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
+        .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
 
-        .csr_host_ack_cnt(csr_host_ack_cnt),
-        .csr_ahppb_dst_addr_head(csr_ahppb_dst_addr_head),
-        .csr_need_new_base_cnt(csr_need_new_base_cnt),
+        // .csr_host_ack_cnt(csr_host_ack_cnt),
+        // .csr_ahppb_dst_addr_head(csr_ahppb_dst_addr_head),
+        // .csr_need_new_base_cnt(csr_need_new_base_cnt),
 
        .csr_aruser(csr_aruser),
        .csr_awuser(csr_awuser),
        .csr_addr_ub(csr_addr_ub),
-       .csr_addr_lb(csr_addr_lb),
+       .csr_addr_lb(csr_addr_lb)//,
 
-       .csr_ahppb_src_addr_vld_cnt(csr_ahppb_src_addr_vld_cnt),
-       .csr_ahppb_src_addr(csr_ahppb_src_addr)
+    //    .csr_ahppb_src_addr_vld_cnt(csr_ahppb_src_addr_vld_cnt),
+    //    .csr_ahppb_src_addr(csr_ahppb_src_addr)
    );
 
 //USER LOGIC Implementation 

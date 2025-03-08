@@ -55,6 +55,8 @@ source ./constraints/cxltyp2_quartus_constraints_ed_en.tcl
 
 source ./constraints/qsf_device_pinout.tcl
 
+set_global_assignment -name SYSTEMVERILOG_FILE common/afu/afu_top.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/ex_default_csr/h_pfn_buffer.sv
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_w32_d256.ip
 set_global_assignment -name IP_FILE common/ip/BRAM/port_1_ram.ip
 set_global_assignment -name IP_FILE common/ip/bram/w64_d8192.ip
@@ -65,7 +67,10 @@ set_global_assignment -name IP_FILE common/ip/fifo/fifo_cdc.ip
 set_global_assignment -name IP_FILE common/ip/fifo_ahppb/fifo_ahppb.ip
 set_global_assignment -name IP_FILE common/cdc_fifos/fifo_28w_16d.ip
 set_global_assignment -name SYSTEMVERILOG_FILE common/include/types.sv
-set_global_assignment -name SYSTEMVERILOG_FILE common/ex_default_csr/h_pfn_buffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/hot_page_push.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/hot_page_mig_arbiter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/hot_page_addr_handler.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/hot_addr_push/hot_addr_push.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/cm_sketch_sorted_cam/afu_banking/src/axis_data_fifo.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/cm_sketch_sorted_cam/afu_banking/src/cam.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/cm_sketch_sorted_cam/afu_banking/src/cm_sketch.sv
@@ -213,9 +218,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE ./common/cafu_csr0/cafu_csr0_wrap
 set_global_assignment -name SYSTEMVERILOG_FILE ./common/cafu_csr0/cafu_csr0_avmm_wrapper.sv
  
 set_global_assignment -name SYSTEMVERILOG_FILE ./common/afu/afu_csr_avmm_slave.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ./common/afu/afu_top.sv
-
-
 set_global_assignment -name SYSTEMVERILOG_FILE ./common/atomic_afu/afu_ate_mem_target_pkg.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ./common/atomic_afu/afu_ate_comparator.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ./common/atomic_afu/afu_atomic_test_engine.sv
@@ -250,3 +252,6 @@ set_instance_assignment -name VIRTUAL_PIN ON -to i_phy_* -entity cxltyp2_ed
 
 set_global_assignment -name POWER_APPLY_THERMAL_MARGIN ADDITIONAL
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_36w_64d.ip
+set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name USE_SIGNALTAP_FILE m5_impl.stp
+set_global_assignment -name SIGNALTAP_FILE m5_impl.stp

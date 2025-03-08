@@ -1,0 +1,115 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 2024  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the Intel FPGA Software License Subscription Agreements 
+on the Quartus Prime software download page.
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 0 0 272 312)
+	(text "altecc_dec_latency2" (rect 68 0 149 12)(font "SansSerif" (font_size 11)))
+	(text "inst" (rect 8 296 20 308)(font "Arial" ))
+	(port
+		(pt 0 76)
+		(input)
+		(text "data[71..0]" (rect 0 0 40 12)(font "SansSerif" (font_size 8)))
+		(text "data[71..0]" (rect 4 65 70 76)(font "SansSerif" (font_size 8)))
+		(line (pt 0 76)(pt 68 76)(line_width 3))
+	)
+	(port
+		(pt 0 126)
+		(input)
+		(text "clock" (rect 0 0 20 12)(font "SansSerif" (font_size 8)))
+		(text "clock" (rect 4 115 34 126)(font "SansSerif" (font_size 8)))
+		(line (pt 0 126)(pt 68 126)(line_width 1))
+	)
+	(port
+		(pt 272 76)
+		(output)
+		(text "q[63..0]" (rect 0 0 29 12)(font "SansSerif" (font_size 8)))
+		(text "q[63..0]" (rect 234 65 282 76)(font "SansSerif" (font_size 8)))
+		(line (pt 272 76)(pt 170 76)(line_width 3))
+	)
+	(port
+		(pt 272 126)
+		(output)
+		(text "err_corrected" (rect 0 0 55 12)(font "SansSerif" (font_size 8)))
+		(text "err_corrected" (rect 202 115 280 126)(font "SansSerif" (font_size 8)))
+		(line (pt 272 126)(pt 170 126)(line_width 1))
+	)
+	(port
+		(pt 272 176)
+		(output)
+		(text "err_detected" (rect 0 0 50 12)(font "SansSerif" (font_size 8)))
+		(text "err_detected" (rect 207 165 279 176)(font "SansSerif" (font_size 8)))
+		(line (pt 272 176)(pt 170 176)(line_width 1))
+	)
+	(port
+		(pt 272 226)
+		(output)
+		(text "err_fatal" (rect 0 0 34 12)(font "SansSerif" (font_size 8)))
+		(text "err_fatal" (rect 227 215 281 226)(font "SansSerif" (font_size 8)))
+		(line (pt 272 226)(pt 170 226)(line_width 1))
+	)
+	(port
+		(pt 272 276)
+		(output)
+		(text "syn_e" (rect 0 0 25 12)(font "SansSerif" (font_size 8)))
+		(text "syn_e" (rect 239 265 269 276)(font "SansSerif" (font_size 8)))
+		(line (pt 272 276)(pt 170 276)(line_width 1))
+	)
+	(drawing
+		(text "data" (rect 44 46 112 105)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "data" (rect 73 71 170 152)(font "SansSerif" (color 0 0 0)))
+		(text "q" (rect 171 46 348 105)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "q" (rect 162 71 330 152)(font "SansSerif" (color 0 0 0)))
+		(text "err_corrected" (rect 171 96 420 205)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "err_corrected" (rect 107 121 292 252)(font "SansSerif" (color 0 0 0)))
+		(text "err_detected" (rect 171 146 414 305)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "err_detected" (rect 112 171 296 352)(font "SansSerif" (color 0 0 0)))
+		(text "err_fatal" (rect 171 196 396 405)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "err_fatal" (rect 129 221 312 452)(font "SansSerif" (color 0 0 0)))
+		(text "syn_e" (rect 171 246 372 505)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "syn_e" (rect 140 271 310 552)(font "SansSerif" (color 0 0 0)))
+		(text "clock" (rect 40 96 110 205)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "clock" (rect 73 121 176 252)(font "SansSerif" (color 0 0 0)))
+		(text " altecc_dec_latency2 " (rect 181 301 488 612)(font "SansSerif" ))
+		(line (pt 68 34)(pt 170 34)(line_width 1))
+		(line (pt 170 34)(pt 170 301)(line_width 1))
+		(line (pt 68 301)(pt 170 301)(line_width 1))
+		(line (pt 68 34)(pt 68 301)(line_width 1))
+		(line (pt 69 55)(pt 69 80)(line_width 1))
+		(line (pt 70 55)(pt 70 80)(line_width 1))
+		(line (pt 169 55)(pt 169 80)(line_width 1))
+		(line (pt 168 55)(pt 168 80)(line_width 1))
+		(line (pt 169 105)(pt 169 130)(line_width 1))
+		(line (pt 168 105)(pt 168 130)(line_width 1))
+		(line (pt 169 155)(pt 169 180)(line_width 1))
+		(line (pt 168 155)(pt 168 180)(line_width 1))
+		(line (pt 169 205)(pt 169 230)(line_width 1))
+		(line (pt 168 205)(pt 168 230)(line_width 1))
+		(line (pt 169 255)(pt 169 280)(line_width 1))
+		(line (pt 168 255)(pt 168 280)(line_width 1))
+		(line (pt 69 105)(pt 69 130)(line_width 1))
+		(line (pt 70 105)(pt 70 130)(line_width 1))
+		(line (pt 0 0)(pt 272 0)(line_width 1))
+		(line (pt 272 0)(pt 272 318)(line_width 1))
+		(line (pt 0 318)(pt 272 318)(line_width 1))
+		(line (pt 0 0)(pt 0 318)(line_width 1))
+	)
+)

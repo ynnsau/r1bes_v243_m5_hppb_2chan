@@ -28,7 +28,7 @@
 //
 
 module ex_default_csr_avmm_slave 
-import mig_params::*;
+// import mig_params::*;
 #(
     parameter REGFILE_SIZE = 64,
     parameter UPDATE_SIZE  = 8      // first 8 read only, remaining r-w
@@ -77,30 +77,28 @@ import mig_params::*;
    output logic [32:0]  csr_addr_lb,
 
     // HPPB Performance
-        // input logic [63:0] csr_hppb_min_mig_time,
-        // input logic [63:0] csr_hppb_max_mig_time,
-        // input logic [63:0] csr_hppb_total_curr_mig_time,
-        // input logic [63:0] csr_hppb_min_pg0_mig_time,
-        // input logic [63:0] csr_hppb_max_pg0_mig_time,
-        // input logic [63:0] csr_hppb_min_pgn_mig_time,
-        // input logic [63:0] csr_hppb_max_pgn_mig_time,
-        // input logic [63:0] csr_hppb_max_fifo_full_cnt,
-        // input logic [63:0] csr_hppb_max_fifo_empty_cnt,
-        // input logic [63:0] csr_hppb_max_total_read_cnt,
-        // input logic [63:0] csr_hppb_max_total_write_cnt,
-        // input logic [63:0] csr_hppb_rresp_err_cnt,
-        // input logic [63:0] csr_hppb_bresp_err_cnt,
-        // input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-        // input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
+    input logic [63:0] csr_hppb_min_mig_time,
+    input logic [63:0] csr_hppb_max_mig_time,
+    input logic [63:0] csr_hppb_total_curr_mig_time,
+    input logic [63:0] csr_hppb_min_pg0_mig_time,
+    input logic [63:0] csr_hppb_max_pg0_mig_time,
+    input logic [63:0] csr_hppb_min_pgn_mig_time,
+    input logic [63:0] csr_hppb_max_pgn_mig_time,
+    input logic [63:0] csr_hppb_max_fifo_full_cnt,
+    input logic [63:0] csr_hppb_max_fifo_empty_cnt,
+    input logic [63:0] csr_hppb_max_total_read_cnt,
+    input logic [63:0] csr_hppb_max_total_write_cnt,
+    input logic [63:0] csr_hppb_rresp_err_cnt,
+    input logic [63:0] csr_hppb_bresp_err_cnt,
+    input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
+    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
 
-   output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
-   output logic [63:0] csr_ahppb_dst_addr_head,
-   input logic [63:0]  csr_need_new_base_cnt,
+//    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
+//    output logic [63:0] csr_ahppb_dst_addr_head,
+//    input logic [63:0]  csr_need_new_base_cnt,
 
-   output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
-   output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
-
-
+//    output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
+//    output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
 );
 
     logic [63:0] data [REGFILE_SIZE];    // CSR regfile
@@ -189,26 +187,24 @@ import mig_params::*;
                     data[i] <= writedata & mask;
                 end
             end
+            data[18] <= csr_hppb_min_mig_time;
+            data[19] <= csr_hppb_max_mig_time;
+            // data[20] <= csr_hppb_min_pg0_mig_time;
+            data[20] <= csr_hppb_max_pg0_mig_time;
+            // data[22] <= csr_hppb_min_pgn_mig_time;
+            data[21] <= csr_hppb_max_pgn_mig_time;
+            data[22] <= csr_hppb_total_curr_mig_time;//csr_hppb_max_fifo_full_cnt;
+            data[23] <= csr_hppb_max_fifo_empty_cnt;
 
-            // data[18] <= csr_hppb_min_mig_time;
-            // data[19] <= csr_hppb_max_mig_time;
-            // // data[20] <= csr_hppb_min_pg0_mig_time;
-            // data[20] <= csr_hppb_max_pg0_mig_time;
-            // // data[22] <= csr_hppb_min_pgn_mig_time;
-            // data[21] <= csr_hppb_max_pgn_mig_time;
-            // data[22] <= csr_hppb_total_curr_mig_time;//csr_hppb_max_fifo_full_cnt;
-            // data[23] <= csr_hppb_max_fifo_empty_cnt;
+            data[33] <= csr_hppb_max_total_read_cnt;
+            data[34] <= csr_hppb_max_total_write_cnt;
+            data[35] <= csr_hppb_test_mig_done_cnt;
 
-            // data[33] <= csr_hppb_max_total_read_cnt;
-            // data[34] <= csr_hppb_max_total_write_cnt;
-            // data[35] <= csr_hppb_test_mig_done_cnt;
+            data[27] <= csr_hppb_rresp_err_cnt;
+            data[28] <= csr_hppb_bresp_err_cnt;
+            data[29] <= csr_hppb_max_outstanding_rreq_cnt;
+            data[30] <= csr_hppb_max_outstanding_wreq_cnt;
 
-            // data[27] <= csr_hppb_rresp_err_cnt;
-            // data[28] <= csr_hppb_bresp_err_cnt;
-            // data[29] <= csr_hppb_max_outstanding_rreq_cnt;
-            // data[30] <= csr_hppb_max_outstanding_wreq_cnt;
-            data[30] <= csr_need_new_base_cnt;
-            data[46] <= debug_register;
         end    
     end 
 
@@ -489,17 +485,17 @@ import mig_params::*;
         // reg_26 used for hot page pushing dst_addr buff validity count        for reading
         csr_dst_addr_valid_cnt = data[26];
 
-        csr_ahppb_dst_addr_head = data[33];
-        for (int i = 34; i < 34 + MIG_GRP_SIZE; i++) begin
-            csr_host_ack_cnt[i-34] = data[i];
-        end
+        // csr_ahppb_dst_addr_head = data[33];
+        // for (int i = 34; i < 34 + MIG_GRP_SIZE; i++) begin
+        //     csr_host_ack_cnt[i-34] = data[i];
+        // end
         
-        debug_register = data[45];
+        // debug_register = data[45];
 
-        csr_ahppb_src_addr_vld_cnt = data[47];
-        for (int i = 48; i < 48 + MIG_GRP_SIZE; i++) begin
-            csr_ahppb_src_addr[i-48] = data[i];
-        end
+        // csr_ahppb_src_addr_vld_cnt = data[47];
+        // for (int i = 48; i < 48 + MIG_GRP_SIZE; i++) begin
+        //     csr_ahppb_src_addr[i-48] = data[i];
+        // end
 
         case(address_shift3) 
             'd11: begin
