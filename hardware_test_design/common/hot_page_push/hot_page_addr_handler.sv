@@ -1,10 +1,11 @@
 module hot_page_addr_handler
 #(
-    parameter MIG_GRP_SIZE = 16
+    parameter MIG_GRP_SIZE = 16,
+    parameter ADDR_NUM_PAIRS = 512
 )
 (
     // HPPB DEBUGGING
-        output logic [63:0] csr_hppb_test_mig_done_cnt,
+    output logic [63:0]             csr_hppb_test_mig_done_cnt,
 
     input logic                     axi4_mm_clk,
     input logic                     axi4_mm_rst_n,
@@ -66,6 +67,8 @@ logic           dst_read_req_in_progress;
 // logic [511:0]   src_addr_storage;
 
 logic [63:0]    old_dst_addr_valid_cnt;
+logic [63:0]    old_mig_done_cnt;
+logic [$clog2(ADDR_NUM_PAIRS/32)-1:0]   hppb_addr_buf_offset;
 
 always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
@@ -74,9 +77,13 @@ always_ff @(posedge axi4_mm_clk) begin
         dst_read_req_in_progress <= '0;
 
         old_dst_addr_valid_cnt <= '0;
+        old_mig_done_cnt <= '0;
+
         addr_pull_req_ptr <= '0;
+        hppb_addr_buf_offset <= '0;
     end else begin
         state_rd <= next_state_rd;
+        old_mig_done_cnt <= mig_done_cnt;
         // if (hapb_wvalid & hapb_wready) begin
         //     src_addr_storage <= hapb_wdata;
         // end
@@ -87,6 +94,7 @@ always_ff @(posedge axi4_mm_clk) begin
         if (hppb_dst_rvalid & hppb_dst_rready & addr_pull_rec_ptr == '1) begin
             dst_read_req_in_progress <= '0;
             old_dst_addr_valid_cnt <= dst_addr_valid_cnt;
+            hppb_addr_buf_offset <= hppb_addr_buf_offset + 1'b1;
         end
     end
 end
@@ -95,7 +103,10 @@ always_comb begin
     next_state_rd = state_rd;
     unique case (state_rd)
         STATE_RD_RESET:
-            if ((old_dst_addr_valid_cnt != dst_addr_valid_cnt && dst_addr_buf_pAddr != '0) && ~dst_read_req_in_progress) begin
+            if ((( (old_dst_addr_valid_cnt != dst_addr_valid_cnt) 
+                || (old_mig_done_cnt != mig_done_cnt && hppb_addr_buf_offset != '0) )
+                && dst_addr_buf_pAddr != '0)
+                && ~dst_read_req_in_progress) begin
                 next_state_rd = STATE_RD_ADDR;
             end
         STATE_RD_ADDR:
@@ -113,7 +124,7 @@ always_comb begin
             hppb_dst_arvalid = '1;
             hppb_dst_arid = addr_pull_req_ptr;      // Arbiter differentiates
             hppb_dst_aruser = csr_aruser;           // TODO based upon buffer location
-            hppb_dst_araddr = dst_addr_buf_pAddr + (512*addr_pull_req_ptr)/8;       // byte aligned address
+            hppb_dst_araddr = dst_addr_buf_pAddr + (512*addr_pull_req_ptr)/8 + (32*16*(hppb_addr_buf_offset*(MIG_GRP_SIZE/8)))/8;       // byte aligned address
         end
         default:;
     endcase
@@ -144,7 +155,7 @@ always_comb begin
 
     new_addr_available = (hppb_dst_rvalid & hppb_dst_rready & (addr_pull_rec_ptr == '1));
     if (new_addr_available) begin
-        for (int i = 0; i < MIG_GRP_SIZE/2; i++) begin
+        for (int i = 0; i < MIG_GRP_SIZE - 8; i++) begin
             if (i % 2 == 0) begin
                 src_addr[i/2] = {20'b0, addr_pull_storage[(i*2)*32 +: 32], 12'b0};
                 dst_addr[i/2] = {20'b0, addr_pull_storage[((i*2)+1)*32 +: 32], 12'b0};

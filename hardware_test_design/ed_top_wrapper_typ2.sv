@@ -1638,7 +1638,7 @@ logic [32:0]  csr_addr_ub;
 logic [32:0]  csr_addr_lb;
 
 // HOT PAGE PUSHING SIGNALS
-localparam ACTUAL_MIG_GRP_SIZE = 16;
+localparam ACTUAL_MIG_GRP_SIZE = 32;
 
 logic atleast_one_valid_src, atleast_one_valid_src1;
 // CSRs
