@@ -160,8 +160,8 @@ always_comb begin
                 src_addr[i/2] = {20'b0, addr_pull_storage[(i*2)*32 +: 32], 12'b0};
                 dst_addr[i/2] = {20'b0, addr_pull_storage[((i*2)+1)*32 +: 32], 12'b0};
             end else begin
-                src_addr1[(i-1)/2] <= {20'b0, addr_pull_storage[(i*2)*32 +: 32], 12'b0};
-                dst_addr1[(i-1)/2] <= {20'b0, addr_pull_storage[((i*2)+1)*32 +: 32], 12'b0};
+                src_addr1[(i-1)/2] = {20'b0, addr_pull_storage[(i*2)*32 +: 32], 12'b0};
+                dst_addr1[(i-1)/2] = {20'b0, addr_pull_storage[((i*2)+1)*32 +: 32], 12'b0};
             end
 
             // if (hppb_dst_rdata[(i+1)*32 +: 32] == '0) src_addr[i] = '0;
@@ -169,11 +169,11 @@ always_comb begin
 
         for (int i = 0; i < 8; i++) begin       // hppb_dst_rdata last group, addr_pull_storage doesn't have this (save a cycle)
             if (i % 2 == 0) begin
-                src_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] <= {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
-                dst_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] <= {20'b0, hppb_dst_rdata[((i*2)+1)*32 +: 32], 12'b0};
+                src_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] = {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
+                dst_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] = {20'b0, hppb_dst_rdata[((i*2)+1)*32 +: 32], 12'b0};
             end else begin
-                src_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] <= {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
-                dst_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] <= {20'b0, hppb_dst_rdata[((i*2)+1)*32 +: 32], 12'b0};
+                src_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] = {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
+                dst_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] = {20'b0, hppb_dst_rdata[((i*2)+1)*32 +: 32], 12'b0};
             end
             
     //         src_addr1[i] <= {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
