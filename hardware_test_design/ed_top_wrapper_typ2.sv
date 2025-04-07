@@ -1645,6 +1645,8 @@ logic atleast_one_valid_src, atleast_one_valid_src1;
   logic [63:0]  csr_hapb_head_aclk,           csr_hapb_head_eclk;
   logic [63:0]  csr_dst_addr_buf_pAddr_aclk,  csr_dst_addr_buf_pAddr_eclk;
   logic [63:0]  csr_dst_addr_valid_cnt_aclk,  csr_dst_addr_valid_cnt_eclk;
+  logic [63:0]  csr_hppb_debug_addr_aclk, csr_hppb_debug_addr_eclk;
+  logic [63:0]  csr_hppb_mig_start_cnt_aclk, csr_hppb_mig_start_cnt_eclk;
 
 // HPPB DEBUGGING
   logic [63:0]  csr_hppb_test_mig_done_cnt;
@@ -1833,6 +1835,7 @@ logic atleast_one_valid_src, atleast_one_valid_src1;
     logic                      hppb_dst_rvalid;
     logic                      hppb_dst_rready;
 
+  logic [63:0]             csr_debug_addr[16];
 
 // ********************* wrapper code around hot page push reads for profiling
     logic                      test_hppb_arready;
@@ -2064,6 +2067,8 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
   .dst_addr(hppb_dst_addr),
   .dst_addr1(hppb1_dst_addr),
   .new_addr_available(hppb_new_addr_available),
+  .csr_hppb_debug_addr(csr_hppb_debug_addr_eclk),
+  .csr_hppb_mig_start_cnt(csr_hppb_mig_start_cnt_eclk),
 
   .csr_aruser(csr_aruser),
 
@@ -2086,7 +2091,9 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
     .hppb_dst_rvalid(hppb_dst_rvalid),
     .hppb_dst_rready(hppb_dst_rready),
 
-    .mig_done_cnt(hppb_mig_done_cnt & hppb1_mig_done_cnt)
+    .mig_done_cnt(hppb_mig_done_cnt & hppb1_mig_done_cnt),
+
+    .csr_debug_addr(csr_debug_addr)
 
 );
 
@@ -2110,6 +2117,21 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
     .data_out (csr_dst_addr_valid_cnt_eclk)
   );
 
+  bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+  ) bus_synchronizer_debug_addr_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_hppb_debug_addr_aclk),
+    .data_out (csr_hppb_debug_addr_eclk)
+  );
+  
+  bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+  ) bus_synchronizer_mig_start_cnt_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_hppb_mig_start_cnt_aclk),
+    .data_out (csr_hppb_mig_start_cnt_eclk)
+  );
 
 hot_page_push_arbiter hot_page_push_arbiter
 (
@@ -2972,7 +2994,9 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
       .csr_hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
       .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
       .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
-
+      .csr_hppb_debug_addr(csr_hppb_debug_addr_aclk),
+      .csr_hppb_mig_start_cnt(csr_hppb_mig_start_cnt_aclk),
+      .csr_debug_addr(csr_debug_addr),
 
     .csr_aruser             (csr_aruser),
     .csr_awuser             (csr_awuser),

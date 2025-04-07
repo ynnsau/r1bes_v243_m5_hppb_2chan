@@ -86,8 +86,11 @@ module ex_default_csr_top
     input logic [63:0] csr_hppb_rresp_err_cnt,
     input logic [63:0] csr_hppb_bresp_err_cnt,
     input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
+    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt,
+    output logic [63:0]              csr_hppb_debug_addr,
+    output logic [63:0]              csr_hppb_mig_start_cnt,
 
+    input logic [63:0]             csr_debug_addr[16]
 //    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
 //    output logic [63:0] csr_ahppb_dst_addr_head,
 //    input logic [63:0]  csr_need_new_base_cnt,
@@ -148,6 +151,9 @@ module ex_default_csr_top
         .csr_hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
         .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
         .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
+        .csr_hppb_debug_addr(csr_hppb_debug_addr),
+        .csr_hppb_mig_start_cnt(csr_hppb_mig_start_cnt),
+        .csr_debug_addr(csr_debug_addr),
 
         // .csr_host_ack_cnt(csr_host_ack_cnt),
         // .csr_ahppb_dst_addr_head(csr_ahppb_dst_addr_head),

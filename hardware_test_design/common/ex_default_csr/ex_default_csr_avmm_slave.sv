@@ -91,7 +91,11 @@ module ex_default_csr_avmm_slave
     input logic [63:0] csr_hppb_rresp_err_cnt,
     input logic [63:0] csr_hppb_bresp_err_cnt,
     input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
+    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt,
+    output logic [63:0]              csr_hppb_debug_addr,
+    output logic [63:0]              csr_hppb_mig_start_cnt,
+
+    input logic [63:0]             csr_debug_addr[16]
 
 //    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
 //    output logic [63:0] csr_ahppb_dst_addr_head,
@@ -200,10 +204,14 @@ module ex_default_csr_avmm_slave
             data[34] <= csr_hppb_max_total_write_cnt;
             data[35] <= csr_hppb_test_mig_done_cnt;
 
-            data[27] <= csr_hppb_rresp_err_cnt;
-            data[28] <= csr_hppb_bresp_err_cnt;
+            // data[27] <= csr_hppb_rresp_err_cnt;
+            // data[28] <= csr_hppb_bresp_err_cnt;
             data[29] <= csr_hppb_max_outstanding_rreq_cnt;
             data[30] <= csr_hppb_max_outstanding_wreq_cnt;
+
+            for (int i = 0; i < 16; i++) begin
+                data[i + 38] <= csr_debug_addr[i];
+            end
 
         end    
     end 
@@ -484,7 +492,8 @@ module ex_default_csr_avmm_slave
         csr_dst_addr_buf_pAddr = data[25];
         // reg_26 used for hot page pushing dst_addr buff validity count        for reading
         csr_dst_addr_valid_cnt = data[26];
-
+        csr_hppb_debug_addr = data[27];
+        csr_hppb_mig_start_cnt = data[28];
         // csr_ahppb_dst_addr_head = data[33];
         // for (int i = 34; i < 34 + MIG_GRP_SIZE; i++) begin
         //     csr_host_ack_cnt[i-34] = data[i];
