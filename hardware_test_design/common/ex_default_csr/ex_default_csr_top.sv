@@ -59,8 +59,9 @@ module ex_default_csr_top
 
     // for hot page pushing pushing
     output logic [63:0] csr_hapb_head,
-    output logic [63:0] csr_dst_addr_buf_pAddr,
-    output logic [63:0] csr_dst_addr_valid_cnt,
+    output logic [63:0] csr_addr_pair_buf_pAddr,
+    output logic [63:0] csr_addr_pair_vld_cnt,
+    output logic [63:0] csr_huge_pg_addr_pair,
 
     // HPPB DEBUGGING
     input  logic [63:0] csr_hppb_test_mig_done_cnt,
@@ -126,8 +127,9 @@ module ex_default_csr_top
 
     // for hot page pushing pushing
         .csr_hapb_head(csr_hapb_head),
-        .csr_dst_addr_buf_pAddr(csr_dst_addr_buf_pAddr),
-        .csr_dst_addr_valid_cnt(csr_dst_addr_valid_cnt),
+        .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr),
+        .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt),
+        .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair),
 
         // HPPB DEBUGGING
         .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),

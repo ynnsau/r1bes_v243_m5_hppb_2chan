@@ -1643,8 +1643,9 @@ localparam ACTUAL_MIG_GRP_SIZE = 32;
 logic atleast_one_valid_src, atleast_one_valid_src1;
 // CSRs
   logic [63:0]  csr_hapb_head_aclk,           csr_hapb_head_eclk;
-  logic [63:0]  csr_dst_addr_buf_pAddr_aclk,  csr_dst_addr_buf_pAddr_eclk;
-  logic [63:0]  csr_dst_addr_valid_cnt_aclk,  csr_dst_addr_valid_cnt_eclk;
+  logic [63:0]  csr_addr_pair_buf_pAddr_aclk,  csr_addr_pair_buf_pAddr_eclk;
+  logic [63:0]  csr_addr_pair_vld_cnt_aclk,  csr_addr_pair_vld_cnt_eclk;
+  logic [63:0]  csr_huge_pg_addr_pair_aclk,  csr_huge_pg_addr_pair_eclk;
 
 // HPPB DEBUGGING
   logic [63:0]  csr_hppb_test_mig_done_cnt;
@@ -2058,11 +2059,12 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
 
   .src_addr(hppb_src_addr),
   .src_addr1(hppb1_src_addr),
-
-  .dst_addr_buf_pAddr(csr_dst_addr_buf_pAddr_eclk), //   Fixed after being set to something useful?
-  .dst_addr_valid_cnt(csr_dst_addr_valid_cnt_eclk),
   .dst_addr(hppb_dst_addr),
   .dst_addr1(hppb1_dst_addr),
+
+  .addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_eclk), //   Fixed after being set to something useful?
+  .addr_pair_vld_cnt(csr_addr_pair_vld_cnt_eclk),
+  .huge_pg_addr_pair(csr_huge_pg_addr_pair_eclk),
   .new_addr_available(hppb_new_addr_available),
 
   .csr_aruser(csr_aruser),
@@ -2096,18 +2098,26 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
 
   bus_synchronizer #(
     .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_dst_addr_buf_pAddr_inst (
+  ) bus_synchronizer_addr_pair_buf_pAddr_inst (
     .clk      (ip2hdm_clk),
-    .data_in  (csr_dst_addr_buf_pAddr_aclk),
-    .data_out (csr_dst_addr_buf_pAddr_eclk)
+    .data_in  (csr_addr_pair_buf_pAddr_aclk),
+    .data_out (csr_addr_pair_buf_pAddr_eclk)
   );
 
   bus_synchronizer #(
     .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_dst_addr_valid_cnt_inst (
+  ) bus_synchronizer_addr_pair_vld_cnt_inst (
     .clk      (ip2hdm_clk),
-    .data_in  (csr_dst_addr_valid_cnt_aclk),
-    .data_out (csr_dst_addr_valid_cnt_eclk)
+    .data_in  (csr_addr_pair_vld_cnt_aclk),
+    .data_out (csr_addr_pair_vld_cnt_eclk)
+  );
+
+  bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+  ) bus_synchronizer_huge_pg_addr_pair_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_huge_pg_addr_pair_aclk),
+    .data_out (csr_huge_pg_addr_pair_eclk)
   );
 
 
@@ -2950,8 +2960,9 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     
     // for hot page pushing pushing
     .csr_hapb_head(csr_hapb_head_aclk),
-    .csr_dst_addr_buf_pAddr(csr_dst_addr_buf_pAddr_aclk),
-    .csr_dst_addr_valid_cnt(csr_dst_addr_valid_cnt_aclk),
+    .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_aclk),
+    .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt_aclk),
+    .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair_aclk),
 
     // HPPB DEBUGGING
     .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),

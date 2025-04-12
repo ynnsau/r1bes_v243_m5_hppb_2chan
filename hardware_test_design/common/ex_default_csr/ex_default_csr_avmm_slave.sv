@@ -63,8 +63,9 @@ module ex_default_csr_avmm_slave
 
     // for hot page pushing pushing
     output logic [63:0] csr_hapb_head,      // basically src_addr_buf_pAddr
-    output logic [63:0] csr_dst_addr_buf_pAddr,
-    output logic [63:0] csr_dst_addr_valid_cnt,
+    output logic [63:0] csr_addr_pair_buf_pAddr,
+    output logic [63:0] csr_addr_pair_vld_cnt,
+    output logic [63:0] csr_huge_pg_addr_pair,
 
     // HPPB DEBUGGING
     input  logic [63:0] csr_hppb_test_mig_done_cnt,
@@ -481,10 +482,11 @@ module ex_default_csr_avmm_slave
         // reg_24 used for hot page pushing src_addr buff pAddr
         csr_hapb_head = data[24];
         // reg_25 used for hot page pushing dst_addr buff pAddr
-        csr_dst_addr_buf_pAddr = data[25];
+        csr_addr_pair_buf_pAddr = data[25];
         // reg_26 used for hot page pushing dst_addr buff validity count        for reading
-        csr_dst_addr_valid_cnt = data[26];
+        csr_addr_pair_vld_cnt = data[26];
 
+        csr_huge_pg_addr_pair = data[31];
         // csr_ahppb_dst_addr_head = data[33];
         // for (int i = 34; i < 34 + MIG_GRP_SIZE; i++) begin
         //     csr_host_ack_cnt[i-34] = data[i];
