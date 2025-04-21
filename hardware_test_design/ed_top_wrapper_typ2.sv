@@ -2005,7 +2005,7 @@ hot_addr_push hot_addr_push
   
   // Other signals
     .hapb_head(csr_hapb_head_eclk),
-    .mig_done_cnt(hppb_mig_done_cnt & hppb1_mig_done_cnt),
+    .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt),
 
     .page_mig_addr_en           (page_mig_addr_en_eclk),
     .page_mig_addr              (page_mig_addr_eclk),
@@ -2088,7 +2088,7 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
     .hppb_dst_rvalid(hppb_dst_rvalid),
     .hppb_dst_rready(hppb_dst_rready),
 
-    .mig_done_cnt(hppb_mig_done_cnt & hppb1_mig_done_cnt)
+    .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt)
 
 );
 
@@ -2104,7 +2104,7 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
     .data_out (csr_addr_pair_buf_pAddr_eclk)
   );
 
-  bus_synchronizer #(
+  more_sync_bus_synchronizer #(
     .SIGNAL_WIDTH(64)
   ) bus_synchronizer_addr_pair_vld_cnt_inst (
     .clk      (ip2hdm_clk),

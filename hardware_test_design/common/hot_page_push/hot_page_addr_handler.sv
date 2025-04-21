@@ -91,6 +91,7 @@ always_ff @(posedge axi4_mm_clk) begin
     end else begin
         state_rd <= next_state_rd;
         old_mig_done_cnt <= mig_done_cnt;
+        old_addr_pair_vld_cnt[63] <= addr_pair_vld_cnt[63];
         // if (hapb_wvalid & hapb_wready) begin
         //     src_addr_storage <= hapb_wdata;
         // end
@@ -100,15 +101,15 @@ always_ff @(posedge axi4_mm_clk) begin
         end
         if (hppb_dst_rvalid & hppb_dst_rready & addr_pull_rec_ptr == '1) begin
             dst_read_req_in_progress <= '0;
-            old_addr_pair_vld_cnt <= addr_pair_vld_cnt;
+            old_addr_pair_vld_cnt[62:0] <= addr_pair_vld_cnt[62:0];
             hppb_addr_buf_offset <= hppb_addr_buf_offset + 1'b1;
         end
         if (huge_pg_mig_active && new_addr_available) begin
-            old_addr_pair_vld_cnt <= addr_pair_vld_cnt;
+            old_addr_pair_vld_cnt[62:0] <= addr_pair_vld_cnt[62:0];
         end
 
         if (~huge_pg_mig_active && old_addr_pair_vld_cnt[62:0] != addr_pair_vld_cnt[62:0]) begin
-            batch_size <= (addr_pair_vld_cnt - old_addr_pair_vld_cnt);
+            batch_size <= (addr_pair_vld_cnt[62:0] - old_addr_pair_vld_cnt[62:0]);
         end 
 
         if (hppb_addr_buf_offset != '0 && hppb_addr_buf_offset == batch_size) begin
@@ -122,7 +123,7 @@ always_comb begin
     next_state_rd = state_rd;
     unique case (state_rd)
         STATE_RD_RESET:
-            if ((( (old_addr_pair_vld_cnt != addr_pair_vld_cnt) 
+            if ((( (old_addr_pair_vld_cnt[62:0] != addr_pair_vld_cnt[62:0]) 
                 || (old_mig_done_cnt != mig_done_cnt && hppb_addr_buf_offset != batch_size) )
                 && addr_pair_buf_pAddr != '0)
                 && ~dst_read_req_in_progress
@@ -205,7 +206,7 @@ always_comb begin
             end
         end
     end else begin
-        new_addr_available = (old_addr_pair_vld_cnt[62:0] != addr_pair_vld_cnt[62:0]) || (old_mig_done_cnt != mig_done_cnt && huge_pg_addr_offset != '0);
+        new_addr_available = ((old_addr_pair_vld_cnt[62:0] + 1'b1) == addr_pair_vld_cnt[62:0]) || (old_mig_done_cnt != mig_done_cnt && huge_pg_addr_offset != '0);
         for (int i = 0; i < MIG_GRP_SIZE; i++) begin
             if (i % 2 == 0) begin
                 src_addr[i/2] = {20'b0, huge_pg_addr_pair[31:0], 12'b0} + i*4096 + huge_pg_addr_offset*MIG_GRP_SIZE*4096;
