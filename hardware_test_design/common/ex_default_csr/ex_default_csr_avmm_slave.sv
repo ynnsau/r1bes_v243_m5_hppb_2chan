@@ -28,9 +28,9 @@
 //
 
 module ex_default_csr_avmm_slave 
-// import mig_params::*;
+import mig_params::*;
 #(
-    parameter REGFILE_SIZE = 64,
+    parameter REGFILE_SIZE = 128,
     parameter UPDATE_SIZE  = 8      // first 8 read only, remaining r-w
 )(
  
@@ -61,44 +61,20 @@ module ex_default_csr_avmm_slave
    input logic page_mig_addr_en,
    input logic [27:0]  page_mig_addr,
 
-    // for hot page pushing pushing
-    output logic [63:0] csr_hapb_head,      // basically src_addr_buf_pAddr
-    output logic [63:0] csr_dst_addr_buf_pAddr,
-    output logic [63:0] csr_dst_addr_valid_cnt,
 
-    // HPPB DEBUGGING
-    input  logic [63:0] csr_hppb_test_mig_done_cnt,
+    output logic [32:0]  csr_addr_ub,
+    output logic [32:0]  csr_addr_lb,
 
 
-   output logic [5:0] csr_aruser,
-   output logic [5:0] csr_awuser,
+    output logic [5:0]   csr_aruser,
+    output logic [5:0]   csr_awuser,
+    output logic [63:0]  csr_hapb_head,
+    output logic [63:0]  csr_ahppb_batch_info   [MIG_GRP_SIZE],     // TODO will need only half
+    output logic [63:0]  csr_batch_ack_cnt,
+    output logic [63:0]  csr_ahppb_src_addr     [MIG_GRP_SIZE],
+    input logic [63:0]  csr_ahppb_mig_start_cnt,
+    input logic [63:0]  csr_ahppb_mig_done_cnt
 
-   output logic [32:0]  csr_addr_ub,
-   output logic [32:0]  csr_addr_lb,
-
-    // HPPB Performance
-    input logic [63:0] csr_hppb_min_mig_time,
-    input logic [63:0] csr_hppb_max_mig_time,
-    input logic [63:0] csr_hppb_total_curr_mig_time,
-    input logic [63:0] csr_hppb_min_pg0_mig_time,
-    input logic [63:0] csr_hppb_max_pg0_mig_time,
-    input logic [63:0] csr_hppb_min_pgn_mig_time,
-    input logic [63:0] csr_hppb_max_pgn_mig_time,
-    input logic [63:0] csr_hppb_max_fifo_full_cnt,
-    input logic [63:0] csr_hppb_max_fifo_empty_cnt,
-    input logic [63:0] csr_hppb_max_total_read_cnt,
-    input logic [63:0] csr_hppb_max_total_write_cnt,
-    input logic [63:0] csr_hppb_rresp_err_cnt,
-    input logic [63:0] csr_hppb_bresp_err_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
-
-//    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
-//    output logic [63:0] csr_ahppb_dst_addr_head,
-//    input logic [63:0]  csr_need_new_base_cnt,
-
-//    output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
-//    output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
 );
 
     logic [63:0] data [REGFILE_SIZE];    // CSR regfile
@@ -187,24 +163,9 @@ module ex_default_csr_avmm_slave
                     data[i] <= writedata & mask;
                 end
             end
-            data[18] <= csr_hppb_min_mig_time;
-            data[19] <= csr_hppb_max_mig_time;
-            // data[20] <= csr_hppb_min_pg0_mig_time;
-            data[20] <= csr_hppb_max_pg0_mig_time;
-            // data[22] <= csr_hppb_min_pgn_mig_time;
-            data[21] <= csr_hppb_max_pgn_mig_time;
-            data[22] <= csr_hppb_total_curr_mig_time;//csr_hppb_max_fifo_full_cnt;
-            data[23] <= csr_hppb_max_fifo_empty_cnt;
 
-            data[33] <= csr_hppb_max_total_read_cnt;
-            data[34] <= csr_hppb_max_total_write_cnt;
-            data[35] <= csr_hppb_test_mig_done_cnt;
-
-            data[27] <= csr_hppb_rresp_err_cnt;
-            data[28] <= csr_hppb_bresp_err_cnt;
-            data[29] <= csr_hppb_max_outstanding_rreq_cnt;
-            data[30] <= csr_hppb_max_outstanding_wreq_cnt;
-
+            data[18] <= csr_ahppb_mig_start_cnt;
+            data[19] <= csr_ahppb_mig_done_cnt;
         end    
     end 
 
@@ -480,22 +441,13 @@ module ex_default_csr_avmm_slave
 
         // reg_24 used for hot page pushing src_addr buff pAddr
         csr_hapb_head = data[24];
-        // reg_25 used for hot page pushing dst_addr buff pAddr
-        csr_dst_addr_buf_pAddr = data[25];
-        // reg_26 used for hot page pushing dst_addr buff validity count        for reading
-        csr_dst_addr_valid_cnt = data[26];
-
-        // csr_ahppb_dst_addr_head = data[33];
-        // for (int i = 34; i < 34 + MIG_GRP_SIZE; i++) begin
-        //     csr_host_ack_cnt[i-34] = data[i];
-        // end
-        
-        // debug_register = data[45];
-
-        // csr_ahppb_src_addr_vld_cnt = data[47];
-        // for (int i = 48; i < 48 + MIG_GRP_SIZE; i++) begin
-        //     csr_ahppb_src_addr[i-48] = data[i];
-        // end
+        csr_batch_ack_cnt = data[33];
+        for (int i = 34; i < 34 + MIG_GRP_SIZE; i++) begin
+            csr_ahppb_batch_info[i-34] = data[i];
+        end
+        for (int i = (34 + MIG_GRP_SIZE); i < (34 + MIG_GRP_SIZE) + MIG_GRP_SIZE; i++) begin
+            csr_ahppb_src_addr[i-((34 + MIG_GRP_SIZE))] = data[i]; // TODO Temporary, need to replace with: HAPB pushed addresses
+        end
 
         case(address_shift3) 
             'd11: begin

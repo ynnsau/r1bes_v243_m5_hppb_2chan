@@ -44,6 +44,9 @@ import tmp_cafu_csr0_cfg_pkg::*;
 import intel_cxl_pio_parameters :: *;
 import mc_ecc_pkg::*;
 import ed_mc_axi_if_pkg::*;
+
+import mig_params::*;
+
 #(
 
    localparam T1IP_ENABLE              = 1'b0 
@@ -1638,94 +1641,67 @@ logic [32:0]  csr_addr_ub;
 logic [32:0]  csr_addr_lb;
 
 // HOT PAGE PUSHING SIGNALS
-localparam ACTUAL_MIG_GRP_SIZE = 32;
+localparam ACTUAL_MIG_GRP_SIZE = 16;
 
-logic atleast_one_valid_src, atleast_one_valid_src1;
+logic atleast_one_valid_src;
 // CSRs
   logic [63:0]  csr_hapb_head_aclk,           csr_hapb_head_eclk;
-  logic [63:0]  csr_dst_addr_buf_pAddr_aclk,  csr_dst_addr_buf_pAddr_eclk;
-  logic [63:0]  csr_dst_addr_valid_cnt_aclk,  csr_dst_addr_valid_cnt_eclk;
-
-// HPPB DEBUGGING
-  logic [63:0]  csr_hppb_test_mig_done_cnt;
 
 
 // Other signals
-  logic [63:0]  hppb_src_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb1_src_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb1_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic         hppb_new_addr_available;
-
-  logic [63:0]  hppb_mig_done_cnt, hppb1_mig_done_cnt;
-
-  // Performance counters
-  logic [63:0] csr_hppb_min_mig_time;
-  logic [63:0] csr_hppb_max_mig_time;
-  logic [63:0] csr_hppb_total_curr_mig_time;
-  logic [63:0] csr_hppb_min_pg0_mig_time;
-  logic [63:0] csr_hppb_max_pg0_mig_time;
-  logic [63:0] csr_hppb_min_pgn_mig_time;
-  logic [63:0] csr_hppb_max_pgn_mig_time;
-  logic [63:0] csr_hppb_max_fifo_full_cnt;
-  logic [63:0] csr_hppb_max_fifo_empty_cnt;
-  logic [63:0] csr_hppb_max_total_read_cnt;
-  logic [63:0] csr_hppb_max_total_write_cnt;
-  logic [63:0] csr_hppb_rresp_err_cnt;
-  logic [63:0] csr_hppb_bresp_err_cnt;
-  logic [63:0] csr_hppb_max_outstanding_rreq_cnt;
-  logic [63:0] csr_hppb_max_outstanding_wreq_cnt;
-
-
+  // logic [63:0]  hppb_src_addr [ACTUAL_MIG_GRP_SIZE];
+  // logic [63:0]  hppb_dst_addr [ACTUAL_MIG_GRP_SIZE];
+  // logic         hppb_new_addr_available;
+  // logic [63:0]  hppb_mig_done_cnt;
 // Module Level AXI signals
   // HPPB
     logic [11:0]               hppb_arid;
     logic [63:0]               hppb_araddr;
-    logic [9:0]                hppb_arlen;    // must tie to 10'd0
-    logic [2:0]                hppb_arsize;   // must tie to 3'b110
-    logic [1:0]                hppb_arburst;  // must tie to 2'b00
-    logic [2:0]                hppb_arprot;   // must tie to 3'b000
-    logic [3:0]                hppb_arqos;    // must tie to 4'b0000
-    logic [5:0]                hppb_aruser;   // 4'b0000": non-cacheable; 4'b0001: cacheable shared; 4'b0010: cacheable owned
+    logic [9:0]                hppb_arlen;    
+    logic [2:0]                hppb_arsize;   
+    logic [1:0]                hppb_arburst;  
+    logic [2:0]                hppb_arprot;   
+    logic [3:0]                hppb_arqos;    
+    logic [5:0]                hppb_aruser;   
     logic                      hppb_arvalid;
-    logic [3:0]                hppb_arcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_arlock;   // must tie to 2'b00
-    logic [3:0]                hppb_arregion; // must tie to 4'b0000
+    logic [3:0]                hppb_arcache;  
+    logic [1:0]                hppb_arlock;   
+    logic [3:0]                hppb_arregion; 
     logic                      hppb_arready;
 
     logic [11:0]               hppb_rid;
     logic [511:0]              hppb_rdata;  
-    logic [1:0]                hppb_rresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic                      hppb_rlast;  // no use
-    logic                      hppb_ruser;  // no use
+    logic [1:0]                hppb_rresp;  
+    logic                      hppb_rlast;  
+    logic                      hppb_ruser;  
     logic                      hppb_rvalid;
     logic                      hppb_rready;
 
     logic [11:0]               hppb_awid;
     logic [63:0]               hppb_awaddr; 
-    logic [9:0]                hppb_awlen;    // must tie to 10'd0
-    logic [2:0]                hppb_awsize;   // must tie to 3'b110 (64B/T)
-    logic [1:0]                hppb_awburst;  // must tie to 2'b00            : CXL IP limitation
-    logic [2:0]                hppb_awprot;   // must tie to 3'b000
-    logic [3:0]                hppb_awqos;    // must tie to 4'b0000
+    logic [9:0]                hppb_awlen;    
+    logic [2:0]                hppb_awsize;   
+    logic [1:0]                hppb_awburst;              
+    logic [2:0]                hppb_awprot;   
+    logic [3:0]                hppb_awqos;    
     logic [5:0]                hppb_awuser;
     logic                      hppb_awvalid;
-    logic [3:0]                hppb_awcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_awlock;   // must tie to 2'b00
-    logic [3:0]                hppb_awregion; // must tie to 4'b0000
-    logic [5:0]                hppb_awatop;   // must tie to 6'b000000
+    logic [3:0]                hppb_awcache;  
+    logic [1:0]                hppb_awlock;   
+    logic [3:0]                hppb_awregion; 
+    logic [5:0]                hppb_awatop;   
     logic                      hppb_awready;
 
     logic [511:0]              hppb_wdata;
     logic [(512/8)-1:0]        hppb_wstrb;
     logic                      hppb_wlast;
-    logic                      hppb_wuser;  // must tie to 1'b0
+    logic                      hppb_wuser;  
     logic                      hppb_wvalid;
     logic                      hppb_wready;
 
     logic [11:0]               hppb_bid;
-    logic [1:0]                hppb_bresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic [3:0]                hppb_buser;  // must tie to 4'b0000
+    logic [1:0]                hppb_bresp;  
+    logic [3:0]                hppb_buser;  
     logic                      hppb_bvalid;
     logic                      hppb_bready;
 
@@ -1784,217 +1760,114 @@ logic atleast_one_valid_src, atleast_one_valid_src1;
   // HAPB
     logic [11:0]               hapb_awid;
     logic [63:0]               hapb_awaddr; 
-    logic [9:0]                hapb_awlen;    // must tie to 10'd0
-    logic [2:0]                hapb_awsize;   // must tie to 3'b110 (64B/T)
-    logic [1:0]                hapb_awburst;  // must tie to 2'b00            : CXL IP limitation
-    logic [2:0]                hapb_awprot;   // must tie to 3'b000
-    logic [3:0]                hapb_awqos;    // must tie to 4'b0000
+    logic [9:0]                hapb_awlen;    
+    logic [2:0]                hapb_awsize;   
+    logic [1:0]                hapb_awburst;              
+    logic [2:0]                hapb_awprot;   
+    logic [3:0]                hapb_awqos;    
     logic [5:0]                hapb_awuser;
     logic                      hapb_awvalid;
-    logic [3:0]                hapb_awcache;  // must tie to 4'b0000
-    logic [1:0]                hapb_awlock;   // must tie to 2'b00
-    logic [3:0]                hapb_awregion; // must tie to 4'b0000
-    logic [5:0]                hapb_awatop;   // must tie to 6'b000000
+    logic [3:0]                hapb_awcache;  
+    logic [1:0]                hapb_awlock;   
+    logic [3:0]                hapb_awregion; 
+    logic [5:0]                hapb_awatop;   
     logic                      hapb_awready;
 
     logic [511:0]              hapb_wdata;
     logic [(512/8)-1:0]        hapb_wstrb;
     logic                      hapb_wlast;
-    logic                      hapb_wuser;  // must tie to 1'b0
+    logic                      hapb_wuser;  
     logic                      hapb_wvalid;
     logic                      hapb_wready;
 
     logic [11:0]               hapb_bid;
-    logic [1:0]                hapb_bresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic [3:0]                hapb_buser;  // must tie to 4'b0000
+    logic [1:0]                hapb_bresp;  
+    logic [3:0]                hapb_buser;  
     logic                      hapb_bvalid;
     logic                      hapb_bready;
 
   // HPPB_DST_REQ
     logic [11:0]               hppb_dst_arid;
     logic [63:0]               hppb_dst_araddr;
-    logic [9:0]                hppb_dst_arlen;    // must tie to 10'd0
-    logic [2:0]                hppb_dst_arsize;   // must tie to 3'b110
-    logic [1:0]                hppb_dst_arburst;  // must tie to 2'b00
-    logic [2:0]                hppb_dst_arprot;   // must tie to 3'b000
-    logic [3:0]                hppb_dst_arqos;    // must tie to 4'b0000
-    logic [5:0]                hppb_dst_aruser;   // 4'b0000": non-cacheable; 4'b0001: cacheable shared; 4'b0010: cacheable owned
+    logic [9:0]                hppb_dst_arlen;    
+    logic [2:0]                hppb_dst_arsize;   
+    logic [1:0]                hppb_dst_arburst;  
+    logic [2:0]                hppb_dst_arprot;   
+    logic [3:0]                hppb_dst_arqos;    
+    logic [5:0]                hppb_dst_aruser;   
     logic                      hppb_dst_arvalid;
-    logic [3:0]                hppb_dst_arcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_dst_arlock;   // must tie to 2'b00
-    logic [3:0]                hppb_dst_arregion; // must tie to 4'b0000
+    logic [3:0]                hppb_dst_arcache;  
+    logic [1:0]                hppb_dst_arlock;   
+    logic [3:0]                hppb_dst_arregion; 
     logic                      hppb_dst_arready;
 
     logic [11:0]               hppb_dst_rid;
     logic [511:0]              hppb_dst_rdata;  
-    logic [1:0]                hppb_dst_rresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic                      hppb_dst_rlast;  // no use
-    logic                      hppb_dst_ruser;  // no use
+    logic [1:0]                hppb_dst_rresp;  
+    logic                      hppb_dst_rlast;  
+    logic                      hppb_dst_ruser;  
     logic                      hppb_dst_rvalid;
     logic                      hppb_dst_rready;
 
+  // AHPPB: Auto HPPB
+    logic [11:0]               ahppb_arid [MIG_GRP_SIZE];
+    logic [63:0]               ahppb_araddr [MIG_GRP_SIZE];
+    logic [5:0]                ahppb_aruser [MIG_GRP_SIZE];
+    logic                      ahppb_arvalid [MIG_GRP_SIZE];
+    logic                      ahppb_arready [MIG_GRP_SIZE];
 
-// ********************* wrapper code around hot page push reads for profiling
-    logic                      test_hppb_arready;
+    logic [11:0]               ahppb_rid [MIG_GRP_SIZE];
+    logic [511:0]              ahppb_rdata [MIG_GRP_SIZE];
+    logic [1:0]                ahppb_rresp [MIG_GRP_SIZE];
+    logic                      ahppb_rlast [MIG_GRP_SIZE];
+    logic                      ahppb_ruser [MIG_GRP_SIZE];
+    logic                      ahppb_rvalid [MIG_GRP_SIZE];
+    logic                      ahppb_rready [MIG_GRP_SIZE];
 
-    logic [11:0]               test_hppb_rid;
-    logic [511:0]              test_hppb_rdata;  
-    logic                      test_hppb_rlast;  // no use
-    logic                      test_hppb_rvalid;
+    logic [11:0]               ahppb_awid [MIG_GRP_SIZE];
+    logic [63:0]               ahppb_awaddr [MIG_GRP_SIZE];
+    logic [5:0]                ahppb_awuser [MIG_GRP_SIZE];
+    logic                      ahppb_awvalid [MIG_GRP_SIZE];
+    logic                      ahppb_awready [MIG_GRP_SIZE];
 
-    assign test_hppb_rlast = '1;
-    assign test_hppb_arready = '1;
-    always_ff @( posedge ip2hdm_clk ) begin
-      test_hppb_rid <= hppb_arid;
-      test_hppb_rdata <= 512'hDEADBEEF;
-      test_hppb_rvalid <= hppb_arvalid;
-    end
-// *********************
+    logic [511:0]              ahppb_wdata [MIG_GRP_SIZE];
+    logic [(512/8)-1:0]        ahppb_wstrb [MIG_GRP_SIZE];
+    logic                      ahppb_wlast [MIG_GRP_SIZE];
+    logic                      ahppb_wvalid [MIG_GRP_SIZE];
+    logic                      ahppb_wready [MIG_GRP_SIZE];
 
-// HOT PAGE PUSH MODULE
-hot_page_push #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE/2)) hot_page_push
-(
-  // Clocks
-    .axi4_mm_clk                           (ip2hdm_clk), 
-  // Resets
-    .axi4_mm_rst_n                         (ip2hdm_reset_n),
+    logic [11:0]               ahppb_bid [MIG_GRP_SIZE];
+    logic [1:0]                ahppb_bresp [MIG_GRP_SIZE];
+    logic [3:0]                ahppb_buser [MIG_GRP_SIZE];
+    logic                      ahppb_bvalid [MIG_GRP_SIZE];
+    logic                      ahppb_bready [MIG_GRP_SIZE];
 
-  .src_addr(hppb_src_addr),
-  .new_addr_available(hppb_new_addr_available),
-  .dst_addr(hppb_dst_addr),
+  logic [63:0]               ahppb_src_addr [MIG_GRP_SIZE];
+  logic [63:0]               ahppb_dst_addr [MIG_GRP_SIZE];
+  logic [1:0]                ahppb_ack_sts  [MIG_GRP_SIZE];   // 00 == wait, 01 == ack, 10 == nack
+  logic                      ahppb_new_addr_available;
 
-  .mig_done_cnt(hppb_mig_done_cnt),
+  logic                      clst_invalidate [MIG_GRP_SIZE];
+  logic [5:0]                clst_page_offset [MIG_GRP_SIZE];
 
-  .atleast_one_valid_src(atleast_one_valid_src),
+  logic [63:0]               ahppb_mig_done_cnt [MIG_GRP_SIZE];
+  logic [63:0]               ahppb_total_mig_done_cnt;
 
-  .csr_aruser(csr_aruser),
-  .csr_awuser(csr_awuser),
+  logic                      ahppb_mig_in_progress;
 
-  // hot page push axi write: hppb_
-    .hppb_awid(hppb_awid),
-    .hppb_awaddr(hppb_awaddr), 
-    .hppb_awuser(hppb_awuser),
-    .hppb_awvalid(hppb_awvalid),
-    .hppb_awready(hppb_awready),
+  logic [63:0]               csr_ahppb_batch_info_aclk [MIG_GRP_SIZE];
+  logic [63:0]               csr_ahppb_batch_info_eclk [MIG_GRP_SIZE];
+  logic [63:0]               csr_ahppb_src_addr_eclk[MIG_GRP_SIZE];
+  logic [63:0]               csr_ahppb_src_addr_aclk[MIG_GRP_SIZE];
+  logic [63:0]               csr_batch_ack_cnt_eclk, csr_batch_ack_cnt_aclk;
+  logic [63:0]               csr_ahppb_mig_start_cnt, csr_ahppb_mig_done_cnt; // TODO
 
-    .hppb_wdata(hppb_wdata),
-    .hppb_wstrb(hppb_wstrb),
-    .hppb_wlast(hppb_wlast),
-    .hppb_wvalid(hppb_wvalid),
-    .hppb_wready(hppb_wready),
+  logic ahppb_ack_wait;
+  logic [MIG_GRP_SIZE - 1: 0] ahppb_ack_wait_all;
 
-    .hppb_bid(hppb_bid),
-    .hppb_bresp(hppb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_buser(hppb_buser),  // must tie to 4'b0000
-    .hppb_bvalid(hppb_bvalid),
-    .hppb_bready(hppb_bready),
+  assign ahppb_ack_wait = (ahppb_ack_wait_all == '1); // if all are waiting, only then can address push talk
 
-  // hot page push axi read: hppb_
-    .hppb_arid(hppb_arid),
-    .hppb_araddr(hppb_araddr),
-    .hppb_arvalid(hppb_arvalid),
-    .hppb_aruser(hppb_aruser),
-    .hppb_arready(hppb_arready),
-
-    .hppb_rid(hppb_rid),
-    .hppb_rdata(hppb_rdata),  
-    .hppb_rresp(hppb_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_rlast(hppb_rlast),  // no use
-    .hppb_ruser(hppb_ruser),  // no use
-    .hppb_rvalid(hppb_rvalid),
-    .hppb_rready(hppb_rready),
-
-
-    .min_mig_time(csr_hppb_min_mig_time),
-    .max_mig_time(csr_hppb_max_mig_time),
-    .total_curr_mig_time(csr_hppb_total_curr_mig_time),
-    .min_pg0_mig_time(csr_hppb_min_pg0_mig_time),
-    .max_pg0_mig_time(csr_hppb_max_pg0_mig_time),
-    .min_pgn_mig_time(csr_hppb_min_pgn_mig_time),
-    .max_pgn_mig_time(csr_hppb_max_pgn_mig_time),
-    .max_fifo_full_cnt(csr_hppb_max_fifo_full_cnt),
-    .max_fifo_empty_cnt(csr_hppb_max_fifo_empty_cnt),
-    .max_total_read_cnt(csr_hppb_max_total_read_cnt),
-    .max_total_write_cnt(csr_hppb_max_total_write_cnt),
-    .hppb_rresp_err_cnt(csr_hppb_rresp_err_cnt),
-    .hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
-    .max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
-    .max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt)
-);
-
-
-hot_page_push #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE/2)) hot_page_push_1
-(
-  // Clocks
-    .axi4_mm_clk                           (ip2hdm_clk), 
-  // Resets
-    .axi4_mm_rst_n                         (ip2hdm_reset_n),
-
-  // TODO TODO TODO
-  .src_addr(hppb1_src_addr),
-  .new_addr_available(hppb_new_addr_available),
-  .dst_addr(hppb1_dst_addr),
-
-  .mig_done_cnt(hppb1_mig_done_cnt),
-
-  .atleast_one_valid_src(atleast_one_valid_src1),
-
-  .csr_aruser(csr_aruser),
-  .csr_awuser(csr_awuser),
-
-  // hot page push axi write: hppb_
-    .hppb_awid(hppb1_awid),
-    .hppb_awaddr(hppb1_awaddr), 
-    .hppb_awuser(hppb1_awuser),
-    .hppb_awvalid(hppb1_awvalid),
-    .hppb_awready(hppb1_awready),
-
-    .hppb_wdata(hppb1_wdata),
-    .hppb_wstrb(hppb1_wstrb),
-    .hppb_wlast(hppb1_wlast),
-    .hppb_wvalid(hppb1_wvalid),
-    .hppb_wready(hppb1_wready),
-
-    .hppb_bid(hppb1_bid),
-    .hppb_bresp(hppb1_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_buser(hppb1_buser),  // must tie to 4'b0000
-    .hppb_bvalid(hppb1_bvalid),
-    .hppb_bready(hppb1_bready),
-
-  // hot page push axi read: hppb_
-    .hppb_arid(hppb1_arid),
-    .hppb_araddr(hppb1_araddr),
-    .hppb_arvalid(hppb1_arvalid),
-    .hppb_aruser(hppb1_aruser),
-    .hppb_arready(hppb1_arready),
-
-    .hppb_rid(hppb1_rid),
-    .hppb_rdata(hppb1_rdata),  
-    .hppb_rresp(hppb1_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_rlast(hppb1_rlast),  // no use
-    .hppb_ruser(hppb1_ruser),  // no use
-    .hppb_rvalid(hppb1_rvalid),
-    .hppb_rready(hppb1_rready),
-
-
-    .min_mig_time(),
-    .max_mig_time(),
-    .total_curr_mig_time(),
-    .min_pg0_mig_time(),
-    .max_pg0_mig_time(),
-    .min_pgn_mig_time(),
-    .max_pgn_mig_time(),
-    .max_fifo_full_cnt(),
-    .max_fifo_empty_cnt(),
-    .max_total_read_cnt(),
-    .max_total_write_cnt(),
-    .hppb_rresp_err_cnt(),
-    .hppb_bresp_err_cnt(),
-    .max_outstanding_rreq_cnt(),
-    .max_outstanding_wreq_cnt()
-);
-
-
+// FIXME
 hot_addr_push hot_addr_push
 (
   // Clocks
@@ -2004,7 +1877,7 @@ hot_addr_push hot_addr_push
   
   // Other signals
     .hapb_head(csr_hapb_head_eclk),
-    .mig_done_cnt(hppb_mig_done_cnt & hppb1_mig_done_cnt),
+    .ahppb_ack_wait(ahppb_ack_wait),  // while HPPB is waiting for ACK
 
     .page_mig_addr_en           (page_mig_addr_en_eclk),
     .page_mig_addr              (page_mig_addr_eclk),
@@ -2014,8 +1887,6 @@ hot_addr_push hot_addr_push
     .cxl_addr_offset        (cxl_addr_offset),
     .csr_addr_ub            (csr_addr_ub),
     .csr_addr_lb            (csr_addr_lb),
-
-    .atleast_one_valid_src(atleast_one_valid_src | atleast_one_valid_src1),
 
     .csr_awuser(csr_awuser),
 
@@ -2033,11 +1904,10 @@ hot_addr_push hot_addr_push
     .hapb_wready(hapb_wready),
 
     .hapb_bid(hapb_bid),
-    .hapb_bresp(hapb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hapb_buser(hapb_buser),  // must tie to 4'b0000
+    .hapb_bresp(hapb_bresp),  
+    .hapb_buser(hapb_buser),  
     .hapb_bvalid(hapb_bvalid),
     .hapb_bready(hapb_bready)
-
 );
 
   bus_synchronizer #(
@@ -2048,67 +1918,224 @@ hot_addr_push hot_addr_push
     .data_out (csr_hapb_head_eclk)
   );
 
-hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handler
+auto_push_arbiter auto_push_arbiter
 (
-  // HPPB DEBUGGING
-    .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),
+  // control signals
+    .axi4_mm_clk(ip2hdm_clk), 
+    .axi4_mm_rst_n(ip2hdm_reset_n),
 
-  .axi4_mm_clk                           (ip2hdm_clk), 
-  .axi4_mm_rst_n                         (ip2hdm_reset_n),
+    .hapb_wdata(hapb_wdata),  // based on HAPB AXI writes
+    .hapb_wvalid(hapb_wvalid),
+    .hapb_wready(hapb_wready),
 
-  .src_addr(hppb_src_addr),
-  .src_addr1(hppb1_src_addr),
+    .csr_ahppb_mig_start_cnt(csr_ahppb_mig_start_cnt), 
+    .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt),
+    .csr_batch_ack_cnt(csr_batch_ack_cnt_eclk),
+    .csr_ahppb_batch_info(csr_ahppb_batch_info_eclk),
+    .csr_ahppb_src_addr(csr_ahppb_src_addr_eclk),
 
-  .dst_addr_buf_pAddr(csr_dst_addr_buf_pAddr_eclk), //   Fixed after being set to something useful?
-  .dst_addr_valid_cnt(csr_dst_addr_valid_cnt_eclk),
-  .dst_addr(hppb_dst_addr),
-  .dst_addr1(hppb1_dst_addr),
-  .new_addr_available(hppb_new_addr_available),
+    .ahppb_mig_in_progress(ahppb_mig_in_progress),
+    .ahppb_src_addr(ahppb_src_addr),
+    .ahppb_dst_addr(ahppb_dst_addr),
+    .ahppb_ack_sts(ahppb_ack_sts),
+    .ahppb_new_addr_available(ahppb_new_addr_available),
+    .ahppb_mig_done_cnt(ahppb_mig_done_cnt),
+    .ahppb_total_mig_done_cnt(ahppb_total_mig_done_cnt),
 
-  .csr_aruser(csr_aruser),
+    .clst_invalidate_common(ip2cafu_axistd0_tvalid),
+    .clst_page_offset_common(ip2cafu_axistd0_tdata),
+    .clst_ready(cafu2ip_axistd0_tready),
+    .clst_invalidate(clst_invalidate),
+    .clst_page_offset(clst_page_offset),
 
-  .hapb_wdata(hapb_wdata),
-  .hapb_wvalid(hapb_wvalid),
-  .hapb_wready(hapb_wready),
+  // hot page push axi write: hppb_
+    .hppb_awid(hppb_awid),
+    .hppb_awaddr(hppb_awaddr), 
+    .hppb_awuser(hppb_awuser),
+    .hppb_awvalid(hppb_awvalid),
+    .hppb_awready(hppb_awready),
 
-  // DST ADDRESS AXI READ: hppb_dst_
-    .hppb_dst_arid(hppb_dst_arid),
-    .hppb_dst_araddr(hppb_dst_araddr),
-    .hppb_dst_arvalid(hppb_dst_arvalid),
-    .hppb_dst_aruser(hppb_dst_aruser),
-    .hppb_dst_arready(hppb_dst_arready),
+    .hppb_wdata(hppb_wdata),
+    .hppb_wstrb(hppb_wstrb),
+    .hppb_wlast(hppb_wlast),
+    .hppb_wvalid(hppb_wvalid),
+    .hppb_wready(hppb_wready),
 
-    .hppb_dst_rid(hppb_dst_rid),
-    .hppb_dst_rdata(hppb_dst_rdata),  
-    .hppb_dst_rresp(hppb_dst_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_dst_rlast(hppb_dst_rlast),  // no use
-    .hppb_dst_ruser(hppb_dst_ruser),  // no use
-    .hppb_dst_rvalid(hppb_dst_rvalid),
-    .hppb_dst_rready(hppb_dst_rready),
+    .hppb_bid(hppb_bid),
+    .hppb_bresp(hppb_bresp),  
+    .hppb_buser(hppb_buser),  
+    .hppb_bvalid(hppb_bvalid),
+    .hppb_bready(hppb_bready),
 
-    .mig_done_cnt(hppb_mig_done_cnt & hppb1_mig_done_cnt)
+  // hot page push axi read: hppb_
+    .hppb_arid(hppb_arid),
+    .hppb_araddr(hppb_araddr),
+    .hppb_arvalid(hppb_arvalid),
+    .hppb_aruser(hppb_aruser),
+    .hppb_arready(hppb_arready),
 
+    .hppb_rid(hppb_rid),
+    .hppb_rdata(hppb_rdata),  
+    .hppb_rresp(hppb_rresp),  
+    .hppb_rlast(hppb_rlast),  
+    .hppb_ruser(hppb_ruser),  
+    .hppb_rvalid(hppb_rvalid),
+    .hppb_rready(hppb_rready),
+
+  // HOT PAGE PUSH 1 AXI WRITE: hppb1_
+    .hppb1_awid(hppb1_awid),
+    .hppb1_awaddr(hppb1_awaddr), 
+    .hppb1_awuser(hppb1_awuser),
+    .hppb1_awvalid(hppb1_awvalid),
+    .hppb1_awready(hppb1_awready),
+
+    .hppb1_wdata(hppb1_wdata),
+    .hppb1_wstrb(hppb1_wstrb),
+    .hppb1_wlast(hppb1_wlast),
+    .hppb1_wvalid(hppb1_wvalid),
+    .hppb1_wready(hppb1_wready),
+
+    .hppb1_bid(hppb1_bid),
+    .hppb1_bresp(hppb1_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    .hppb1_buser(hppb1_buser),  // must tie to 4'b0000
+    .hppb1_bvalid(hppb1_bvalid),
+    .hppb1_bready(hppb1_bready),
+
+  // HOT PAGE PUSH AXI READ: hppb1_
+    .hppb1_arid(hppb1_arid),
+    .hppb1_araddr(hppb1_araddr),
+    .hppb1_arvalid(hppb1_arvalid),
+    .hppb1_aruser(hppb1_aruser),
+    .hppb1_arready(hppb1_arready),
+
+    .hppb1_rid(hppb1_rid),
+    .hppb1_rdata(hppb1_rdata),  
+    .hppb1_rresp(hppb1_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    .hppb1_rlast(hppb1_rlast),  // no use
+    .hppb1_ruser(hppb1_ruser),  // no use
+    .hppb1_rvalid(hppb1_rvalid),
+    .hppb1_rready(hppb1_rready),
+
+  // auto hot page push axi write: ahppb_
+    .ahppb_awid(ahppb_awid),
+    .ahppb_awaddr(ahppb_awaddr), 
+    .ahppb_awuser(ahppb_awuser),
+    .ahppb_awvalid(ahppb_awvalid),
+    .ahppb_awready(ahppb_awready),
+
+    .ahppb_wdata(ahppb_wdata),
+    .ahppb_wstrb(ahppb_wstrb),
+    .ahppb_wlast(ahppb_wlast),
+    .ahppb_wvalid(ahppb_wvalid),
+    .ahppb_wready(ahppb_wready),
+
+    .ahppb_bid(ahppb_bid),
+    .ahppb_bresp(ahppb_bresp),  
+    .ahppb_buser(ahppb_buser),  
+    .ahppb_bvalid(ahppb_bvalid),
+    .ahppb_bready(ahppb_bready),
+
+  // auto hot page push axi read: ahppb_
+    .ahppb_arid(ahppb_arid),
+    .ahppb_araddr(ahppb_araddr),
+    .ahppb_arvalid(ahppb_arvalid),
+    .ahppb_aruser(ahppb_aruser),
+    .ahppb_arready(ahppb_arready),
+
+    .ahppb_rid(ahppb_rid),
+    .ahppb_rdata(ahppb_rdata),  
+    .ahppb_rresp(ahppb_rresp),  
+    .ahppb_rlast(ahppb_rlast),  
+    .ahppb_ruser(ahppb_ruser),  
+    .ahppb_rvalid(ahppb_rvalid),
+    .ahppb_rready(ahppb_rready)
 );
 
 
+  bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+  ) bus_synchronizer_batch_ack_cnt_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_batch_ack_cnt_aclk),
+    .data_out (csr_batch_ack_cnt_eclk)
+  );
+
+generate for (genvar i = 0; i < MIG_GRP_SIZE; i++) begin : auto_hot_pushers
+  bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+  ) bus_synchronizer_ahppb_src_addr_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_ahppb_src_addr_aclk[i]),
+    .data_out (csr_ahppb_src_addr_eclk[i])
+  );
+
+
+  bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+  ) bus_synchronizer_ahppb_batch_info_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_ahppb_batch_info_aclk[i]),
+    .data_out (csr_ahppb_batch_info_eclk[i])
+  );
+
+  auto_hot_page_push auto_hot_page_push
+  (
+    .axi4_mm_clk(ip2hdm_clk), 
+    .axi4_mm_rst_n(ip2hdm_reset_n),
+
+    .clst_invalidate(clst_invalidate[i]),
+    .clst_page_offset(clst_page_offset[i]),
+
+    .mig_done_cnt(ahppb_mig_done_cnt[i]),
+
+    .csr_aruser(csr_aruser),
+    .csr_awuser(csr_awuser),
+
+    .src_addr(ahppb_src_addr[i]),
+    .dst_addr(ahppb_dst_addr[i]),
+    .ack_sts(ahppb_ack_sts[i]),
+    .new_addr_available(ahppb_new_addr_available),
+
+  // auto hot page push axi read: ahppb_
+    .ahppb_arid(ahppb_arid[i]),
+    .ahppb_araddr(ahppb_araddr[i]),
+    .ahppb_arvalid(ahppb_arvalid[i]),
+    .ahppb_aruser(ahppb_aruser[i]),
+    .ahppb_arready(ahppb_arready[i]),
+
+    .ahppb_rid(ahppb_rid[i]),
+    .ahppb_rdata(ahppb_rdata[i]),  
+    .ahppb_rresp(ahppb_rresp[i]),  
+    .ahppb_rlast(ahppb_rlast[i]),  
+    .ahppb_ruser(ahppb_ruser[i]),  
+    .ahppb_rvalid(ahppb_rvalid[i]),
+    .ahppb_rready(ahppb_rready[i]),
+
+  // auto hot page push axi write: ahppb_
+    .ahppb_awid(ahppb_awid[i]),
+    .ahppb_awaddr(ahppb_awaddr[i]), 
+    .ahppb_awuser(ahppb_awuser[i]),
+    .ahppb_awvalid(ahppb_awvalid[i]),
+    .ahppb_awready(ahppb_awready[i]),
+
+    .ahppb_wdata(ahppb_wdata[i]),
+    .ahppb_wstrb(ahppb_wstrb[i]),
+    .ahppb_wlast(ahppb_wlast[i]),
+    .ahppb_wvalid(ahppb_wvalid[i]),
+    .ahppb_wready(ahppb_wready[i]),
+
+    .ahppb_bid(ahppb_bid[i]),
+    .ahppb_bresp(ahppb_bresp[i]),  
+    .ahppb_buser(ahppb_buser[i]),  
+    .ahppb_bvalid(ahppb_bvalid[i]),
+    .ahppb_bready(ahppb_bready[i]),
+
+    .ahppb_ack_wait(ahppb_ack_wait_all[i]),
+    .pusher_pos(i)
+  );
+end endgenerate
+
 `ifdef BYPASS_ATE 
-
-
-  bus_synchronizer #(
-    .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_dst_addr_buf_pAddr_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (csr_dst_addr_buf_pAddr_aclk),
-    .data_out (csr_dst_addr_buf_pAddr_eclk)
-  );
-
-  bus_synchronizer #(
-    .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_dst_addr_valid_cnt_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (csr_dst_addr_valid_cnt_aclk),
-    .data_out (csr_dst_addr_valid_cnt_eclk)
-  );
 
 
 hot_page_push_arbiter hot_page_push_arbiter
@@ -2244,8 +2271,8 @@ hot_page_push_arbiter hot_page_push_arbiter
     .hapb_wready(hapb_wready),
 
     .hapb_bid(hapb_bid),
-    .hapb_bresp(hapb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hapb_buser(hapb_buser),  // must tie to 4'b0000
+    .hapb_bresp(hapb_bresp),  
+    .hapb_buser(hapb_buser),  
     .hapb_bvalid(hapb_bvalid),
     .hapb_bready(hapb_bready),
 
@@ -2263,8 +2290,8 @@ hot_page_push_arbiter hot_page_push_arbiter
     .hppb_wready(hppb_wready),
 
     .hppb_bid(hppb_bid),
-    .hppb_bresp(hppb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_buser(hppb_buser),  // must tie to 4'b0000
+    .hppb_bresp(hppb_bresp),  
+    .hppb_buser(hppb_buser),  
     .hppb_bvalid(hppb_bvalid),
     .hppb_bready(hppb_bready),
 
@@ -2277,9 +2304,9 @@ hot_page_push_arbiter hot_page_push_arbiter
 
     .hppb_rid(hppb_rid),
     .hppb_rdata(hppb_rdata),  
-    .hppb_rresp(hppb_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_rlast(hppb_rlast),  // no use
-    .hppb_ruser(hppb_ruser),  // no use
+    .hppb_rresp(hppb_rresp),  
+    .hppb_rlast(hppb_rlast),  
+    .hppb_ruser(hppb_ruser),  
     .hppb_rvalid(hppb_rvalid),
     .hppb_rready(hppb_rready),
 
@@ -2322,18 +2349,17 @@ hot_page_push_arbiter hot_page_push_arbiter
   // DST ADDRESS AXI READ: hppb_dst_
     .hppb_dst_arid(hppb_dst_arid),
     .hppb_dst_araddr(hppb_dst_araddr),
-    .hppb_dst_arvalid(hppb_dst_arvalid),
+    .hppb_dst_arvalid('0),
     .hppb_dst_aruser(hppb_dst_aruser),
     .hppb_dst_arready(hppb_dst_arready),
 
     .hppb_dst_rid(hppb_dst_rid),
     .hppb_dst_rdata(hppb_dst_rdata),  
-    .hppb_dst_rresp(hppb_dst_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_dst_rlast(hppb_dst_rlast),  // no use
-    .hppb_dst_ruser(hppb_dst_ruser),  // no use
+    .hppb_dst_rresp(hppb_dst_rresp),  
+    .hppb_dst_rlast(hppb_dst_rlast),  
+    .hppb_dst_ruser(hppb_dst_ruser),  
     .hppb_dst_rvalid(hppb_dst_rvalid),
     .hppb_dst_rready(hppb_dst_rready)
-
 );
 
 `else
@@ -2949,35 +2975,18 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     .page_mig_addr     (page_mig_addr_aclk),
     
     // for hot page pushing pushing
-    .csr_hapb_head(csr_hapb_head_aclk),
-    .csr_dst_addr_buf_pAddr(csr_dst_addr_buf_pAddr_aclk),
-    .csr_dst_addr_valid_cnt(csr_dst_addr_valid_cnt_aclk),
-
-    // HPPB DEBUGGING
-    .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),
-
-    // HPPB Performance
-      .csr_hppb_min_mig_time(csr_hppb_min_mig_time),
-      .csr_hppb_max_mig_time(csr_hppb_max_mig_time),
-      .csr_hppb_total_curr_mig_time(csr_hppb_total_curr_mig_time),
-      .csr_hppb_min_pg0_mig_time(csr_hppb_min_pg0_mig_time),
-      .csr_hppb_max_pg0_mig_time(csr_hppb_max_pg0_mig_time),
-      .csr_hppb_min_pgn_mig_time(csr_hppb_min_pgn_mig_time),
-      .csr_hppb_max_pgn_mig_time(csr_hppb_max_pgn_mig_time),
-      .csr_hppb_max_fifo_full_cnt(csr_hppb_max_fifo_full_cnt),
-      .csr_hppb_max_fifo_empty_cnt(csr_hppb_max_fifo_empty_cnt),
-      .csr_hppb_max_total_read_cnt(csr_hppb_max_total_read_cnt),
-      .csr_hppb_max_total_write_cnt(csr_hppb_max_total_write_cnt),
-      .csr_hppb_rresp_err_cnt(csr_hppb_rresp_err_cnt),
-      .csr_hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
-      .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
-      .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
-
-
-    .csr_aruser             (csr_aruser),
-    .csr_awuser             (csr_awuser),
     .csr_addr_ub            (csr_addr_ub),
-    .csr_addr_lb            (csr_addr_lb)
+    .csr_addr_lb            (csr_addr_lb),
+
+    .csr_aruser(csr_aruser),
+    .csr_awuser(csr_awuser),
+    .csr_hapb_head(csr_hapb_head_aclk),
+    .csr_batch_ack_cnt(csr_batch_ack_cnt_aclk),
+    .csr_ahppb_batch_info(csr_ahppb_batch_info_aclk),
+    .csr_ahppb_src_addr(csr_ahppb_src_addr_aclk),
+    .csr_ahppb_mig_start_cnt(csr_ahppb_mig_start_cnt),
+    .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt)
+
  );
 
 

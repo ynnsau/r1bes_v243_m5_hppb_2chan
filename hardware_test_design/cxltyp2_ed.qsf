@@ -55,6 +55,10 @@ source ./constraints/cxltyp2_quartus_constraints_ed_en.tcl
 
 source ./constraints/qsf_device_pinout.tcl
 
+set_global_assignment -name SIGNALTAP_FILE m5_impl.stp
+set_global_assignment -name SIGNALTAP_FILE auto_copy.stp
+set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/auto_hot_page_push.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/auto_push_arbiter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/afu/afu_top.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/ex_default_csr/h_pfn_buffer.sv
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_w32_d256.ip
@@ -253,5 +257,5 @@ set_instance_assignment -name VIRTUAL_PIN ON -to i_phy_* -entity cxltyp2_ed
 set_global_assignment -name POWER_APPLY_THERMAL_MARGIN ADDITIONAL
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_36w_64d.ip
 set_global_assignment -name ENABLE_SIGNALTAP ON
-set_global_assignment -name USE_SIGNALTAP_FILE m5_impl.stp
-set_global_assignment -name SIGNALTAP_FILE m5_impl.stp
+set_global_assignment -name USE_SIGNALTAP_FILE ../../auto_copy_mode_big/hardware_test_design/auto_copy.stp
+set_global_assignment -name SIGNALTAP_FILE ../../auto_copy_mode_big/hardware_test_design/auto_copy.stp

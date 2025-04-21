@@ -28,7 +28,7 @@
 //
 
 module ex_default_csr_top
-// import mig_params::*;
+import mig_params::*;
 (
     input  logic        csr_avmm_clk,
     input  logic        csr_avmm_rstn,  
@@ -58,43 +58,17 @@ module ex_default_csr_top
 
 
     // for hot page pushing pushing
-    output logic [63:0] csr_hapb_head,
-    output logic [63:0] csr_dst_addr_buf_pAddr,
-    output logic [63:0] csr_dst_addr_valid_cnt,
-
-    // HPPB DEBUGGING
-    input  logic [63:0] csr_hppb_test_mig_done_cnt,
-
-   output logic [5:0] csr_aruser,
-   output logic [5:0] csr_awuser,
    output logic [32:0]  csr_addr_ub,
    output logic [32:0]  csr_addr_lb,
 
-
-    // HPPB Performance
-    input logic [63:0] csr_hppb_min_mig_time,
-    input logic [63:0] csr_hppb_max_mig_time,
-    input logic [63:0] csr_hppb_total_curr_mig_time,
-    input logic [63:0] csr_hppb_min_pg0_mig_time,
-    input logic [63:0] csr_hppb_max_pg0_mig_time,
-    input logic [63:0] csr_hppb_min_pgn_mig_time,
-    input logic [63:0] csr_hppb_max_pgn_mig_time,
-    input logic [63:0] csr_hppb_max_fifo_full_cnt,
-    input logic [63:0] csr_hppb_max_fifo_empty_cnt,
-    input logic [63:0] csr_hppb_max_total_read_cnt,
-    input logic [63:0] csr_hppb_max_total_write_cnt,
-    input logic [63:0] csr_hppb_rresp_err_cnt,
-    input logic [63:0] csr_hppb_bresp_err_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
-
-//    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
-//    output logic [63:0] csr_ahppb_dst_addr_head,
-//    input logic [63:0]  csr_need_new_base_cnt,
-
-//    output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
-//    output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
-
+    output logic [5:0]  csr_aruser,
+    output logic [5:0]  csr_awuser,
+    output logic [63:0] csr_hapb_head,
+    output logic [63:0] csr_ahppb_batch_info     [MIG_GRP_SIZE],
+    output logic [63:0] csr_batch_ack_cnt,
+    output logic [63:0] csr_ahppb_src_addr       [MIG_GRP_SIZE],
+    input logic [63:0]  csr_ahppb_mig_start_cnt,
+    input logic [63:0]  csr_ahppb_mig_done_cnt
 );
 
 //CSR block
@@ -124,42 +98,17 @@ module ex_default_csr_top
        .page_mig_addr_en  (page_mig_addr_en),
        .page_mig_addr   (page_mig_addr),
 
-    // for hot page pushing pushing
+        .csr_addr_ub(csr_addr_ub),
+        .csr_addr_lb(csr_addr_lb),
+
+        .csr_aruser(csr_aruser),
+        .csr_awuser(csr_awuser),
         .csr_hapb_head(csr_hapb_head),
-        .csr_dst_addr_buf_pAddr(csr_dst_addr_buf_pAddr),
-        .csr_dst_addr_valid_cnt(csr_dst_addr_valid_cnt),
-
-        // HPPB DEBUGGING
-        .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),
-
-        // HPPB Performance
-        .csr_hppb_min_mig_time(csr_hppb_min_mig_time),
-        .csr_hppb_max_mig_time(csr_hppb_max_mig_time),
-        .csr_hppb_total_curr_mig_time(csr_hppb_total_curr_mig_time),
-        .csr_hppb_min_pg0_mig_time(csr_hppb_min_pg0_mig_time),
-        .csr_hppb_max_pg0_mig_time(csr_hppb_max_pg0_mig_time),
-        .csr_hppb_min_pgn_mig_time(csr_hppb_min_pgn_mig_time),
-        .csr_hppb_max_pgn_mig_time(csr_hppb_max_pgn_mig_time),
-        .csr_hppb_max_fifo_full_cnt(csr_hppb_max_fifo_full_cnt),
-        .csr_hppb_max_fifo_empty_cnt(csr_hppb_max_fifo_empty_cnt),
-        .csr_hppb_max_total_read_cnt(csr_hppb_max_total_read_cnt),
-        .csr_hppb_max_total_write_cnt(csr_hppb_max_total_write_cnt),
-        .csr_hppb_rresp_err_cnt(csr_hppb_rresp_err_cnt),
-        .csr_hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
-        .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
-        .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
-
-        // .csr_host_ack_cnt(csr_host_ack_cnt),
-        // .csr_ahppb_dst_addr_head(csr_ahppb_dst_addr_head),
-        // .csr_need_new_base_cnt(csr_need_new_base_cnt),
-
-       .csr_aruser(csr_aruser),
-       .csr_awuser(csr_awuser),
-       .csr_addr_ub(csr_addr_ub),
-       .csr_addr_lb(csr_addr_lb)//,
-
-    //    .csr_ahppb_src_addr_vld_cnt(csr_ahppb_src_addr_vld_cnt),
-    //    .csr_ahppb_src_addr(csr_ahppb_src_addr)
+        .csr_ahppb_batch_info(csr_ahppb_batch_info),
+        .csr_batch_ack_cnt(csr_batch_ack_cnt),
+        .csr_ahppb_src_addr(csr_ahppb_src_addr),
+        .csr_ahppb_mig_start_cnt(csr_ahppb_mig_start_cnt),
+        .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt)
    );
 
 //USER LOGIC Implementation 
