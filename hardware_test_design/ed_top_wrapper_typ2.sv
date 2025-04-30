@@ -1814,6 +1814,7 @@ logic atleast_one_valid_src;
     logic [63:0]               ahppb_araddr [MIG_GRP_SIZE];
     logic [5:0]                ahppb_aruser [MIG_GRP_SIZE];
     logic                      ahppb_arvalid [MIG_GRP_SIZE];
+    logic                      ahppb_arvalid_intended [MIG_GRP_SIZE];
     logic                      ahppb_arready [MIG_GRP_SIZE];
 
     logic [11:0]               ahppb_rid [MIG_GRP_SIZE];
@@ -1861,6 +1862,17 @@ logic atleast_one_valid_src;
   logic [63:0]               csr_ahppb_src_addr_aclk[MIG_GRP_SIZE];
   logic [63:0]               csr_batch_ack_cnt_eclk, csr_batch_ack_cnt_aclk;
   logic [63:0]               csr_ahppb_mig_start_cnt, csr_ahppb_mig_done_cnt; // TODO
+
+
+  logic[63:0]                              iafu_snp_page_addr[MIG_GRP_SIZE];
+  logic                                    iafu_snp_inv[4];
+  logic [5:0]                              iafu_snp_pg_off[4];
+  logic [$clog2(MIG_GRP_SIZE)-1:0]         iafu_snp_idx[4];
+
+  logic [63:0]              clst_ip_og_cnt[8];
+  logic [63:0]              clst_ip_fin_cnt[8];
+  logic [63:0]              clst_host_og_cnt[8];
+  logic [63:0]              clst_host_fin_cnt[8];
 
   logic ahppb_ack_wait;
   logic [MIG_GRP_SIZE - 1: 0] ahppb_ack_wait_all;
@@ -2039,6 +2051,7 @@ auto_push_arbiter auto_push_arbiter
     .ahppb_arid(ahppb_arid),
     .ahppb_araddr(ahppb_araddr),
     .ahppb_arvalid(ahppb_arvalid),
+    .ahppb_arvalid_intended(ahppb_arvalid_intended),
     .ahppb_aruser(ahppb_aruser),
     .ahppb_arready(ahppb_arready),
 
@@ -2048,7 +2061,12 @@ auto_push_arbiter auto_push_arbiter
     .ahppb_rlast(ahppb_rlast),  
     .ahppb_ruser(ahppb_ruser),  
     .ahppb_rvalid(ahppb_rvalid),
-    .ahppb_rready(ahppb_rready)
+    .ahppb_rready(ahppb_rready),
+
+    .clst_ip_og_cnt(clst_ip_og_cnt),
+    .clst_ip_fin_cnt(clst_ip_fin_cnt),
+    .clst_host_og_cnt(clst_host_og_cnt),
+    .clst_host_fin_cnt(clst_host_fin_cnt)
 );
 
 
@@ -2086,6 +2104,11 @@ generate for (genvar i = 0; i < MIG_GRP_SIZE; i++) begin : auto_hot_pushers
     .clst_invalidate(clst_invalidate[i]),
     .clst_page_offset(clst_page_offset[i]),
 
+    .iafu_snp_page_addr(iafu_snp_page_addr[i]),
+    .iafu_snp_inv(iafu_snp_inv),
+    .iafu_snp_pg_off(iafu_snp_pg_off),
+    .iafu_snp_idx(iafu_snp_idx),
+
     .mig_done_cnt(ahppb_mig_done_cnt[i]),
 
     .csr_aruser(csr_aruser),
@@ -2100,6 +2123,7 @@ generate for (genvar i = 0; i < MIG_GRP_SIZE; i++) begin : auto_hot_pushers
     .ahppb_arid(ahppb_arid[i]),
     .ahppb_araddr(ahppb_araddr[i]),
     .ahppb_arvalid(ahppb_arvalid[i]),
+    .ahppb_arvalid_intended(ahppb_arvalid_intended[i]),
     .ahppb_aruser(ahppb_aruser[i]),
     .ahppb_arready(ahppb_arready[i]),
 
@@ -2985,7 +3009,12 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     .csr_ahppb_batch_info(csr_ahppb_batch_info_aclk),
     .csr_ahppb_src_addr(csr_ahppb_src_addr_aclk),
     .csr_ahppb_mig_start_cnt(csr_ahppb_mig_start_cnt),
-    .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt)
+    .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt),
+
+    .clst_ip_og_cnt(clst_ip_og_cnt),
+    .clst_ip_fin_cnt(clst_ip_fin_cnt),
+    .clst_host_og_cnt(clst_host_og_cnt),
+    .clst_host_fin_cnt(clst_host_fin_cnt)
 
  );
 
@@ -3011,7 +3040,12 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     .cxlip2iafu_to_mc_axi4            ( cxlip2iafu_to_mc_axi4    ), 
     .iafu2mc_to_mc_axi4               ( iafu2mc_to_mc_axi4       ), 
     .mc2iafu_from_mc_axi4             ( mc2iafu_from_mc_axi4     ), 
-    .iafu2cxlip_from_mc_axi4          ( iafu2cxlip_from_mc_axi4  )  
+    .iafu2cxlip_from_mc_axi4          ( iafu2cxlip_from_mc_axi4  ),
+
+    .iafu_snp_page_addr(iafu_snp_page_addr),
+    .iafu_snp_inv(iafu_snp_inv),
+    .iafu_snp_pg_off(iafu_snp_pg_off),
+    .iafu_snp_idx(iafu_snp_idx)
 );
 
 

@@ -55,6 +55,7 @@ source ./constraints/cxltyp2_quartus_constraints_ed_en.tcl
 
 source ./constraints/qsf_device_pinout.tcl
 
+set_global_assignment -name SYSTEMVERILOG_FILE common/afu/iafu_snooper.sv
 set_global_assignment -name SIGNALTAP_FILE m5_impl.stp
 set_global_assignment -name SIGNALTAP_FILE auto_copy.stp
 set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/auto_hot_page_push.sv

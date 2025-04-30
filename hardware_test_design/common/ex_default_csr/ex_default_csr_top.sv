@@ -68,7 +68,13 @@ import mig_params::*;
     output logic [63:0] csr_batch_ack_cnt,
     output logic [63:0] csr_ahppb_src_addr       [MIG_GRP_SIZE],
     input logic [63:0]  csr_ahppb_mig_start_cnt,
-    input logic [63:0]  csr_ahppb_mig_done_cnt
+    input logic [63:0]  csr_ahppb_mig_done_cnt,
+
+    input logic [63:0]              clst_ip_og_cnt[8],
+    input logic [63:0]              clst_ip_fin_cnt[8],
+    input logic [63:0]              clst_host_og_cnt[8],
+    input logic [63:0]              clst_host_fin_cnt[8]
+
 );
 
 //CSR block
@@ -108,7 +114,12 @@ import mig_params::*;
         .csr_batch_ack_cnt(csr_batch_ack_cnt),
         .csr_ahppb_src_addr(csr_ahppb_src_addr),
         .csr_ahppb_mig_start_cnt(csr_ahppb_mig_start_cnt),
-        .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt)
+        .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt),
+
+        .clst_ip_og_cnt(clst_ip_og_cnt),
+        .clst_ip_fin_cnt(clst_ip_fin_cnt),
+        .clst_host_og_cnt(clst_host_og_cnt),
+        .clst_host_fin_cnt(clst_host_fin_cnt)
    );
 
 //USER LOGIC Implementation 
