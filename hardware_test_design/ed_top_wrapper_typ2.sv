@@ -1646,7 +1646,7 @@ logic atleast_one_valid_src, atleast_one_valid_src1;
   logic [63:0]  csr_addr_pair_buf_pAddr_aclk,  csr_addr_pair_buf_pAddr_eclk;
   logic [63:0]  csr_addr_pair_vld_cnt_aclk,  csr_addr_pair_vld_cnt_eclk;
   logic [63:0]  csr_huge_pg_addr_pair_aclk,  csr_huge_pg_addr_pair_eclk;
-
+  logic [63:0]  csr_mig_done_cnt_buf_pAddr_aclk,  csr_mig_done_cnt_buf_pAddr_eclk;
 // HPPB DEBUGGING
   logic [63:0]  csr_hppb_test_mig_done_cnt;
 
@@ -1654,7 +1654,7 @@ logic atleast_one_valid_src, atleast_one_valid_src1;
 // Other signals
   logic [63:0]  hppb_src_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb1_src_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
+  logic [63:0]  hppb_addr_pair_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb1_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic         hppb_new_addr_available;
 
@@ -1811,28 +1811,59 @@ logic atleast_one_valid_src, atleast_one_valid_src1;
     logic                      hapb_bvalid;
     logic                      hapb_bready;
 
-  // HPPB_DST_REQ
-    logic [11:0]               hppb_dst_arid;
-    logic [63:0]               hppb_dst_araddr;
-    logic [9:0]                hppb_dst_arlen;    // must tie to 10'd0
-    logic [2:0]                hppb_dst_arsize;   // must tie to 3'b110
-    logic [1:0]                hppb_dst_arburst;  // must tie to 2'b00
-    logic [2:0]                hppb_dst_arprot;   // must tie to 3'b000
-    logic [3:0]                hppb_dst_arqos;    // must tie to 4'b0000
-    logic [5:0]                hppb_dst_aruser;   // 4'b0000": non-cacheable; 4'b0001: cacheable shared; 4'b0010: cacheable owned
-    logic                      hppb_dst_arvalid;
-    logic [3:0]                hppb_dst_arcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_dst_arlock;   // must tie to 2'b00
-    logic [3:0]                hppb_dst_arregion; // must tie to 4'b0000
-    logic                      hppb_dst_arready;
+  // hppb_addr_pair_REQ
+    logic [11:0]               hppb_addr_pair_arid;
+    logic [63:0]               hppb_addr_pair_araddr;
+    logic [9:0]                hppb_addr_pair_arlen;    // must tie to 10'd0
+    logic [2:0]                hppb_addr_pair_arsize;   // must tie to 3'b110
+    logic [1:0]                hppb_addr_pair_arburst;  // must tie to 2'b00
+    logic [2:0]                hppb_addr_pair_arprot;   // must tie to 3'b000
+    logic [3:0]                hppb_addr_pair_arqos;    // must tie to 4'b0000
+    logic [5:0]                hppb_addr_pair_aruser;   // 4'b0000": non-cacheable; 4'b0001: cacheable shared; 4'b0010: cacheable owned
+    logic                      hppb_addr_pair_arvalid;
+    logic [3:0]                hppb_addr_pair_arcache;  // must tie to 4'b0000
+    logic [1:0]                hppb_addr_pair_arlock;   // must tie to 2'b00
+    logic [3:0]                hppb_addr_pair_arregion; // must tie to 4'b0000
+    logic                      hppb_addr_pair_arready;
 
-    logic [11:0]               hppb_dst_rid;
-    logic [511:0]              hppb_dst_rdata;  
-    logic [1:0]                hppb_dst_rresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic                      hppb_dst_rlast;  // no use
-    logic                      hppb_dst_ruser;  // no use
-    logic                      hppb_dst_rvalid;
-    logic                      hppb_dst_rready;
+    logic [11:0]               hppb_addr_pair_rid;
+    logic [511:0]              hppb_addr_pair_rdata;  
+    logic [1:0]                hppb_addr_pair_rresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
+    logic                      hppb_addr_pair_rlast;  // no use
+    logic                      hppb_addr_pair_ruser;  // no use
+    logic                      hppb_addr_pair_rvalid;
+    logic                      hppb_addr_pair_rready;
+
+
+  // hppb_mig_done_REQ
+    logic [11:0]               hppb_mig_done_awid;
+    logic [63:0]               hppb_mig_done_awaddr; 
+    logic [9:0]                hppb_mig_done_awlen;    // must tie to 10'd0
+    logic [2:0]                hppb_mig_done_awsize;   // must tie to 3'b110 (64B/T)
+    logic [1:0]                hppb_mig_done_awburst;  // must tie to 2'b00            : CXL IP limitation
+    logic [2:0]                hppb_mig_done_awprot;   // must tie to 3'b000
+    logic [3:0]                hppb_mig_done_awqos;    // must tie to 4'b0000
+    logic [5:0]                hppb_mig_done_awuser;
+    logic                      hppb_mig_done_awvalid;
+    logic [3:0]                hppb_mig_done_awcache;  // must tie to 4'b0000
+    logic [1:0]                hppb_mig_done_awlock;   // must tie to 2'b00
+    logic [3:0]                hppb_mig_done_awregion; // must tie to 4'b0000
+    logic [5:0]                hppb_mig_done_awatop;   // must tie to 6'b000000
+    logic                      hppb_mig_done_awready;
+
+    logic [511:0]              hppb_mig_done_wdata;
+    logic [(512/8)-1:0]        hppb_mig_done_wstrb;
+    logic                      hppb_mig_done_wlast;
+    logic                      hppb_mig_done_wuser;  // must tie to 1'b0
+    logic                      hppb_mig_done_wvalid;
+    logic                      hppb_mig_done_wready;
+
+    logic [11:0]               hppb_mig_done_bid;
+    logic [1:0]                hppb_mig_done_bresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
+    logic [3:0]                hppb_mig_done_buser;  // must tie to 4'b0000
+    logic                      hppb_mig_done_bvalid;
+    logic                      hppb_mig_done_bready;
+
 
 
 // ********************* wrapper code around hot page push reads for profiling
@@ -1862,7 +1893,7 @@ hot_page_push #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE/2)) hot_page_push
 
   .src_addr(hppb_src_addr),
   .new_addr_available(hppb_new_addr_available),
-  .dst_addr(hppb_dst_addr),
+  .dst_addr(hppb_addr_pair_addr),
 
   .mig_done_cnt(hppb_mig_done_cnt),
 
@@ -2059,13 +2090,14 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
 
   .src_addr(hppb_src_addr),
   .src_addr1(hppb1_src_addr),
-  .dst_addr(hppb_dst_addr),
+  .dst_addr(hppb_addr_pair_addr),
   .dst_addr1(hppb1_dst_addr),
 
   .addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_eclk), //   Fixed after being set to something useful?
   .addr_pair_vld_cnt(csr_addr_pair_vld_cnt_eclk),
   .huge_pg_addr_pair(csr_huge_pg_addr_pair_eclk),
   .new_addr_available(hppb_new_addr_available),
+  .mig_done_cnt_buf_pAddr(csr_mig_done_cnt_buf_pAddr_eclk), //   Fixed after being set to something useful?
 
   .csr_aruser(csr_aruser),
 
@@ -2073,20 +2105,39 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
   .hapb_wvalid(hapb_wvalid),
   .hapb_wready(hapb_wready),
 
-  // DST ADDRESS AXI READ: hppb_dst_
-    .hppb_dst_arid(hppb_dst_arid),
-    .hppb_dst_araddr(hppb_dst_araddr),
-    .hppb_dst_arvalid(hppb_dst_arvalid),
-    .hppb_dst_aruser(hppb_dst_aruser),
-    .hppb_dst_arready(hppb_dst_arready),
+  // ADDR PAIR AXI READ: hppb_addr_pair_
+    .hppb_addr_pair_arid(hppb_addr_pair_arid),
+    .hppb_addr_pair_araddr(hppb_addr_pair_araddr),
+    .hppb_addr_pair_arvalid(hppb_addr_pair_arvalid),
+    .hppb_addr_pair_aruser(hppb_addr_pair_aruser),
+    .hppb_addr_pair_arready(hppb_addr_pair_arready),
 
-    .hppb_dst_rid(hppb_dst_rid),
-    .hppb_dst_rdata(hppb_dst_rdata),  
-    .hppb_dst_rresp(hppb_dst_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_dst_rlast(hppb_dst_rlast),  // no use
-    .hppb_dst_ruser(hppb_dst_ruser),  // no use
-    .hppb_dst_rvalid(hppb_dst_rvalid),
-    .hppb_dst_rready(hppb_dst_rready),
+    .hppb_addr_pair_rid(hppb_addr_pair_rid),
+    .hppb_addr_pair_rdata(hppb_addr_pair_rdata),  
+    .hppb_addr_pair_rresp(hppb_addr_pair_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    .hppb_addr_pair_rlast(hppb_addr_pair_rlast),  // no use
+    .hppb_addr_pair_ruser(hppb_addr_pair_ruser),  // no use
+    .hppb_addr_pair_rvalid(hppb_addr_pair_rvalid),
+    .hppb_addr_pair_rready(hppb_addr_pair_rready),
+
+  // MIG DONE CNT AXI WRITE: hppb_mig_done_
+    .hppb_mig_done_awid(hppb_mig_done_awid),
+    .hppb_mig_done_awaddr(hppb_mig_done_awaddr),
+    .hppb_mig_done_awuser(hppb_mig_done_awuser),
+    .hppb_mig_done_awvalid(hppb_mig_done_awvalid),
+    .hppb_mig_done_awready(hppb_mig_done_awready),
+    
+    .hppb_mig_done_wdata(hppb_mig_done_wdata),
+    .hppb_mig_done_wstrb(hppb_mig_done_wstrb),
+    .hppb_mig_done_wlast(hppb_mig_done_wlast),
+    .hppb_mig_done_wvalid(hppb_mig_done_wvalid),
+    .hppb_mig_done_wready(hppb_mig_done_wready),
+    
+    .hppb_mig_done_bid(hppb_mig_done_bid),
+    .hppb_mig_done_bresp(hppb_mig_done_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    .hppb_mig_done_buser(hppb_mig_done_buser),  // must tie to 4'b0000
+    .hppb_mig_done_bvalid(hppb_mig_done_bvalid),
+    .hppb_mig_done_bready(hppb_mig_done_bready),
 
     .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt)
 
@@ -2118,6 +2169,14 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
     .clk      (ip2hdm_clk),
     .data_in  (csr_huge_pg_addr_pair_aclk),
     .data_out (csr_huge_pg_addr_pair_eclk)
+  );
+
+  bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+  ) bus_synchronizer_mig_done_cnt_buf_pAddr_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_mig_done_cnt_buf_pAddr_aclk),
+    .data_out (csr_mig_done_cnt_buf_pAddr_eclk)
   );
 
 
@@ -2329,20 +2388,39 @@ hot_page_push_arbiter hot_page_push_arbiter
     .hppb1_rready(hppb1_rready),
 
 
-  // DST ADDRESS AXI READ: hppb_dst_
-    .hppb_dst_arid(hppb_dst_arid),
-    .hppb_dst_araddr(hppb_dst_araddr),
-    .hppb_dst_arvalid(hppb_dst_arvalid),
-    .hppb_dst_aruser(hppb_dst_aruser),
-    .hppb_dst_arready(hppb_dst_arready),
+  // ADDR PAIR AXI READ: hppb_addr_pair_
+    .hppb_addr_pair_arid(hppb_addr_pair_arid),
+    .hppb_addr_pair_araddr(hppb_addr_pair_araddr),
+    .hppb_addr_pair_arvalid(hppb_addr_pair_arvalid),
+    .hppb_addr_pair_aruser(hppb_addr_pair_aruser),
+    .hppb_addr_pair_arready(hppb_addr_pair_arready),
 
-    .hppb_dst_rid(hppb_dst_rid),
-    .hppb_dst_rdata(hppb_dst_rdata),  
-    .hppb_dst_rresp(hppb_dst_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_dst_rlast(hppb_dst_rlast),  // no use
-    .hppb_dst_ruser(hppb_dst_ruser),  // no use
-    .hppb_dst_rvalid(hppb_dst_rvalid),
-    .hppb_dst_rready(hppb_dst_rready)
+    .hppb_addr_pair_rid(hppb_addr_pair_rid),
+    .hppb_addr_pair_rdata(hppb_addr_pair_rdata),  
+    .hppb_addr_pair_rresp(hppb_addr_pair_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    .hppb_addr_pair_rlast(hppb_addr_pair_rlast),  // no use
+    .hppb_addr_pair_ruser(hppb_addr_pair_ruser),  // no use
+    .hppb_addr_pair_rvalid(hppb_addr_pair_rvalid),
+    .hppb_addr_pair_rready(hppb_addr_pair_rready),
+
+  // MIG DONE CNT AXI WRITE: hppb_mig_done_
+    .hppb_mig_done_awid(hppb_mig_done_awid),
+    .hppb_mig_done_awaddr(hppb_mig_done_awaddr),
+    .hppb_mig_done_awuser(hppb_mig_done_awuser),
+    .hppb_mig_done_awvalid(hppb_mig_done_awvalid),
+    .hppb_mig_done_awready(hppb_mig_done_awready),
+    
+    .hppb_mig_done_wdata(hppb_mig_done_wdata),
+    .hppb_mig_done_wstrb(hppb_mig_done_wstrb),
+    .hppb_mig_done_wlast(hppb_mig_done_wlast),
+    .hppb_mig_done_wvalid(hppb_mig_done_wvalid),
+    .hppb_mig_done_wready(hppb_mig_done_wready),
+    
+    .hppb_mig_done_bid(hppb_mig_done_bid),
+    .hppb_mig_done_bresp(hppb_mig_done_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    .hppb_mig_done_buser(hppb_mig_done_buser),  // must tie to 4'b0000
+    .hppb_mig_done_bvalid(hppb_mig_done_bvalid),
+    .hppb_mig_done_bready(hppb_mig_done_bready)
 
 );
 
@@ -2963,6 +3041,7 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_aclk),
     .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt_aclk),
     .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair_aclk),
+    .csr_mig_done_cnt_buf_pAddr(csr_mig_done_cnt_buf_pAddr_aclk),
 
     // HPPB DEBUGGING
     .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),

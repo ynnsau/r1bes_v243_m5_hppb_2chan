@@ -28,7 +28,7 @@ module hot_page_push
     input logic [63:0]                  src_addr[MIG_GRP_SIZE],
 
     // Where to migrate the page (AXI write)
-    input logic                         new_addr_available,     // based on response to hppb_dst_addr AXI read requests
+    input logic                         new_addr_available,     // based on response to hppb_addr_pair_addr AXI read requests
     input logic [63:0]                  dst_addr[MIG_GRP_SIZE],
 
     // Migration done incrementing counter

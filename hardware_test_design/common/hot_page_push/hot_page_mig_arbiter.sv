@@ -209,20 +209,41 @@ module hot_page_push_arbiter(
     input logic                      hppb1_rready,
 
 
-// DST ADDRESS AXI READ: hppb_dst_
-    input logic [11:0]               hppb_dst_arid,
-    input logic [63:0]               hppb_dst_araddr,
-    input logic                      hppb_dst_arvalid,
-    input logic [5:0]                hppb_dst_aruser,
-    output logic                     hppb_dst_arready,
+// DST ADDRESS AXI READ: hppb_addr_pair_
+    input logic [11:0]               hppb_addr_pair_arid,
+    input logic [63:0]               hppb_addr_pair_araddr,
+    input logic                      hppb_addr_pair_arvalid,
+    input logic [5:0]                hppb_addr_pair_aruser,
+    output logic                     hppb_addr_pair_arready,
 
-    output logic [11:0]              hppb_dst_rid,
-    output logic [511:0]             hppb_dst_rdata,  
-    output logic [1:0]               hppb_dst_rresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    output logic                     hppb_dst_rlast,  // no use
-    output logic                     hppb_dst_ruser,  // no use
-    output logic                     hppb_dst_rvalid,
-    input logic                      hppb_dst_rready
+    output logic [11:0]              hppb_addr_pair_rid,
+    output logic [511:0]             hppb_addr_pair_rdata,  
+    output logic [1:0]               hppb_addr_pair_rresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    output logic                     hppb_addr_pair_rlast,  // no use
+    output logic                     hppb_addr_pair_ruser,  // no use
+    output logic                     hppb_addr_pair_rvalid,
+    input logic                      hppb_addr_pair_rready,
+
+// MIG DONE CNT AXI WRITE: hppb_mig_done_
+    input logic [11:0]              hppb_mig_done_awid,
+    input logic [63:0]              hppb_mig_done_awaddr, 
+    input logic [5:0]               hppb_mig_done_awuser,
+    input logic                     hppb_mig_done_awvalid,
+    output logic                    hppb_mig_done_awready,
+
+    // write data channel
+    input logic [511:0]             hppb_mig_done_wdata,
+    input logic [(512/8)-1:0]       hppb_mig_done_wstrb,
+    input logic                     hppb_mig_done_wlast,
+    input logic                     hppb_mig_done_wvalid,
+    output logic                    hppb_mig_done_wready,
+
+    // write response channel
+    output logic [11:0]             hppb_mig_done_bid,
+    output logic [1:0]              hppb_mig_done_bresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    output logic [3:0]              hppb_mig_done_buser,  // must be tied to 4'b0000
+    output logic                    hppb_mig_done_bvalid,
+    input logic                     hppb_mig_done_bready
 
 );
 
@@ -255,7 +276,9 @@ endfunction
 
 // Tying Requests
     logic ongoing_wreq;
-    logic wreq_id, wreq_id_reg;        // 1 indicates hapb, 0 indicates hppb
+
+    // 10 indicates mig_done_cnt, 01 indicates hapb, 00 indicates hppb
+    logic [1:0] wreq_id, wreq_id_reg;        
     always_ff @( posedge axi4_mm_clk ) begin
         if (!axi4_mm_rst_n) begin
             ongoing_wreq <= '0;
@@ -273,6 +296,9 @@ endfunction
     always_comb begin
         set_wr_default();
 
+        hppb_mig_done_awready = '0;
+        hppb_mig_done_wready = '0;
+
         hapb_awready = '0;
         hapb_wready = '0;
 
@@ -282,25 +308,38 @@ endfunction
         wreq_id = wreq_id_reg;
 
         if (~ongoing_wreq) begin
-            awid = {1'b1, hapb_awid[10:0]};
-            awaddr = hapb_awaddr; 
-            awuser = hapb_awuser;
-            awvalid = hapb_awvalid;
-            hapb_awready = awready & hapb_awvalid;
-            wreq_id = '1;
-
-            if (~hapb_awvalid) begin
+            awid = {2'b11, hppb_mig_done_awid[9:0]};
+            awaddr = hppb_mig_done_awaddr; 
+            awuser = hppb_mig_done_awuser;
+            awvalid = hppb_mig_done_awvalid;
+            hppb_mig_done_awready = awready & hppb_mig_done_awvalid;
+            wreq_id = 2'b10;
+            if (~hppb_mig_done_awvalid) begin
+                awid = {2'b10, hapb_awid[9:0]};
+                awaddr = hapb_awaddr; 
+                awuser = hapb_awuser;
+                awvalid = hapb_awvalid;
+                hapb_awready = awready & hapb_awvalid;
+                wreq_id = 2'b01;
+            end 
+            if (~hppb_mig_done_awvalid && ~hapb_awvalid) begin
                 // send hppb requests
                 awid = {1'b0, hppb_awid[10:0]};
                 awaddr = hppb_awaddr; 
                 awuser = hppb_awuser;
                 awvalid = hppb_awvalid;
                 hppb_awready = awready;
-                wreq_id = '0;
+                wreq_id = 2'b00;
             end
         end
         if (ongoing_wreq) begin
-            if (wreq_id == '1) begin
+            if (wreq_id == 2'b10) begin
+                wdata = hppb_mig_done_wdata;
+                wstrb = hppb_mig_done_wstrb;
+                wlast = hppb_mig_done_wlast;
+                wvalid = hppb_mig_done_wvalid;
+                hppb_mig_done_wready = wready;
+            end else if (wreq_id == 2'b01) begin
                 wdata = hapb_wdata;
                 wstrb = hapb_wstrb;
                 wlast = hapb_wlast;
@@ -321,8 +360,13 @@ endfunction
     always_comb begin
         bready = '1;
 
-        hapb_bvalid = bvalid & bid[11] == 1'b1;
+        hppb_mig_done_bvalid = bvalid & bid[11:10] == 2'b11;
+        hapb_bvalid = bvalid & bid[11:10] == 2'b10;
         hppb_bvalid = bvalid & bid[11] == 1'b0;
+
+        hppb_mig_done_bid = {1'b0, bid[10:0]};
+        hppb_mig_done_bresp = bresp;
+        hppb_mig_done_buser = buser;
 
         hapb_bid = {1'b0, bid[10:0]};
         hapb_bresp = bresp;
@@ -357,16 +401,16 @@ endfunction
     always_comb begin
         set_rd_default();
 
-        hppb_dst_arready = '0;
+        hppb_addr_pair_arready = '0;
         hppb_arready = '0;
 
-        arid = {1'b1, hppb_dst_arid[10:0]};
-        araddr = hppb_dst_araddr; 
-        aruser = hppb_dst_aruser;
-        arvalid = hppb_dst_arvalid;
-        hppb_dst_arready = arready;
+        arid = {1'b1, hppb_addr_pair_arid[10:0]};
+        araddr = hppb_addr_pair_araddr; 
+        aruser = hppb_addr_pair_aruser;
+        arvalid = hppb_addr_pair_arvalid;
+        hppb_addr_pair_arready = arready;
 
-        if (~hppb_dst_arvalid) begin
+        if (~hppb_addr_pair_arvalid) begin
             // send hppb requests
             arid = {1'b0, hppb_arid[10:0]};
             araddr = hppb_araddr; 
@@ -378,18 +422,18 @@ endfunction
 
 
 // Tying responses
-    // TODO: Assuming hppb_dst_rready and hppb_rready will be active at the time:::::::
+    // TODO: Assuming hppb_addr_pair_rready and hppb_rready will be active at the time:::::::
     always_comb begin
         rready = '1;
 
-        hppb_dst_rvalid = rvalid & rid[11] == 1'b1;
+        hppb_addr_pair_rvalid = rvalid & rid[11] == 1'b1;
         hppb_rvalid = rvalid & rid[11] == 1'b0;
 
-        hppb_dst_rid = {1'b0, rid[10:0]};
-        hppb_dst_rresp = rresp;
-        hppb_dst_ruser = ruser;
-        hppb_dst_rlast = rlast;
-        hppb_dst_rdata = rdata;
+        hppb_addr_pair_rid = {1'b0, rid[10:0]};
+        hppb_addr_pair_rresp = rresp;
+        hppb_addr_pair_ruser = ruser;
+        hppb_addr_pair_rlast = rlast;
+        hppb_addr_pair_rdata = rdata;
 
         hppb_rid = {1'b0, rid[10:0]};
         hppb_rresp = rresp;

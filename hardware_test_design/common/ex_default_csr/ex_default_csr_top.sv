@@ -62,6 +62,7 @@ module ex_default_csr_top
     output logic [63:0] csr_addr_pair_buf_pAddr,
     output logic [63:0] csr_addr_pair_vld_cnt,
     output logic [63:0] csr_huge_pg_addr_pair,
+    output logic [63:0] csr_mig_done_cnt_buf_pAddr,
 
     // HPPB DEBUGGING
     input  logic [63:0] csr_hppb_test_mig_done_cnt,
@@ -90,7 +91,7 @@ module ex_default_csr_top
     input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
 
 //    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
-//    output logic [63:0] csr_ahppb_dst_addr_head,
+//    output logic [63:0] csr_ahppb_addr_pair_addr_head,
 //    input logic [63:0]  csr_need_new_base_cnt,
 
 //    output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
@@ -130,6 +131,7 @@ module ex_default_csr_top
         .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr),
         .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt),
         .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair),
+        .csr_mig_done_cnt_buf_pAddr(csr_mig_done_cnt_buf_pAddr),
 
         // HPPB DEBUGGING
         .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),
@@ -152,7 +154,7 @@ module ex_default_csr_top
         .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
 
         // .csr_host_ack_cnt(csr_host_ack_cnt),
-        // .csr_ahppb_dst_addr_head(csr_ahppb_dst_addr_head),
+        // .csr_ahppb_addr_pair_addr_head(csr_ahppb_addr_pair_addr_head),
         // .csr_need_new_base_cnt(csr_need_new_base_cnt),
 
        .csr_aruser(csr_aruser),

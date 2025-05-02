@@ -24,25 +24,52 @@ module hot_page_addr_handler
     output logic                    new_addr_available,
 
     input logic [5:0]               csr_aruser,
+    input logic [5:0]               csr_awuser,
 
 
-    output logic [11:0]             hppb_dst_arid,
-    output logic [63:0]             hppb_dst_araddr,
-    output logic                    hppb_dst_arvalid,
-    output logic [5:0]              hppb_dst_aruser,
-    input                           hppb_dst_arready,
+    output logic [11:0]             hppb_addr_pair_arid,
+    output logic [63:0]             hppb_addr_pair_araddr,
+    output logic                    hppb_addr_pair_arvalid,
+    output logic [5:0]              hppb_addr_pair_aruser,
+    input                           hppb_addr_pair_arready,
 
-    input [11:0]                    hppb_dst_rid,
-    input [511:0]                   hppb_dst_rdata,  
-    input [1:0]                     hppb_dst_rresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    input                           hppb_dst_rlast,  // no use
-    input                           hppb_dst_ruser,  // no use
-    input                           hppb_dst_rvalid,
-    output logic                    hppb_dst_rready,
+    input [11:0]                    hppb_addr_pair_rid,
+    input [511:0]                   hppb_addr_pair_rdata,  
+    input [1:0]                     hppb_addr_pair_rresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    input                           hppb_addr_pair_rlast,  // no use
+    input                           hppb_addr_pair_ruser,  // no use
+    input                           hppb_addr_pair_rvalid,
+    output logic                    hppb_addr_pair_rready,
+
+
+    input logic [63:0]              mig_done_cnt_buf_pAddr,
+    output logic [11:0]             hppb_mig_done_awid,
+    output logic [63:0]             hppb_mig_done_awaddr, 
+    output logic [5:0]              hppb_mig_done_awuser,
+    output logic                    hppb_mig_done_awvalid,
+    input                           hppb_mig_done_awready,
+
+    // write data channel
+    output logic [511:0]            hppb_mig_done_wdata,
+    output logic [(512/8)-1:0]      hppb_mig_done_wstrb,
+    output logic                    hppb_mig_done_wlast,
+    output logic                    hppb_mig_done_wvalid,
+    input                           hppb_mig_done_wready,
+
+    // write response channel
+    input [11:0]                    hppb_mig_done_bid,
+    input [1:0]                     hppb_mig_done_bresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
+    input [3:0]                     hppb_mig_done_buser,  // must be tied to 4'b0000
+    input                           hppb_mig_done_bvalid,
+    output logic                    hppb_mig_done_bready,
 
     input logic [63:0]              mig_done_cnt        // real mig_done_cnt
 
 );
+
+/* ---------------------------------
+    AXI Read
+-----------------------------------*/
 
 // Send multiple address requests: 64 addresses (MIG_GRP_SIZE), 8 src-dst pairs => 64/8 = 8 requests
 logic [$clog2(MIG_GRP_SIZE/8) - 1:0]     addr_pull_req_ptr, addr_pull_rec_ptr;
@@ -54,16 +81,16 @@ enum logic {
 } state_rd, next_state_rd;
 
 function void set_rd_default();
-    hppb_dst_arvalid = 1'b0;
-    hppb_dst_arid = 'b0;
-    hppb_dst_araddr = 'b0;
-    hppb_dst_aruser = 'b0;
+    hppb_addr_pair_arvalid = 1'b0;
+    hppb_addr_pair_arid = 'b0;
+    hppb_addr_pair_araddr = 'b0;
+    hppb_addr_pair_aruser = 'b0;
 
-    hppb_dst_rready = 1'b1;      // always receive from rresp channel
+    hppb_addr_pair_rready = 1'b1;      // always receive from rresp channel
 endfunction
 
 
-logic           dst_read_req_in_progress;
+logic           addr_pair_rd_in_progress;
 
 // logic [511:0]   src_addr_storage;
 
@@ -80,7 +107,7 @@ always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
         state_rd <= STATE_RD_RESET;
         // src_addr_storage <= '0;
-        dst_read_req_in_progress <= '0;
+        addr_pair_rd_in_progress <= '0;
 
         old_addr_pair_vld_cnt <= '0;
         old_mig_done_cnt <= '0;
@@ -95,12 +122,12 @@ always_ff @(posedge axi4_mm_clk) begin
         // if (hapb_wvalid & hapb_wready) begin
         //     src_addr_storage <= hapb_wdata;
         // end
-        if (hppb_dst_arready & hppb_dst_arvalid) begin
-            dst_read_req_in_progress <= '1;
+        if (hppb_addr_pair_arready & hppb_addr_pair_arvalid) begin
+            addr_pair_rd_in_progress <= '1;
             addr_pull_req_ptr <= addr_pull_req_ptr + 1'b1;
         end
-        if (hppb_dst_rvalid & hppb_dst_rready & addr_pull_rec_ptr == '1) begin
-            dst_read_req_in_progress <= '0;
+        if (hppb_addr_pair_rvalid & hppb_addr_pair_rready & addr_pull_rec_ptr == '1) begin
+            addr_pair_rd_in_progress <= '0;
             old_addr_pair_vld_cnt[62:0] <= addr_pair_vld_cnt[62:0];
             hppb_addr_buf_offset <= hppb_addr_buf_offset + 1'b1;
         end
@@ -126,12 +153,12 @@ always_comb begin
             if ((( (old_addr_pair_vld_cnt[62:0] != addr_pair_vld_cnt[62:0]) 
                 || (old_mig_done_cnt != mig_done_cnt && hppb_addr_buf_offset != batch_size) )
                 && addr_pair_buf_pAddr != '0)
-                && ~dst_read_req_in_progress
+                && ~addr_pair_rd_in_progress
                 && ~huge_pg_mig_active) begin
                 next_state_rd = STATE_RD_ADDR;
             end
         STATE_RD_ADDR:
-            if (hppb_dst_arready & hppb_dst_arvalid && addr_pull_req_ptr == '1) begin
+            if (hppb_addr_pair_arready & hppb_addr_pair_arvalid && addr_pull_req_ptr == '1) begin
                 next_state_rd = STATE_RD_RESET;
             end
         default:;
@@ -142,10 +169,10 @@ always_comb begin
     set_rd_default();
     unique case(state_rd)
         STATE_RD_ADDR: begin
-            hppb_dst_arvalid = '1;
-            hppb_dst_arid = addr_pull_req_ptr;      // Arbiter differentiates
-            hppb_dst_aruser = csr_aruser;           // TODO based upon buffer location
-            hppb_dst_araddr = addr_pair_buf_pAddr + (512*addr_pull_req_ptr)/8 + (32*16*(hppb_addr_buf_offset*(MIG_GRP_SIZE/8)))/8;       // byte aligned address
+            hppb_addr_pair_arvalid = '1;
+            hppb_addr_pair_arid = addr_pull_req_ptr;      // Arbiter differentiates
+            hppb_addr_pair_aruser = csr_aruser;           // TODO based upon buffer location
+            hppb_addr_pair_araddr = addr_pair_buf_pAddr + (512*addr_pull_req_ptr)/8 + (32*16*(hppb_addr_buf_offset*(MIG_GRP_SIZE/8)))/8;       // byte aligned address
         end
         default:;
     endcase
@@ -157,8 +184,8 @@ always_ff @(posedge axi4_mm_clk) begin
         addr_pull_rec_ptr <= '0;
     end
     else begin
-        if (hppb_dst_rvalid & hppb_dst_rready) begin
-            addr_pull_storage[addr_pull_rec_ptr * 512 +: 512] <= hppb_dst_rdata;
+        if (hppb_addr_pair_rvalid & hppb_addr_pair_rready) begin
+            addr_pull_storage[addr_pull_rec_ptr * 512 +: 512] <= hppb_addr_pair_rdata;
             addr_pull_rec_ptr <= addr_pull_rec_ptr + 1'b1;
         end
         if (new_addr_available) begin
@@ -178,7 +205,7 @@ always_comb begin
     dst_addr1 = '{default: '0};
 
     if (~huge_pg_mig_active) begin
-        new_addr_available = (hppb_dst_rvalid & hppb_dst_rready & (addr_pull_rec_ptr == '1));
+        new_addr_available = (hppb_addr_pair_rvalid & hppb_addr_pair_rready & (addr_pull_rec_ptr == '1));
         if (new_addr_available) begin
             for (int i = 0; i < MIG_GRP_SIZE - 8; i++) begin
                 if (i % 2 == 0) begin
@@ -189,20 +216,20 @@ always_comb begin
                     dst_addr1[(i-1)/2] = {20'b0, addr_pull_storage[((i*2)+1)*32 +: 32], 12'b0};
                 end
 
-                // if (hppb_dst_rdata[(i+1)*32 +: 32] == '0) src_addr[i] = '0;
+                // if (hppb_addr_pair_rdata[(i+1)*32 +: 32] == '0) src_addr[i] = '0;
             end
 
-            for (int i = 0; i < 8; i++) begin       // hppb_dst_rdata last group, addr_pull_storage doesn't have this (save a cycle)
+            for (int i = 0; i < 8; i++) begin       // hppb_addr_pair_rdata last group, addr_pull_storage doesn't have this (save a cycle)
                 if (i % 2 == 0) begin
-                    src_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] = {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
-                    dst_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] = {20'b0, hppb_dst_rdata[((i*2)+1)*32 +: 32], 12'b0};
+                    src_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] = {20'b0, hppb_addr_pair_rdata[(i*2)*32 +: 32], 12'b0};
+                    dst_addr[(MIG_GRP_SIZE/8 - 1)*8/2 + i/2] = {20'b0, hppb_addr_pair_rdata[((i*2)+1)*32 +: 32], 12'b0};
                 end else begin
-                    src_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] = {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
-                    dst_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] = {20'b0, hppb_dst_rdata[((i*2)+1)*32 +: 32], 12'b0};
+                    src_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] = {20'b0, hppb_addr_pair_rdata[(i*2)*32 +: 32], 12'b0};
+                    dst_addr1[(MIG_GRP_SIZE/8 - 1)*8/2 + (i-1)/2] = {20'b0, hppb_addr_pair_rdata[((i*2)+1)*32 +: 32], 12'b0};
                 end
                 
-        //         src_addr1[i] <= {20'b0, hppb_dst_rdata[(i*2)*32 +: 32], 12'b0};
-        //         dst_addr1[i] <= {20'b0, hppb_dst_rdata[((i*2)+1)*32 +: 32], 12'b0};
+        //         src_addr1[i] <= {20'b0, hppb_addr_pair_rdata[(i*2)*32 +: 32], 12'b0};
+        //         dst_addr1[i] <= {20'b0, hppb_addr_pair_rdata[((i*2)+1)*32 +: 32], 12'b0};
             end
         end
     end else begin
@@ -219,6 +246,95 @@ always_comb begin
     end
 end
 
+
+/* ---------------------------------
+    AXI Write
+-----------------------------------*/
+
+    logic           mig_done_cnt_wr_in_progress;
+
+    enum logic [1:0] {
+        STATE_WR_RESET,
+        STATE_WR_ADDR,
+        STATE_WR_DATA,
+        STATE_WR_RESP
+    } state_wr, next_state_wr;
+
+
+    function void set_wr_default();
+        hppb_mig_done_awvalid = 1'b0;
+        hppb_mig_done_awaddr = 'b0;
+        hppb_mig_done_awid = 'b0;
+        hppb_mig_done_awuser = 'b0; 
+
+        hppb_mig_done_wvalid = 1'b0;
+        hppb_mig_done_wlast = 1'b0;
+        hppb_mig_done_wstrb = 64'h0;
+        hppb_mig_done_wdata = mig_done_cnt;
+
+        hppb_mig_done_bready = 1'b1;      // always receive from bresp channel
+    endfunction
+
+
+    always_ff @(posedge axi4_mm_clk) begin
+        if (!axi4_mm_rst_n) begin
+            state_wr <= STATE_WR_RESET;
+            mig_done_cnt_wr_in_progress <= '0;
+
+        end else begin
+            state_wr <= next_state_wr;
+            if (hppb_mig_done_awready & hppb_mig_done_awvalid) begin
+                mig_done_cnt_wr_in_progress <= '1;
+            end
+            if (hppb_mig_done_bvalid & hppb_mig_done_bready) begin
+                mig_done_cnt_wr_in_progress <= '0;
+            end
+        end
+    end
+
+    always_comb begin
+        next_state_wr = state_wr;
+        unique case (state_wr)
+            STATE_WR_RESET:
+                if (old_mig_done_cnt != mig_done_cnt
+                    && mig_done_cnt_buf_pAddr != '0
+                    && ~mig_done_cnt_wr_in_progress) begin
+                    next_state_wr = STATE_WR_ADDR;
+                end
+            STATE_WR_ADDR:
+                if (hppb_mig_done_awready & hppb_mig_done_awvalid) begin
+                    next_state_wr = STATE_WR_DATA;
+                end
+            STATE_WR_DATA:
+                if (hppb_mig_done_wready & hppb_mig_done_wvalid) begin
+                    next_state_wr = STATE_WR_RESP;
+                end
+            STATE_WR_RESP:  
+                if (hppb_mig_done_bvalid & hppb_mig_done_bready) begin
+                    next_state_wr = STATE_WR_RESET;
+                end
+            default:;
+        endcase
+    end
+
+    always_comb begin
+        set_wr_default();
+        unique case(state_wr)
+            STATE_WR_ADDR: begin
+                hppb_mig_done_awvalid = '1;
+                hppb_mig_done_awid = 12'd0;      // Arbiter differentiates
+                hppb_mig_done_awuser = {1'b0, csr_awuser[4:0]};           // TODO based upon buffer location
+                hppb_mig_done_awaddr = mig_done_cnt_buf_pAddr;       // byte aligned address
+            end
+            STATE_WR_DATA: begin
+                hppb_mig_done_wvalid = '1;
+                hppb_mig_done_wdata = mig_done_cnt;       // byte aligned address
+                hppb_mig_done_wlast = '1;
+                hppb_mig_done_wstrb = 64'hffffffffffffffff;
+            end
+            default:;
+        endcase
+    end
 
 // DEBUGGING/TEST
 always_ff @( posedge axi4_mm_clk ) begin
