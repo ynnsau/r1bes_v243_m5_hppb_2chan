@@ -59,6 +59,7 @@ module ex_default_csr_top
 
     // for hot page pushing pushing
     output logic [63:0] csr_hapb_head,
+    input logic [63:0]  csr_hapb_valid_count,    // hapb_valid_count * 512 = count of valid addresses in hapb
     output logic [63:0] csr_addr_pair_buf_pAddr,
     output logic [63:0] csr_addr_pair_vld_cnt,
     output logic [63:0] csr_huge_pg_addr_pair,
@@ -128,6 +129,7 @@ module ex_default_csr_top
 
     // for hot page pushing pushing
         .csr_hapb_head(csr_hapb_head),
+        .csr_hapb_valid_count(csr_hapb_valid_count),
         .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr),
         .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt),
         .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair),

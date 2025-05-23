@@ -24,6 +24,7 @@ module hot_addr_push
     input logic [63:0]                  hapb_head,    // == host_pAddr, initial address assigned/last address read by software
     input logic [63:0]                  mig_done_cnt,    // mig_done_cnt = count of valid addresses in hapb
     input logic                         atleast_one_valid_src,
+    output logic [63:0]                 hapb_valid_count,    // hapb_valid_count * 512 = count of valid addresses in hapb
     // input logic [63:0]                  src_addr_valid_cnt,
 
     // hot page tracker interface
@@ -67,7 +68,9 @@ module hot_addr_push
 logic w_handshake;
 logic aw_handshake;
 
+logic [63:0]                                    hapb_pAddr_base;
 logic                                           hapb_pAddr_ready;
+logic [$clog2(HAPB_SIZE / (512/8)) - 1:0]       hapb_pAddr_offset; // log_2 ( HAPB_SIZE / (512 {bits/axi} / 8 {bits/bytes}) )
 
 localparam HAPB_LOCAL_BUFF_SIZE = 12800;       // 400 addresses * 32 bits each == 16 addresses per transation * 25 addresses from m5 setup
 
@@ -134,6 +137,9 @@ function void reset_ff();
     w_handshake <= 1'b0;
     aw_handshake <= 1'b0;
 
+    hapb_pAddr_base <= '0;
+    hapb_pAddr_offset <= '0;
+    hapb_valid_count <= '0;
 
     hot_addr_pg_data <= '0;
     hot_addr_pg_ptr <= '0;
@@ -145,7 +151,7 @@ function void reset_ff();
 endfunction
 
 always_ff @(posedge axi4_mm_clk) begin
-    if (!axi4_mm_rst_n) begin
+    if (!axi4_mm_rst_n || hapb_head == '0) begin
         reset_ff();
         alternating_bit <= '0;
         old_mig_done_cnt <= '1;            // FFFF..FFFF = To match case at transaction 0
@@ -164,6 +170,7 @@ always_ff @(posedge axi4_mm_clk) begin
                     // the next installment for HAPB has already been sent, invalidate for next request
                     hot_addr_pg_valid <= '0;
                     alternating_bit <= ~alternating_bit;        // For each new segment of data to be considered 'unique' by the receiver
+                    hapb_pAddr_offset <= hapb_pAddr_offset + 'd1;
                 end
             end
 
@@ -173,10 +180,16 @@ always_ff @(posedge axi4_mm_clk) begin
                     w_handshake <= 1'b0;
 
                     old_mig_done_cnt <= mig_done_cnt;
+                    hapb_valid_count <= hapb_valid_count + 'd1;
                 end
             end
             default ;
         endcase
+
+        // handle update for hapb_pAddr_base (should only happen once)
+        if (hapb_pAddr_base == '0 & hapb_head != '0) begin
+            hapb_pAddr_base <= hapb_head;
+        end
 
         // load m5 addresses into a buffer
         if (page_mig_addr_ready & h_pfn_en_r & (h_pfn_addr_r != '0)) begin
@@ -198,7 +211,7 @@ end
 // Start requesting m5 addresses when buffer is valid and full 
 assign hot_addr_pg_ready = hot_addr_pg_valid & (hot_addr_pg_ptr[3:0] == '0);
 
-assign hapb_pAddr_ready = (hapb_head != '0) && ((mig_done_cnt != old_mig_done_cnt) || (~atleast_one_valid_src));// || ((hapb_pAddr_base + (hapb_pAddr_offset*512)/8) != hapb_head));
+assign hapb_pAddr_ready = (hapb_pAddr_base != '0) && ((hapb_valid_count == '0) || ((hapb_pAddr_base + (hapb_pAddr_offset*512)/8) != hapb_head)) && ((mig_done_cnt != old_mig_done_cnt) || (~atleast_one_valid_src));
 
 /*---------------------------------
 FSM
@@ -271,7 +284,7 @@ always_comb begin
             end
             hapb_awid = 12'd0;
             hapb_awuser = csr_awuser; 
-            hapb_awaddr = hapb_head;
+            hapb_awaddr = hapb_pAddr_base + (hapb_pAddr_offset*512)/8;
 
             if (w_handshake == 1'b0) begin
                 hapb_wvalid = 1'b1;

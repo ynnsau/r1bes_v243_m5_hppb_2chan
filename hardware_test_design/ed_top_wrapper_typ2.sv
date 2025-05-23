@@ -1643,6 +1643,7 @@ localparam ACTUAL_MIG_GRP_SIZE = 32;
 logic atleast_one_valid_src, atleast_one_valid_src1;
 // CSRs
   logic [63:0]  csr_hapb_head_aclk,           csr_hapb_head_eclk;
+  logic [63:0]  csr_hapb_valid_count;
   logic [63:0]  csr_addr_pair_buf_pAddr_aclk,  csr_addr_pair_buf_pAddr_eclk;
   logic [63:0]  csr_addr_pair_vld_cnt_aclk,  csr_addr_pair_vld_cnt_eclk;
   logic [63:0]  csr_huge_pg_addr_pair_aclk,  csr_huge_pg_addr_pair_eclk;
@@ -2037,6 +2038,8 @@ hot_addr_push hot_addr_push
   // Other signals
     .hapb_head(csr_hapb_head_eclk),
     .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt),
+    .atleast_one_valid_src(atleast_one_valid_src | atleast_one_valid_src1),
+    .hapb_valid_count(csr_hapb_valid_count),
 
     .page_mig_addr_en           (page_mig_addr_en_eclk),
     .page_mig_addr              (page_mig_addr_eclk),
@@ -2047,7 +2050,6 @@ hot_addr_push hot_addr_push
     .csr_addr_ub            (csr_addr_ub),
     .csr_addr_lb            (csr_addr_lb),
 
-    .atleast_one_valid_src(atleast_one_valid_src | atleast_one_valid_src1),
 
     .csr_awuser(csr_awuser),
 
@@ -3038,6 +3040,7 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     
     // for hot page pushing pushing
     .csr_hapb_head(csr_hapb_head_aclk),
+    .csr_hapb_valid_count(csr_hapb_valid_count),
     .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_aclk),
     .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt_aclk),
     .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair_aclk),

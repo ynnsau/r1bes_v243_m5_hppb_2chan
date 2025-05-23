@@ -63,6 +63,7 @@ module ex_default_csr_avmm_slave
 
     // for hot page pushing pushing
     output logic [63:0] csr_hapb_head,      // basically src_addr_buf_pAddr
+    input logic [63:0]  csr_hapb_valid_count,    // hapb_valid_count * 512 = count of valid addresses in hapb
     output logic [63:0] csr_addr_pair_buf_pAddr,
     output logic [63:0] csr_addr_pair_vld_cnt,
     output logic [63:0] csr_huge_pg_addr_pair,
@@ -202,10 +203,12 @@ module ex_default_csr_avmm_slave
             data[34] <= csr_hppb_max_total_write_cnt;
             data[35] <= csr_hppb_test_mig_done_cnt;
 
-            data[27] <= csr_hppb_rresp_err_cnt;
-            data[28] <= csr_hppb_bresp_err_cnt;
-            data[29] <= csr_hppb_max_outstanding_rreq_cnt;
-            data[30] <= csr_hppb_max_outstanding_wreq_cnt;
+            data[27] <= csr_hapb_valid_count;
+
+            // data[27] <= csr_hppb_rresp_err_cnt;
+            // data[28] <= csr_hppb_bresp_err_cnt;
+            // data[29] <= csr_hppb_max_outstanding_rreq_cnt;
+            // data[30] <= csr_hppb_max_outstanding_wreq_cnt;
 
         end    
     end 
