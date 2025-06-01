@@ -100,8 +100,8 @@ logic alternating_bit;
 assign h_pfn_valid_pfn_guarded = (page_mig_addr_r != '1);
 // PFN to byte address
 // 28 + 12 = 40
-assign h_pfn_addr_cvtr_b4_module = ({24'h0, page_mig_addr_r, 12'h0} + cxl_addr_offset); // adding current address by offset, circular map to 8GB
-assign h_pfn_addr_cvtr = {31'h0, h_pfn_addr_cvtr_b4_module[32:0]}; // modulo by 8GB = [32:0]
+assign h_pfn_addr_cvtr_b4_module = ({24'h0, page_mig_addr_r, 12'h0} + cxl_addr_offset); // adding current address by offset, circular map to 16GB
+assign h_pfn_addr_cvtr = {31'h0, h_pfn_addr_cvtr_b4_module[33:0]}; // modulo by 16GB = [33:0]
 
 assign h_pfn_en = page_mig_addr_en_r & h_pfn_valid_pfn_guarded;
 assign h_pfn_addr_i = h_pfn_addr_cvtr[43:12] + cxl_start_pa[63:12]; // taking PFN from byte address
