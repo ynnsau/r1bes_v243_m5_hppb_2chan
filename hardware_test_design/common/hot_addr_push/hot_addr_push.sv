@@ -95,8 +95,6 @@ logic[63:0]               h_pfn_addr_cvtr;
 logic [ADDR_SIZE-1:0]         page_mig_addr_r;
 logic                         page_mig_addr_en_r;
 
-logic alternating_bit;
-
 assign h_pfn_valid_pfn_guarded = (page_mig_addr_r != '1);
 // PFN to byte address
 // 28 + 12 = 40
@@ -153,7 +151,6 @@ endfunction
 always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n || hapb_head == '0) begin
         reset_ff();
-        alternating_bit <= '0;
         old_mig_done_cnt <= '1;            // FFFF..FFFF = To match case at transaction 0
     end
 
@@ -169,7 +166,6 @@ always_ff @(posedge axi4_mm_clk) begin
                     w_handshake <= 1'b1;
                     // the next installment for HAPB has already been sent, invalidate for next request
                     hot_addr_pg_valid <= '0;
-                    alternating_bit <= ~alternating_bit;        // For each new segment of data to be considered 'unique' by the receiver
                     hapb_pAddr_offset <= hapb_pAddr_offset + 'd1;
                 end
             end
@@ -193,7 +189,7 @@ always_ff @(posedge axi4_mm_clk) begin
 
         // load m5 addresses into a buffer
         if (page_mig_addr_ready & h_pfn_en_r & (h_pfn_addr_r != '0)) begin
-            hot_addr_pg_data[hot_addr_pg_ptr*32 +: 32] <= {alternating_bit, h_pfn_addr_r[ADDR_SIZE-2:1]};
+            hot_addr_pg_data[hot_addr_pg_ptr*32 +: 32] <= h_pfn_addr_r[ADDR_SIZE-2:0];
             hot_addr_pg_ptr <= hot_addr_pg_ptr + 1'b1;
             if ((hot_addr_pg_ptr + 1'b1) == HAPB_LOCAL_BUFF_SIZE/(ADDR_SIZE-1)) begin
                 hot_addr_pg_ptr <= '0;      // improper rounding?
