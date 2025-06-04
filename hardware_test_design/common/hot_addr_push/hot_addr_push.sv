@@ -207,7 +207,7 @@ end
 // Start requesting m5 addresses when buffer is valid and full 
 assign hot_addr_pg_ready = hot_addr_pg_valid & (hot_addr_pg_ptr[3:0] == '0);
 
-assign hapb_pAddr_ready = (hapb_pAddr_base != '0) && ((hapb_valid_count == '0) || ((hapb_pAddr_base + (hapb_pAddr_offset*512)/8) != hapb_head)) && ((mig_done_cnt != old_mig_done_cnt) || (~atleast_one_valid_src));
+assign hapb_pAddr_ready = (hapb_pAddr_base != '0) && ((hapb_valid_count == '0) || ((hapb_pAddr_base + (hapb_pAddr_offset*512)/8) != hapb_head)) /*&& ((mig_done_cnt != old_mig_done_cnt) || (~atleast_one_valid_src))*/;
 
 /*---------------------------------
 FSM
