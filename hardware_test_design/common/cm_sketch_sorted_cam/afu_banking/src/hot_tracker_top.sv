@@ -7,7 +7,6 @@
 `endif
 
 import mc_axi_if_pkg::*;
-import m5_pkg::*;
 
 module hot_tracker_top
 #(
@@ -33,7 +32,7 @@ module hot_tracker_top
   input clk,
   input rstn,
 
-  input m5_pkg::queue_struct_t          to_tracker_struct,
+  // input m5_pkg::queue_struct_t          to_tracker_struct,
 
   // hot tracker interface
   input                   query_en,
@@ -94,9 +93,9 @@ always_comb
     //awvalid = cxlip2iafu_to_mc_axi4.awvalid;
     //awready = mc2iafu_from_mc_axi4.awready;
     
-    araddr  = to_tracker_struct.araddr;
-    arvalid = to_tracker_struct.arvalid;
-    arready = to_tracker_struct.arready;
+    // araddr  = to_tracker_struct.araddr;
+    // arvalid = to_tracker_struct.arvalid;
+    // arready = to_tracker_struct.arready;
 
     //araddr  = cxlip2iafu_to_mc_axi4.araddr;
     //arvalid = cxlip2iafu_to_mc_axi4.arvalid;

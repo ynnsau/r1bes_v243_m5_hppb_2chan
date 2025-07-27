@@ -1145,62 +1145,117 @@ assign  rx_st_dcrdt_update_cnt_o                 =  p0_pld_if.rx_Dcrdt_update_cn
 assign  rx_st_dcrdt_update_o                     =  p0_pld_if.rx_Dcrdt_update                    ;
 assign  rx_st_dcrdt_init_o                       =  p0_pld_if.rx_Dcrdt_init                      ;
     
+axi_ports         axi1_ports();
 // AXI-MM interface - write address channel
-// assign  axi0_awid                                =  afu_cache_axi_aw.awid                        ;
-// assign  axi0_awaddr                              =  afu_cache_axi_aw.awaddr                      ;
-// assign  axi0_awlen                               =  afu_cache_axi_aw.awlen                       ;
-// assign  axi0_awsize                              =  afu_cache_axi_aw.awsize                      ;
-// assign  axi0_awburst                             =  afu_cache_axi_aw.awburst                     ;
-// assign  axi0_awprot                              =  afu_cache_axi_aw.awprot                      ;
-// assign  axi0_awqos                               =  afu_cache_axi_aw.awqos                       ;
-// assign  axi0_awuser                              =  afu_cache_axi_aw.awuser                      ;
-// assign  axi0_awvalid                             =  afu_cache_axi_aw.awvalid                     ;
-// assign  axi0_awcache                             =  afu_cache_axi_aw.awcache                     ;
-// assign  axi0_awlock                              =  afu_cache_axi_aw.awlock                      ;
-// assign  axi0_awregion                            =  afu_cache_axi_aw.awregion                    ;
-// assign  axi0_awatop                              =  6'b000000                                    ;
-assign  afu_cache_axi_awready                    =  '0;//axi0_awready                                 ;
-  
+assign  axi1_awid                                =  axi1_ports.awid                        ;
+assign  axi1_awaddr                              =  axi1_ports.awaddr                      ;
+assign  axi1_awlen                               =  axi1_ports.awlen                       ;
+assign  axi1_awsize                              =  axi1_ports.awsize                      ;
+assign  axi1_awburst                             =  axi1_ports.awburst                     ;
+assign  axi1_awprot                              =  axi1_ports.awprot                      ;
+assign  axi1_awqos                               =  axi1_ports.awqos                       ;
+assign  axi1_awuser                              =  axi1_ports.awuser                      ;
+assign  axi1_awvalid                             =  axi1_ports.awvalid                     ;
+assign  axi1_awcache                             =  axi1_ports.awcache                     ;
+assign  axi1_awlock                              =  axi1_ports.awlock                      ;
+assign  axi1_awregion                            =  axi1_ports.awregion                    ;
+assign  axi1_awatop                              =  6'b000000                                    ;
+assign  axi1_ports.awready                       =  axi1_awready                                 ;
+    
 //      AXI-MM_interface_write_data_channel                                                      
-// assign  axi0_wdata                               =  afu_cache_axi_w.wdata                        ;
-// assign  axi0_wstrb                               =  afu_cache_axi_w.wstrb                        ;
-// assign  axi0_wlast                               =  afu_cache_axi_w.wlast                        ;
-// assign  axi0_wuser                               =  afu_cache_axi_w.wuser                        ;
-// assign  axi0_wvalid                              =  afu_cache_axi_w.wvalid                       ;
-assign  afu_cache_axi_wready                     =  '0;//axi0_wready                                  ;
+assign  axi1_wdata                               =  axi1_ports.wdata                        ;
+assign  axi1_wstrb                               =  axi1_ports.wstrb                        ;
+assign  axi1_wlast                               =  axi1_ports.wlast                        ;
+assign  axi1_wuser                               =  axi1_ports.wuser                        ;
+assign  axi1_wvalid                              =  axi1_ports.wvalid                       ;
+assign  axi1_ports.wready                        =  axi1_wready                                  ;
 
 //  AXI-MM interface - write response channel
-assign afu_cache_axi_b = '0;
-// assign  afu_cache_axi_b.bid                      =  axi0_bid                                     ;
-// assign  afu_cache_axi_b.bresp                    =  axi0_bresp == 'h0 ? eresp_CAFU_OKAY : eresp_CAFU_SLVERR;    
-// assign  afu_cache_axi_b.buser                    =  axi0_buser                                   ;
-assign  afu_cache_axi_b.bvalid                   =  '0;//axi0_bvalid                                  ;
-// assign  axi0_bready                              =  afu_cache_axi_bready                         ;
+assign  axi1_ports.bid                      =  axi1_bid                                     ;
+assign  axi1_ports.bresp                    =  axi1_bresp == 'h0 ? eresp_CAFU_OKAY : eresp_CAFU_SLVERR;    
+assign  axi1_ports.buser                    =  axi1_buser                                   ;
+assign  axi1_ports.bvalid                   =  axi1_bvalid                                  ;
+assign  axi1_bready                         =  axi1_ports.bready                         ;
+    
+//      AXI-MM_interface_read_address_channel                                                    
+assign  axi1_arid                                =  axi1_ports.arid                        ;
+assign  axi1_araddr                              =  axi1_ports.araddr                      ;
+assign  axi1_arlen                               =  axi1_ports.arlen                       ;
+assign  axi1_arsize                              =  axi1_ports.arsize                      ;
+assign  axi1_arburst                             =  axi1_ports.arburst                     ;
+assign  axi1_arprot                              =  axi1_ports.arprot                      ;
+assign  axi1_arqos                               =  axi1_ports.arqos                       ;
+assign  axi1_aruser                              =  axi1_ports.aruser                      ;
+assign  axi1_arvalid                             =  axi1_ports.arvalid                     ;
+assign  axi1_arcache                             =  axi1_ports.arcache                     ;
+assign  axi1_arlock                              =  axi1_ports.arlock                      ;
+assign  axi1_arregion                            =  axi1_ports.arregion                    ;
+assign  axi1_ports.arready                       =  axi1_arready                                 ;
+
+//      AXI-MM_interface_read_response_channel                                                   
+assign  axi1_ports.rid                      =  axi1_rid                                     ;
+assign  axi1_ports.rdata                    =  axi1_rdata                                   ;
+assign  axi1_ports.rresp                    =  axi1_rresp == 'h0 ? eresp_CAFU_OKAY : eresp_CAFU_SLVERR;  
+assign  axi1_ports.rlast                    =  axi1_rlast                                   ;
+assign  axi1_ports.ruser                    =  axi1_ruser                                   ;
+assign  axi1_ports.rvalid                   =  axi1_rvalid                                  ;
+assign  axi1_rready                         =  axi1_ports.rready                         ;
+
+
+// AXI-MM interface - write address channel
+assign  axi0_awid                                =  afu_cache_axi_aw.awid                        ;
+assign  axi0_awaddr                              =  afu_cache_axi_aw.awaddr                      ;
+assign  axi0_awlen                               =  afu_cache_axi_aw.awlen                       ;
+assign  axi0_awsize                              =  afu_cache_axi_aw.awsize                      ;
+assign  axi0_awburst                             =  afu_cache_axi_aw.awburst                     ;
+assign  axi0_awprot                              =  afu_cache_axi_aw.awprot                      ;
+assign  axi0_awqos                               =  afu_cache_axi_aw.awqos                       ;
+assign  axi0_awuser                              =  afu_cache_axi_aw.awuser                      ;
+assign  axi0_awvalid                             =  afu_cache_axi_aw.awvalid                     ;
+assign  axi0_awcache                             =  afu_cache_axi_aw.awcache                     ;
+assign  axi0_awlock                              =  afu_cache_axi_aw.awlock                      ;
+assign  axi0_awregion                            =  afu_cache_axi_aw.awregion                    ;
+assign  axi0_awatop                              =  6'b000000                                    ;
+assign  afu_cache_axi_awready                    =  axi0_awready                                 ;
+  
+//      AXI-MM_interface_write_data_channel                                                      
+assign  axi0_wdata                               =  afu_cache_axi_w.wdata                        ;
+assign  axi0_wstrb                               =  afu_cache_axi_w.wstrb                        ;
+assign  axi0_wlast                               =  afu_cache_axi_w.wlast                        ;
+assign  axi0_wuser                               =  afu_cache_axi_w.wuser                        ;
+assign  axi0_wvalid                              =  afu_cache_axi_w.wvalid                       ;
+assign  afu_cache_axi_wready                     =  axi0_wready                                  ;
+
+//  AXI-MM interface - write response channel
+assign  afu_cache_axi_b.bid                      =  axi0_bid                                     ;
+assign  afu_cache_axi_b.bresp                    =  axi0_bresp == 'h0 ? eresp_CAFU_OKAY : eresp_CAFU_SLVERR;    
+assign  afu_cache_axi_b.buser                    =  axi0_buser                                   ;
+assign  afu_cache_axi_b.bvalid                   =  axi0_bvalid                                  ;
+assign  axi0_bready                              =  afu_cache_axi_bready                         ;
   
 //      AXI-MM_interface_read_address_channel                                                    
-// assign  axi0_arid                                =  afu_cache_axi_ar.arid                        ;
-// assign  axi0_araddr                              =  afu_cache_axi_ar.araddr                      ;
-// assign  axi0_arlen                               =  afu_cache_axi_ar.arlen                       ;
-// assign  axi0_arsize                              =  afu_cache_axi_ar.arsize                      ;
-// assign  axi0_arburst                             =  afu_cache_axi_ar.arburst                     ;
-// assign  axi0_arprot                              =  afu_cache_axi_ar.arprot                      ;
-// assign  axi0_arqos                               =  afu_cache_axi_ar.arqos                       ;
-// assign  axi0_aruser                              =  afu_cache_axi_ar.aruser                      ;
-// assign  axi0_arvalid                             =  afu_cache_axi_ar.arvalid                     ;
-// assign  axi0_arcache                             =  afu_cache_axi_ar.arcache                     ;
-// assign  axi0_arlock                              =  afu_cache_axi_ar.arlock                      ;
-// assign  axi0_arregion                            =  afu_cache_axi_ar.arregion                    ;
-assign  afu_cache_axi_arready                    =  '0;//axi0_arready                                 ;
+assign  axi0_arid                                =  afu_cache_axi_ar.arid                        ;
+assign  axi0_araddr                              =  afu_cache_axi_ar.araddr                      ;
+assign  axi0_arlen                               =  afu_cache_axi_ar.arlen                       ;
+assign  axi0_arsize                              =  afu_cache_axi_ar.arsize                      ;
+assign  axi0_arburst                             =  afu_cache_axi_ar.arburst                     ;
+assign  axi0_arprot                              =  afu_cache_axi_ar.arprot                      ;
+assign  axi0_arqos                               =  afu_cache_axi_ar.arqos                       ;
+assign  axi0_aruser                              =  afu_cache_axi_ar.aruser                      ;
+assign  axi0_arvalid                             =  afu_cache_axi_ar.arvalid                     ;
+assign  axi0_arcache                             =  afu_cache_axi_ar.arcache                     ;
+assign  axi0_arlock                              =  afu_cache_axi_ar.arlock                      ;
+assign  axi0_arregion                            =  afu_cache_axi_ar.arregion                    ;
+assign  afu_cache_axi_arready                    =  axi0_arready                                 ;
 
-//      AXI-MM_interface_read_response_channel    
-assign afu_cache_axi_r = '0;                                               
-// assign  afu_cache_axi_r.rid                      =  axi0_rid                                     ;
-// assign  afu_cache_axi_r.rdata                    =  axi0_rdata                                   ;
-// assign  afu_cache_axi_r.rresp                    =  axi0_rresp == 'h0 ? eresp_CAFU_OKAY : eresp_CAFU_SLVERR;  
-// assign  afu_cache_axi_r.rlast                    =  axi0_rlast                                   ;
-// assign  afu_cache_axi_r.ruser                    =  axi0_ruser                                   ;
-assign  afu_cache_axi_r.rvalid                   =  '0;//axi0_rvalid                                  ;
-// assign  axi0_rready                              =  afu_cache_axi_rready                         ;
+//      AXI-MM_interface_read_response_channel                                                   
+assign  afu_cache_axi_r.rid                      =  axi0_rid                                     ;
+assign  afu_cache_axi_r.rdata                    =  axi0_rdata                                   ;
+assign  afu_cache_axi_r.rresp                    =  axi0_rresp == 'h0 ? eresp_CAFU_OKAY : eresp_CAFU_SLVERR;  
+assign  afu_cache_axi_r.rlast                    =  axi0_rlast                                   ;
+assign  afu_cache_axi_r.ruser                    =  axi0_ruser                                   ;
+assign  afu_cache_axi_r.rvalid                   =  axi0_rvalid                                  ;
+assign  axi0_rready                              =  afu_cache_axi_rready                         ;
 
 assign  ed_rx_st0_chnum_i                        =  '0                                           ;
 assign  ed_rx_st1_chnum_i                        =  '0                                           ;
@@ -1415,7 +1470,31 @@ always @(posedge ip2hdm_clk ) begin
         ip2cafu_quiesce_req_f <= ip2cafu_quiesce_req;     
         ip2cafu_quiesce_req_ff <= ip2cafu_quiesce_req_f;  
     end                                                
-end             
+end
+
+logic [5:0] csr_aruser;
+logic [5:0] csr_awuser;
+
+logic [63:0] csr_offload_func_call_cnt_aclk, csr_offload_func_call_cnt_eclk;
+logic [63:0] csr_offload_func_call_base_aclk, csr_offload_func_call_base_eclk;
+logic [63:0] csr_offload_func_complete_cnt;
+
+
+bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+) bus_synchronizer_offload_func_call_cnt_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_offload_func_call_cnt_aclk),
+    .data_out (csr_offload_func_call_cnt_eclk)
+);
+
+bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+) bus_synchronizer_offload_func_call_base_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_offload_func_call_base_aclk),
+    .data_out (csr_offload_func_call_base_eclk)
+);
 
  //ED HANDSHAKE logic for CXL RESET, User can use this ip2usr_cxlreset_req to reset all the sticky registers in ED
  // ip2usr_cxlreset_req: This signal allows user logic to quiesce any logic related to CXL Reset.
@@ -1440,69 +1519,6 @@ always_ff@(posedge ip2hdm_clk) ip2hdm_reset_n_ff <= ip2hdm_reset_n_f ;
   // Example design Modules instatances                  
   //-------------------------------------------------------
 
-logic [5:0] csr_aruser;
-logic [5:0] csr_awuser;
-
-
-// hot page tracker interface
-logic page_query_en;
-logic page_query_ready;
-logic page_mig_addr_en_aclk;
-logic page_mig_addr_en_stretch;
-logic page_mig_addr_en_eclk;
-logic [27:0]  page_mig_addr;
-logic [27:0]  page_mig_addr_aclk;
-logic [27:0]  page_mig_addr_stretch;
-logic [27:0]  page_mig_addr_eclk;
-logic page_mig_addr_ready;
-
-logic [31:0] page_query_rate_aclk;
-logic [31:0] page_query_rate_eclk;
-logic page_cdc_fifo_rdempty;
-logic mem_chan_rd_en;
-
-logic [63:0] cxl_start_pa;
-logic [63:0] cxl_addr_offset;
-
-// ================================
-//      AFU / CSR -- CDC
-// ================================
-// query rate CDC
-bus_synchronizer #(
-    .SIGNAL_WIDTH(32)
-) bus_synchronizer_page_query_rate_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (page_query_rate_aclk),
-    .data_out (page_query_rate_eclk)
-);
-// page_mig_addr CDC
-fifo_28w_16d afu_to_csr_cdc_fifo_inst (
-    .data   (page_mig_addr_eclk),
-    .wrreq  (page_mig_addr_en_eclk),
-    .rdreq  (1'b1),
-    .wrclk  (ip2hdm_clk),
-    .rdclk  (ip2csr_avmm_clk),
-    .q      (page_mig_addr_aclk),
-    .rdempty(page_cdc_fifo_rdempty),
-    .wrfull ()
-);
-always_ff @( posedge ip2csr_avmm_clk ) begin 
-    page_mig_addr_en_aclk <= ~page_cdc_fifo_rdempty;
-end
-
-m5_ctrl m5_ctrl_inst(
-    .clk    ( ip2hdm_clk ),
-    .rstn   ( ip2hdm_reset_n_f ), 
-
-    .page_query_rate (page_query_rate_eclk),
-    .mem_chan_rd_en   (mem_chan_rd_en),
-    .page_query_en              (page_query_en),
-    .page_query_ready           (page_query_ready),
-
-    .page_mig_addr_en           (page_mig_addr_en_eclk),
-    .page_mig_addr              (page_mig_addr_eclk),
-    .page_mig_addr_ready        ()
-);
 
 
 cafu_csr0_avmm_wrapper
@@ -1634,796 +1650,22 @@ cafu_csr0_avmm_wrapper_inst
 );
 
 
-logic [32:0]  csr_addr_ub;
-logic [32:0]  csr_addr_lb;
-
-// HOT PAGE PUSHING SIGNALS
-localparam ACTUAL_MIG_GRP_SIZE = 32;
-
-logic atleast_one_valid_src, atleast_one_valid_src1;
-// CSRs
-  logic [63:0]  csr_hapb_head_aclk,           csr_hapb_head_eclk;
-  logic [63:0]  csr_hapb_valid_count;
-  logic [63:0]  csr_addr_pair_buf_pAddr_aclk,  csr_addr_pair_buf_pAddr_eclk;
-  logic [63:0]  csr_addr_pair_vld_cnt_aclk,  csr_addr_pair_vld_cnt_eclk;
-  logic [63:0]  csr_huge_pg_addr_pair_aclk,  csr_huge_pg_addr_pair_eclk;
-  logic [63:0]  csr_mig_done_cnt_buf_pAddr_aclk,  csr_mig_done_cnt_buf_pAddr_eclk;
-// HPPB DEBUGGING
-  logic [63:0]  csr_hppb_test_mig_done_cnt;
-
-
-// Other signals
-  logic [63:0]  hppb_src_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb1_src_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb_addr_pair_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb1_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic         hppb_new_addr_available;
-
-  logic [63:0]  hppb_mig_done_cnt, hppb1_mig_done_cnt;
-
-  // Performance counters
-  logic [63:0] csr_hppb_min_mig_time;
-  logic [63:0] csr_hppb_max_mig_time;
-  logic [63:0] csr_hppb_total_curr_mig_time;
-  logic [63:0] csr_hppb_min_pg0_mig_time;
-  logic [63:0] csr_hppb_max_pg0_mig_time;
-  logic [63:0] csr_hppb_min_pgn_mig_time;
-  logic [63:0] csr_hppb_max_pgn_mig_time;
-  logic [63:0] csr_hppb_max_fifo_full_cnt;
-  logic [63:0] csr_hppb_max_fifo_empty_cnt;
-  logic [63:0] csr_hppb_max_total_read_cnt;
-  logic [63:0] csr_hppb_max_total_write_cnt;
-  logic [63:0] csr_hppb_rresp_err_cnt;
-  logic [63:0] csr_hppb_bresp_err_cnt;
-  logic [63:0] csr_hppb_max_outstanding_rreq_cnt;
-  logic [63:0] csr_hppb_max_outstanding_wreq_cnt;
-
-
-// Module Level AXI signals
-  // HPPB
-    logic [11:0]               hppb_arid;
-    logic [63:0]               hppb_araddr;
-    logic [9:0]                hppb_arlen;    // must tie to 10'd0
-    logic [2:0]                hppb_arsize;   // must tie to 3'b110
-    logic [1:0]                hppb_arburst;  // must tie to 2'b00
-    logic [2:0]                hppb_arprot;   // must tie to 3'b000
-    logic [3:0]                hppb_arqos;    // must tie to 4'b0000
-    logic [5:0]                hppb_aruser;   // 4'b0000": non-cacheable; 4'b0001: cacheable shared; 4'b0010: cacheable owned
-    logic                      hppb_arvalid;
-    logic [3:0]                hppb_arcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_arlock;   // must tie to 2'b00
-    logic [3:0]                hppb_arregion; // must tie to 4'b0000
-    logic                      hppb_arready;
-
-    logic [11:0]               hppb_rid;
-    logic [511:0]              hppb_rdata;  
-    logic [1:0]                hppb_rresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic                      hppb_rlast;  // no use
-    logic                      hppb_ruser;  // no use
-    logic                      hppb_rvalid;
-    logic                      hppb_rready;
-
-    logic [11:0]               hppb_awid;
-    logic [63:0]               hppb_awaddr; 
-    logic [9:0]                hppb_awlen;    // must tie to 10'd0
-    logic [2:0]                hppb_awsize;   // must tie to 3'b110 (64B/T)
-    logic [1:0]                hppb_awburst;  // must tie to 2'b00            : CXL IP limitation
-    logic [2:0]                hppb_awprot;   // must tie to 3'b000
-    logic [3:0]                hppb_awqos;    // must tie to 4'b0000
-    logic [5:0]                hppb_awuser;
-    logic                      hppb_awvalid;
-    logic [3:0]                hppb_awcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_awlock;   // must tie to 2'b00
-    logic [3:0]                hppb_awregion; // must tie to 4'b0000
-    logic [5:0]                hppb_awatop;   // must tie to 6'b000000
-    logic                      hppb_awready;
-
-    logic [511:0]              hppb_wdata;
-    logic [(512/8)-1:0]        hppb_wstrb;
-    logic                      hppb_wlast;
-    logic                      hppb_wuser;  // must tie to 1'b0
-    logic                      hppb_wvalid;
-    logic                      hppb_wready;
-
-    logic [11:0]               hppb_bid;
-    logic [1:0]                hppb_bresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic [3:0]                hppb_buser;  // must tie to 4'b0000
-    logic                      hppb_bvalid;
-    logic                      hppb_bready;
-
-  // HPPB 1
-    logic [11:0]               hppb1_arid;
-    logic [63:0]               hppb1_araddr;
-    logic [9:0]                hppb1_arlen;    // must tie to 10'd0
-    logic [2:0]                hppb1_arsize;   // must tie to 3'b110
-    logic [1:0]                hppb1_arburst;  // must tie to 2'b00
-    logic [2:0]                hppb1_arprot;   // must tie to 3'b000
-    logic [3:0]                hppb1_arqos;    // must tie to 4'b0000
-    logic [5:0]                hppb1_aruser;   // 4'b0000": non-cacheable; 4'b0001: cacheable shared; 4'b0010: cacheable owned
-    logic                      hppb1_arvalid;
-    logic [3:0]                hppb1_arcache;  // must tie to 4'b0000
-    logic [1:0]                hppb1_arlock;   // must tie to 2'b00
-    logic [3:0]                hppb1_arregion; // must tie to 4'b0000
-    logic                      hppb1_arready;
-
-    logic [11:0]               hppb1_rid;
-    logic [511:0]              hppb1_rdata;  
-    logic [1:0]                hppb1_rresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic                      hppb1_rlast;  // no use
-    logic                      hppb1_ruser;  // no use
-    logic                      hppb1_rvalid;
-    logic                      hppb1_rready;
-
-    logic [11:0]               hppb1_awid;
-    logic [63:0]               hppb1_awaddr; 
-    logic [9:0]                hppb1_awlen;    // must tie to 10'd0
-    logic [2:0]                hppb1_awsize;   // must tie to 3'b110 (64B/T)
-    logic [1:0]                hppb1_awburst;  // must tie to 2'b00            : CXL IP limitation
-    logic [2:0]                hppb1_awprot;   // must tie to 3'b000
-    logic [3:0]                hppb1_awqos;    // must tie to 4'b0000
-    logic [5:0]                hppb1_awuser;
-    logic                      hppb1_awvalid;
-    logic [3:0]                hppb1_awcache;  // must tie to 4'b0000
-    logic [1:0]                hppb1_awlock;   // must tie to 2'b00
-    logic [3:0]                hppb1_awregion; // must tie to 4'b0000
-    logic [5:0]                hppb1_awatop;   // must tie to 6'b000000
-    logic                      hppb1_awready;
-
-    logic [511:0]              hppb1_wdata;
-    logic [(512/8)-1:0]        hppb1_wstrb;
-    logic                      hppb1_wlast;
-    logic                      hppb1_wuser;  // must tie to 1'b0
-    logic                      hppb1_wvalid;
-    logic                      hppb1_wready;
-
-    logic [11:0]               hppb1_bid;
-    logic [1:0]                hppb1_bresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic [3:0]                hppb1_buser;  // must tie to 4'b0000
-    logic                      hppb1_bvalid;
-    logic                      hppb1_bready;
-
-
-  // HAPB
-    logic [11:0]               hapb_awid;
-    logic [63:0]               hapb_awaddr; 
-    logic [9:0]                hapb_awlen;    // must tie to 10'd0
-    logic [2:0]                hapb_awsize;   // must tie to 3'b110 (64B/T)
-    logic [1:0]                hapb_awburst;  // must tie to 2'b00            : CXL IP limitation
-    logic [2:0]                hapb_awprot;   // must tie to 3'b000
-    logic [3:0]                hapb_awqos;    // must tie to 4'b0000
-    logic [5:0]                hapb_awuser;
-    logic                      hapb_awvalid;
-    logic [3:0]                hapb_awcache;  // must tie to 4'b0000
-    logic [1:0]                hapb_awlock;   // must tie to 2'b00
-    logic [3:0]                hapb_awregion; // must tie to 4'b0000
-    logic [5:0]                hapb_awatop;   // must tie to 6'b000000
-    logic                      hapb_awready;
-
-    logic [511:0]              hapb_wdata;
-    logic [(512/8)-1:0]        hapb_wstrb;
-    logic                      hapb_wlast;
-    logic                      hapb_wuser;  // must tie to 1'b0
-    logic                      hapb_wvalid;
-    logic                      hapb_wready;
-
-    logic [11:0]               hapb_bid;
-    logic [1:0]                hapb_bresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic [3:0]                hapb_buser;  // must tie to 4'b0000
-    logic                      hapb_bvalid;
-    logic                      hapb_bready;
-
-  // hppb_addr_pair_REQ
-    logic [11:0]               hppb_addr_pair_arid;
-    logic [63:0]               hppb_addr_pair_araddr;
-    logic [9:0]                hppb_addr_pair_arlen;    // must tie to 10'd0
-    logic [2:0]                hppb_addr_pair_arsize;   // must tie to 3'b110
-    logic [1:0]                hppb_addr_pair_arburst;  // must tie to 2'b00
-    logic [2:0]                hppb_addr_pair_arprot;   // must tie to 3'b000
-    logic [3:0]                hppb_addr_pair_arqos;    // must tie to 4'b0000
-    logic [5:0]                hppb_addr_pair_aruser;   // 4'b0000": non-cacheable; 4'b0001: cacheable shared; 4'b0010: cacheable owned
-    logic                      hppb_addr_pair_arvalid;
-    logic [3:0]                hppb_addr_pair_arcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_addr_pair_arlock;   // must tie to 2'b00
-    logic [3:0]                hppb_addr_pair_arregion; // must tie to 4'b0000
-    logic                      hppb_addr_pair_arready;
-
-    logic [11:0]               hppb_addr_pair_rid;
-    logic [511:0]              hppb_addr_pair_rdata;  
-    logic [1:0]                hppb_addr_pair_rresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic                      hppb_addr_pair_rlast;  // no use
-    logic                      hppb_addr_pair_ruser;  // no use
-    logic                      hppb_addr_pair_rvalid;
-    logic                      hppb_addr_pair_rready;
-
-
-  // hppb_mig_done_REQ
-    logic [11:0]               hppb_mig_done_awid;
-    logic [63:0]               hppb_mig_done_awaddr; 
-    logic [9:0]                hppb_mig_done_awlen;    // must tie to 10'd0
-    logic [2:0]                hppb_mig_done_awsize;   // must tie to 3'b110 (64B/T)
-    logic [1:0]                hppb_mig_done_awburst;  // must tie to 2'b00            : CXL IP limitation
-    logic [2:0]                hppb_mig_done_awprot;   // must tie to 3'b000
-    logic [3:0]                hppb_mig_done_awqos;    // must tie to 4'b0000
-    logic [5:0]                hppb_mig_done_awuser;
-    logic                      hppb_mig_done_awvalid;
-    logic [3:0]                hppb_mig_done_awcache;  // must tie to 4'b0000
-    logic [1:0]                hppb_mig_done_awlock;   // must tie to 2'b00
-    logic [3:0]                hppb_mig_done_awregion; // must tie to 4'b0000
-    logic [5:0]                hppb_mig_done_awatop;   // must tie to 6'b000000
-    logic                      hppb_mig_done_awready;
-
-    logic [511:0]              hppb_mig_done_wdata;
-    logic [(512/8)-1:0]        hppb_mig_done_wstrb;
-    logic                      hppb_mig_done_wlast;
-    logic                      hppb_mig_done_wuser;  // must tie to 1'b0
-    logic                      hppb_mig_done_wvalid;
-    logic                      hppb_mig_done_wready;
-
-    logic [11:0]               hppb_mig_done_bid;
-    logic [1:0]                hppb_mig_done_bresp;  // no use: 2'b00: OKAY; 2'b01: EXOKAY; 2'b10: SLVERR
-    logic [3:0]                hppb_mig_done_buser;  // must tie to 4'b0000
-    logic                      hppb_mig_done_bvalid;
-    logic                      hppb_mig_done_bready;
-
-
-
-// ********************* wrapper code around hot page push reads for profiling
-    logic                      test_hppb_arready;
-
-    logic [11:0]               test_hppb_rid;
-    logic [511:0]              test_hppb_rdata;  
-    logic                      test_hppb_rlast;  // no use
-    logic                      test_hppb_rvalid;
-
-    assign test_hppb_rlast = '1;
-    assign test_hppb_arready = '1;
-    always_ff @( posedge ip2hdm_clk ) begin
-      test_hppb_rid <= hppb_arid;
-      test_hppb_rdata <= 512'hDEADBEEF;
-      test_hppb_rvalid <= hppb_arvalid;
-    end
-// *********************
-
-// HOT PAGE PUSH MODULE
-hot_page_push #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE/2)) hot_page_push
-(
-  // Clocks
-    .axi4_mm_clk                           (ip2hdm_clk), 
-  // Resets
-    .axi4_mm_rst_n                         (ip2hdm_reset_n),
-
-  .src_addr(hppb_src_addr),
-  .new_addr_available(hppb_new_addr_available),
-  .dst_addr(hppb_addr_pair_addr),
-
-  .mig_done_cnt(hppb_mig_done_cnt),
-
-  .atleast_one_valid_src(atleast_one_valid_src),
-
-  .csr_aruser(csr_aruser),
-  .csr_awuser(csr_awuser),
-
-  // hot page push axi write: hppb_
-    .hppb_awid(hppb_awid),
-    .hppb_awaddr(hppb_awaddr), 
-    .hppb_awuser(hppb_awuser),
-    .hppb_awvalid(hppb_awvalid),
-    .hppb_awready(hppb_awready),
-
-    .hppb_wdata(hppb_wdata),
-    .hppb_wstrb(hppb_wstrb),
-    .hppb_wlast(hppb_wlast),
-    .hppb_wvalid(hppb_wvalid),
-    .hppb_wready(hppb_wready),
-
-    .hppb_bid(hppb_bid),
-    .hppb_bresp(hppb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_buser(hppb_buser),  // must tie to 4'b0000
-    .hppb_bvalid(hppb_bvalid),
-    .hppb_bready(hppb_bready),
-
-  // hot page push axi read: hppb_
-    .hppb_arid(hppb_arid),
-    .hppb_araddr(hppb_araddr),
-    .hppb_arvalid(hppb_arvalid),
-    .hppb_aruser(hppb_aruser),
-    .hppb_arready(hppb_arready),
-
-    .hppb_rid(hppb_rid),
-    .hppb_rdata(hppb_rdata),  
-    .hppb_rresp(hppb_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_rlast(hppb_rlast),  // no use
-    .hppb_ruser(hppb_ruser),  // no use
-    .hppb_rvalid(hppb_rvalid),
-    .hppb_rready(hppb_rready),
-
-
-    .min_mig_time(csr_hppb_min_mig_time),
-    .max_mig_time(csr_hppb_max_mig_time),
-    .total_curr_mig_time(csr_hppb_total_curr_mig_time),
-    .min_pg0_mig_time(csr_hppb_min_pg0_mig_time),
-    .max_pg0_mig_time(csr_hppb_max_pg0_mig_time),
-    .min_pgn_mig_time(csr_hppb_min_pgn_mig_time),
-    .max_pgn_mig_time(csr_hppb_max_pgn_mig_time),
-    .max_fifo_full_cnt(csr_hppb_max_fifo_full_cnt),
-    .max_fifo_empty_cnt(csr_hppb_max_fifo_empty_cnt),
-    .max_total_read_cnt(csr_hppb_max_total_read_cnt),
-    .max_total_write_cnt(csr_hppb_max_total_write_cnt),
-    .hppb_rresp_err_cnt(csr_hppb_rresp_err_cnt),
-    .hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
-    .max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
-    .max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt)
-);
-
-
-hot_page_push #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE/2)) hot_page_push_1
-(
-  // Clocks
-    .axi4_mm_clk                           (ip2hdm_clk), 
-  // Resets
-    .axi4_mm_rst_n                         (ip2hdm_reset_n),
-
-  // TODO TODO TODO
-  .src_addr(hppb1_src_addr),
-  .new_addr_available(hppb_new_addr_available),
-  .dst_addr(hppb1_dst_addr),
-
-  .mig_done_cnt(hppb1_mig_done_cnt),
-
-  .atleast_one_valid_src(atleast_one_valid_src1),
-
-  .csr_aruser(csr_aruser),
-  .csr_awuser(csr_awuser),
-
-  // hot page push axi write: hppb_
-    .hppb_awid(hppb1_awid),
-    .hppb_awaddr(hppb1_awaddr), 
-    .hppb_awuser(hppb1_awuser),
-    .hppb_awvalid(hppb1_awvalid),
-    .hppb_awready(hppb1_awready),
-
-    .hppb_wdata(hppb1_wdata),
-    .hppb_wstrb(hppb1_wstrb),
-    .hppb_wlast(hppb1_wlast),
-    .hppb_wvalid(hppb1_wvalid),
-    .hppb_wready(hppb1_wready),
-
-    .hppb_bid(hppb1_bid),
-    .hppb_bresp(hppb1_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_buser(hppb1_buser),  // must tie to 4'b0000
-    .hppb_bvalid(hppb1_bvalid),
-    .hppb_bready(hppb1_bready),
-
-  // hot page push axi read: hppb_
-    .hppb_arid(hppb1_arid),
-    .hppb_araddr(hppb1_araddr),
-    .hppb_arvalid(hppb1_arvalid),
-    .hppb_aruser(hppb1_aruser),
-    .hppb_arready(hppb1_arready),
-
-    .hppb_rid(hppb1_rid),
-    .hppb_rdata(hppb1_rdata),  
-    .hppb_rresp(hppb1_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_rlast(hppb1_rlast),  // no use
-    .hppb_ruser(hppb1_ruser),  // no use
-    .hppb_rvalid(hppb1_rvalid),
-    .hppb_rready(hppb1_rready),
-
-
-    .min_mig_time(),
-    .max_mig_time(),
-    .total_curr_mig_time(),
-    .min_pg0_mig_time(),
-    .max_pg0_mig_time(),
-    .min_pgn_mig_time(),
-    .max_pgn_mig_time(),
-    .max_fifo_full_cnt(),
-    .max_fifo_empty_cnt(),
-    .max_total_read_cnt(),
-    .max_total_write_cnt(),
-    .hppb_rresp_err_cnt(),
-    .hppb_bresp_err_cnt(),
-    .max_outstanding_rreq_cnt(),
-    .max_outstanding_wreq_cnt()
-);
-
-
-hot_addr_push hot_addr_push
-(
-  // Clocks
-    .axi4_mm_clk                           (ip2hdm_clk), 
-  // Resets
-    .axi4_mm_rst_n                         (ip2hdm_reset_n),
-  
-  // Other signals
-    .hapb_head(csr_hapb_head_eclk),
-    .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt),
-    .atleast_one_valid_src(atleast_one_valid_src | atleast_one_valid_src1),
-    .hapb_valid_count(csr_hapb_valid_count),
-
-    .page_mig_addr_en           (page_mig_addr_en_eclk),
-    .page_mig_addr              (page_mig_addr_eclk),
-    .page_mig_addr_ready        (page_mig_addr_ready),
-
-    .cxl_start_pa           (cxl_start_pa),
-    .cxl_addr_offset        (cxl_addr_offset),
-    .csr_addr_ub            (csr_addr_ub),
-    .csr_addr_lb            (csr_addr_lb),
-
-
-    .csr_awuser(csr_awuser),
-
-  // hot addr push axi write: hapb_
-    .hapb_awid(hapb_awid),
-    .hapb_awaddr(hapb_awaddr), 
-    .hapb_awuser(hapb_awuser),
-    .hapb_awvalid(hapb_awvalid),
-    .hapb_awready(hapb_awready),
-
-    .hapb_wdata(hapb_wdata),
-    .hapb_wstrb(hapb_wstrb),
-    .hapb_wlast(hapb_wlast),
-    .hapb_wvalid(hapb_wvalid),
-    .hapb_wready(hapb_wready),
-
-    .hapb_bid(hapb_bid),
-    .hapb_bresp(hapb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hapb_buser(hapb_buser),  // must tie to 4'b0000
-    .hapb_bvalid(hapb_bvalid),
-    .hapb_bready(hapb_bready)
-
-);
-
-  bus_synchronizer #(
-    .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_hapb_head_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (csr_hapb_head_aclk),
-    .data_out (csr_hapb_head_eclk)
-  );
-
-hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handler
-(
-  // HPPB DEBUGGING
-    .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),
-
-  .axi4_mm_clk                           (ip2hdm_clk), 
-  .axi4_mm_rst_n                         (ip2hdm_reset_n),
-
-  .src_addr(hppb_src_addr),
-  .src_addr1(hppb1_src_addr),
-  .dst_addr(hppb_addr_pair_addr),
-  .dst_addr1(hppb1_dst_addr),
-
-  .addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_eclk), //   Fixed after being set to something useful?
-  .addr_pair_vld_cnt(csr_addr_pair_vld_cnt_eclk),
-  .huge_pg_addr_pair(csr_huge_pg_addr_pair_eclk),
-  .new_addr_available(hppb_new_addr_available),
-  .mig_done_cnt_buf_pAddr(csr_mig_done_cnt_buf_pAddr_eclk), //   Fixed after being set to something useful?
-
-  .csr_aruser(csr_aruser),
-
-  .hapb_wdata(hapb_wdata),
-  .hapb_wvalid(hapb_wvalid),
-  .hapb_wready(hapb_wready),
-
-  // ADDR PAIR AXI READ: hppb_addr_pair_
-    .hppb_addr_pair_arid(hppb_addr_pair_arid),
-    .hppb_addr_pair_araddr(hppb_addr_pair_araddr),
-    .hppb_addr_pair_arvalid(hppb_addr_pair_arvalid),
-    .hppb_addr_pair_aruser(hppb_addr_pair_aruser),
-    .hppb_addr_pair_arready(hppb_addr_pair_arready),
-
-    .hppb_addr_pair_rid(hppb_addr_pair_rid),
-    .hppb_addr_pair_rdata(hppb_addr_pair_rdata),  
-    .hppb_addr_pair_rresp(hppb_addr_pair_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_addr_pair_rlast(hppb_addr_pair_rlast),  // no use
-    .hppb_addr_pair_ruser(hppb_addr_pair_ruser),  // no use
-    .hppb_addr_pair_rvalid(hppb_addr_pair_rvalid),
-    .hppb_addr_pair_rready(hppb_addr_pair_rready),
-
-  // MIG DONE CNT AXI WRITE: hppb_mig_done_
-    .hppb_mig_done_awid(hppb_mig_done_awid),
-    .hppb_mig_done_awaddr(hppb_mig_done_awaddr),
-    .hppb_mig_done_awuser(hppb_mig_done_awuser),
-    .hppb_mig_done_awvalid(hppb_mig_done_awvalid),
-    .hppb_mig_done_awready(hppb_mig_done_awready),
-    
-    .hppb_mig_done_wdata(hppb_mig_done_wdata),
-    .hppb_mig_done_wstrb(hppb_mig_done_wstrb),
-    .hppb_mig_done_wlast(hppb_mig_done_wlast),
-    .hppb_mig_done_wvalid(hppb_mig_done_wvalid),
-    .hppb_mig_done_wready(hppb_mig_done_wready),
-    
-    .hppb_mig_done_bid(hppb_mig_done_bid),
-    .hppb_mig_done_bresp(hppb_mig_done_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_mig_done_buser(hppb_mig_done_buser),  // must tie to 4'b0000
-    .hppb_mig_done_bvalid(hppb_mig_done_bvalid),
-    .hppb_mig_done_bready(hppb_mig_done_bready),
-
-    .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt)
-
-);
-
-
 `ifdef BYPASS_ATE 
 
-
-  bus_synchronizer #(
-    .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_addr_pair_buf_pAddr_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (csr_addr_pair_buf_pAddr_aclk),
-    .data_out (csr_addr_pair_buf_pAddr_eclk)
-  );
-
-  more_sync_bus_synchronizer #(
-    .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_addr_pair_vld_cnt_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (csr_addr_pair_vld_cnt_aclk),
-    .data_out (csr_addr_pair_vld_cnt_eclk)
-  );
-
-  bus_synchronizer #(
-    .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_huge_pg_addr_pair_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (csr_huge_pg_addr_pair_aclk),
-    .data_out (csr_huge_pg_addr_pair_eclk)
-  );
-
-  bus_synchronizer #(
-    .SIGNAL_WIDTH(64)
-  ) bus_synchronizer_mig_done_cnt_buf_pAddr_inst (
-    .clk      (ip2hdm_clk),
-    .data_in  (csr_mig_done_cnt_buf_pAddr_aclk),
-    .data_out (csr_mig_done_cnt_buf_pAddr_eclk)
-  );
-
-
-hot_page_push_arbiter hot_page_push_arbiter
-(
+func_offload func_offload(
   .axi4_mm_clk                           (ip2hdm_clk), 
   .axi4_mm_rst_n                         (ip2hdm_reset_n),
 
-  // ACTUAL AXI SIGNALS
-  // AXI-MM interface - write address channel
-    .awid                                  (axi1_awid),
-    .awaddr                                (axi1_awaddr), 
-    .awlen                                 (axi1_awlen),
-    .awsize                                (axi1_awsize),
-    .awburst                               (axi1_awburst),
-    .awprot                                (axi1_awprot),
-    .awqos                                 (axi1_awqos),
-    .awuser                                (axi1_awuser),
-    .awvalid                               (axi1_awvalid),
-    .awcache                               (axi1_awcache),
-    .awlock                                (axi1_awlock),
-    .awregion                              (axi1_awregion),
-    .awatop                                (axi1_awatop),
-    .awready                               (axi1_awready),
-    
-  // AXI-MM interface - write data channel
-    .wdata                                 (axi1_wdata),
-    .wstrb                                 (axi1_wstrb),
-    .wlast                                 (axi1_wlast),
-    .wuser                                 (axi1_wuser),
-    .wvalid                                (axi1_wvalid),
-    .wready                                (axi1_wready),
-    
-  // AXI-MM interface - write response channel
-    .bid                                  (axi1_bid),
-    .bresp                                (axi1_bresp),
-    .buser                                (axi1_buser),
-    .bvalid                               (axi1_bvalid),
-    .bready                               (axi1_bready),
-    
-  // AXI-MM interface - read address channel
-    .arid                                  (axi1_arid),
-    .araddr                                (axi1_araddr),
-    .arlen                                 (axi1_arlen),
-    .arsize                                (axi1_arsize),
-    .arburst                               (axi1_arburst),
-    .arprot                                (axi1_arprot),
-    .arqos                                 (axi1_arqos),
-    .aruser                                (axi1_aruser),
-    .arvalid                               (axi1_arvalid),
-    .arcache                               (axi1_arcache),
-    .arlock                                (axi1_arlock),
-    .arregion                              (axi1_arregion),
-    .arready                               (axi1_arready),
+  // CSR based
+  .csr_aruser(csr_aruser),
+  .csr_awuser(csr_awuser),
 
-  // AXI-MM interface - read response channel
-    .rid                                   (axi1_rid),
-    .rdata                                 (axi1_rdata),
-    .rresp                                 (axi1_rresp),
-    .rlast                                 (axi1_rlast),
-    .ruser                                 (axi1_ruser),
-    .rvalid                                (axi1_rvalid),
-    .rready                                (axi1_rready),
+  .offload_func_call_cnt(csr_offload_func_call_cnt_eclk),
+  .offload_func_call_base(csr_offload_func_call_base_eclk),
+  .offload_func_complete_cnt(csr_offload_func_complete_cnt),
 
-
-  // ACTUAL AXI SIGNALS MM 0
-  // AXI-MM interface - write address channel
-    .awid1                                  (axi0_awid),
-    .awaddr1                                (axi0_awaddr), 
-    .awlen1                                 (axi0_awlen),
-    .awsize1                                (axi0_awsize),
-    .awburst1                               (axi0_awburst),
-    .awprot1                                (axi0_awprot),
-    .awqos1                                 (axi0_awqos),
-    .awuser1                                (axi0_awuser),
-    .awvalid1                               (axi0_awvalid),
-    .awcache1                               (axi0_awcache),
-    .awlock1                                (axi0_awlock),
-    .awregion1                              (axi0_awregion),
-    .awatop1                                (axi0_awatop),
-    .awready1                               (axi0_awready),
-    
-  // AXI-MM interface - write data channel
-    .wdata1                                 (axi0_wdata),
-    .wstrb1                                 (axi0_wstrb),
-    .wlast1                                 (axi0_wlast),
-    .wuser1                                 (axi0_wuser),
-    .wvalid1                                (axi0_wvalid),
-    .wready1                                (axi0_wready),
-    
-  // AXI-MM interface - write response channel
-    .bid1                                  (axi0_bid),
-    .bresp1                                (axi0_bresp),
-    .buser1                                (axi0_buser),
-    .bvalid1                               (axi0_bvalid),
-    .bready1                               (axi0_bready),
-    
-  // AXI-MM interface - read address channel
-    .arid1                                  (axi0_arid),
-    .araddr1                                (axi0_araddr),
-    .arlen1                                 (axi0_arlen),
-    .arsize1                                (axi0_arsize),
-    .arburst1                               (axi0_arburst),
-    .arprot1                                (axi0_arprot),
-    .arqos1                                 (axi0_arqos),
-    .aruser1                                (axi0_aruser),
-    .arvalid1                               (axi0_arvalid),
-    .arcache1                               (axi0_arcache),
-    .arlock1                                (axi0_arlock),
-    .arregion1                              (axi0_arregion),
-    .arready1                               (axi0_arready),
-
-  // AXI-MM interface - read response channel
-    .rid1                                   (axi0_rid),
-    .rdata1                                 (axi0_rdata),
-    .rresp1                                 (axi0_rresp),
-    .rlast1                                 (axi0_rlast),
-    .ruser1                                 (axi0_ruser),
-    .rvalid1                                (axi0_rvalid),
-    .rready1                                (axi0_rready),
-
-
-  // HOT ADDRESS PUSH AXI WRITE: hapb_
-    .hapb_awid(hapb_awid),
-    .hapb_awaddr(hapb_awaddr), 
-    .hapb_awuser(hapb_awuser),
-    .hapb_awvalid(hapb_awvalid),
-    .hapb_awready(hapb_awready),
-
-    .hapb_wdata(hapb_wdata),
-    .hapb_wstrb(hapb_wstrb),
-    .hapb_wlast(hapb_wlast),
-    .hapb_wvalid(hapb_wvalid),
-    .hapb_wready(hapb_wready),
-
-    .hapb_bid(hapb_bid),
-    .hapb_bresp(hapb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hapb_buser(hapb_buser),  // must tie to 4'b0000
-    .hapb_bvalid(hapb_bvalid),
-    .hapb_bready(hapb_bready),
-
-  // HOT PAGE PUSH AXI WRITE: hppb_
-    .hppb_awid(hppb_awid),
-    .hppb_awaddr(hppb_awaddr), 
-    .hppb_awuser(hppb_awuser),
-    .hppb_awvalid(hppb_awvalid),
-    .hppb_awready(hppb_awready),
-
-    .hppb_wdata(hppb_wdata),
-    .hppb_wstrb(hppb_wstrb),
-    .hppb_wlast(hppb_wlast),
-    .hppb_wvalid(hppb_wvalid),
-    .hppb_wready(hppb_wready),
-
-    .hppb_bid(hppb_bid),
-    .hppb_bresp(hppb_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_buser(hppb_buser),  // must tie to 4'b0000
-    .hppb_bvalid(hppb_bvalid),
-    .hppb_bready(hppb_bready),
-
-  // HOT PAGE PUSH AXI READ: hppb_
-    .hppb_arid(hppb_arid),
-    .hppb_araddr(hppb_araddr),
-    .hppb_arvalid(hppb_arvalid),
-    .hppb_aruser(hppb_aruser),
-    .hppb_arready(hppb_arready),
-
-    .hppb_rid(hppb_rid),
-    .hppb_rdata(hppb_rdata),  
-    .hppb_rresp(hppb_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_rlast(hppb_rlast),  // no use
-    .hppb_ruser(hppb_ruser),  // no use
-    .hppb_rvalid(hppb_rvalid),
-    .hppb_rready(hppb_rready),
-
-
-  // HOT PAGE PUSH 1 AXI WRITE: hppb1_
-    .hppb1_awid(hppb1_awid),
-    .hppb1_awaddr(hppb1_awaddr), 
-    .hppb1_awuser(hppb1_awuser),
-    .hppb1_awvalid(hppb1_awvalid),
-    .hppb1_awready(hppb1_awready),
-
-    .hppb1_wdata(hppb1_wdata),
-    .hppb1_wstrb(hppb1_wstrb),
-    .hppb1_wlast(hppb1_wlast),
-    .hppb1_wvalid(hppb1_wvalid),
-    .hppb1_wready(hppb1_wready),
-
-    .hppb1_bid(hppb1_bid),
-    .hppb1_bresp(hppb1_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb1_buser(hppb1_buser),  // must tie to 4'b0000
-    .hppb1_bvalid(hppb1_bvalid),
-    .hppb1_bready(hppb1_bready),
-
-  // HOT PAGE PUSH AXI READ: hppb1_
-    .hppb1_arid(hppb1_arid),
-    .hppb1_araddr(hppb1_araddr),
-    .hppb1_arvalid(hppb1_arvalid),
-    .hppb1_aruser(hppb1_aruser),
-    .hppb1_arready(hppb1_arready),
-
-    .hppb1_rid(hppb1_rid),
-    .hppb1_rdata(hppb1_rdata),  
-    .hppb1_rresp(hppb1_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb1_rlast(hppb1_rlast),  // no use
-    .hppb1_ruser(hppb1_ruser),  // no use
-    .hppb1_rvalid(hppb1_rvalid),
-    .hppb1_rready(hppb1_rready),
-
-
-  // ADDR PAIR AXI READ: hppb_addr_pair_
-    .hppb_addr_pair_arid(hppb_addr_pair_arid),
-    .hppb_addr_pair_araddr(hppb_addr_pair_araddr),
-    .hppb_addr_pair_arvalid(hppb_addr_pair_arvalid),
-    .hppb_addr_pair_aruser(hppb_addr_pair_aruser),
-    .hppb_addr_pair_arready(hppb_addr_pair_arready),
-
-    .hppb_addr_pair_rid(hppb_addr_pair_rid),
-    .hppb_addr_pair_rdata(hppb_addr_pair_rdata),  
-    .hppb_addr_pair_rresp(hppb_addr_pair_rresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_addr_pair_rlast(hppb_addr_pair_rlast),  // no use
-    .hppb_addr_pair_ruser(hppb_addr_pair_ruser),  // no use
-    .hppb_addr_pair_rvalid(hppb_addr_pair_rvalid),
-    .hppb_addr_pair_rready(hppb_addr_pair_rready),
-
-  // MIG DONE CNT AXI WRITE: hppb_mig_done_
-    .hppb_mig_done_awid(hppb_mig_done_awid),
-    .hppb_mig_done_awaddr(hppb_mig_done_awaddr),
-    .hppb_mig_done_awuser(hppb_mig_done_awuser),
-    .hppb_mig_done_awvalid(hppb_mig_done_awvalid),
-    .hppb_mig_done_awready(hppb_mig_done_awready),
-    
-    .hppb_mig_done_wdata(hppb_mig_done_wdata),
-    .hppb_mig_done_wstrb(hppb_mig_done_wstrb),
-    .hppb_mig_done_wlast(hppb_mig_done_wlast),
-    .hppb_mig_done_wvalid(hppb_mig_done_wvalid),
-    .hppb_mig_done_wready(hppb_mig_done_wready),
-    
-    .hppb_mig_done_bid(hppb_mig_done_bid),
-    .hppb_mig_done_bresp(hppb_mig_done_bresp),  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    .hppb_mig_done_buser(hppb_mig_done_buser),  // must tie to 4'b0000
-    .hppb_mig_done_bvalid(hppb_mig_done_bvalid),
-    .hppb_mig_done_bready(hppb_mig_done_bready)
-
+  .w_ch(axi1_ports.aw_req),
+  .r_ch(axi1_ports.ar_req)
 );
 
 `else
@@ -3038,40 +2280,15 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     .page_mig_addr_en  (page_mig_addr_en_aclk),
     .page_mig_addr     (page_mig_addr_aclk),
     
-    // for hot page pushing pushing
-    .csr_hapb_head(csr_hapb_head_aclk),
-    .csr_hapb_valid_count(csr_hapb_valid_count),
-    .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_aclk),
-    .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt_aclk),
-    .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair_aclk),
-    .csr_mig_done_cnt_buf_pAddr(csr_mig_done_cnt_buf_pAddr_aclk),
-
-    // HPPB DEBUGGING
-    .csr_hppb_test_mig_done_cnt(csr_hppb_test_mig_done_cnt),
-
-    // HPPB Performance
-      .csr_hppb_min_mig_time(csr_hppb_min_mig_time),
-      .csr_hppb_max_mig_time(csr_hppb_max_mig_time),
-      .csr_hppb_total_curr_mig_time(csr_hppb_total_curr_mig_time),
-      .csr_hppb_min_pg0_mig_time(csr_hppb_min_pg0_mig_time),
-      .csr_hppb_max_pg0_mig_time(csr_hppb_max_pg0_mig_time),
-      .csr_hppb_min_pgn_mig_time(csr_hppb_min_pgn_mig_time),
-      .csr_hppb_max_pgn_mig_time(csr_hppb_max_pgn_mig_time),
-      .csr_hppb_max_fifo_full_cnt(csr_hppb_max_fifo_full_cnt),
-      .csr_hppb_max_fifo_empty_cnt(csr_hppb_max_fifo_empty_cnt),
-      .csr_hppb_max_total_read_cnt(csr_hppb_max_total_read_cnt),
-      .csr_hppb_max_total_write_cnt(csr_hppb_max_total_write_cnt),
-      .csr_hppb_rresp_err_cnt(csr_hppb_rresp_err_cnt),
-      .csr_hppb_bresp_err_cnt(csr_hppb_bresp_err_cnt),
-      .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
-      .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
-
 
     .csr_aruser             (csr_aruser),
     .csr_awuser             (csr_awuser),
-    .csr_addr_ub            (csr_addr_ub),
-    .csr_addr_lb            (csr_addr_lb)
+
+    .csr_offload_func_call_cnt(csr_offload_func_call_cnt_aclk),
+    .csr_offload_func_call_base(csr_offload_func_call_base_aclk),
+    .csr_offload_func_complete_cnt(csr_offload_func_complete_cnt)
  );
+
 
 
 
@@ -3083,15 +2300,6 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
  afu_top afu_top_inst(
     .afu_clk                          ( ip2hdm_clk               ),
     .afu_rstn                         ( ip2hdm_reset_n_f         ),
-
-    // hot page tracker interface
-    .page_query_en              (page_query_en),
-    .page_query_ready           (page_query_ready),
-    .page_mig_addr_en           (page_mig_addr_en_eclk),
-    .page_mig_addr              (page_mig_addr_eclk),
-    .page_mig_addr_ready        (1'b1),
-    .mem_chan_rd_en             (mem_chan_rd_en),    
-
     .cxlip2iafu_to_mc_axi4            ( cxlip2iafu_to_mc_axi4    ), 
     .iafu2mc_to_mc_axi4               ( iafu2mc_to_mc_axi4       ), 
     .mc2iafu_from_mc_axi4             ( mc2iafu_from_mc_axi4     ), 
