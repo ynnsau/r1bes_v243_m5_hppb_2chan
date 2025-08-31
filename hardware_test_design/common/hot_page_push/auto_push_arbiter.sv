@@ -1,21 +1,19 @@
-// TAGGING changes with FIXME when needing to switch back to HAPB
 module auto_push_arbiter
 import mig_params::*;
 (
     input logic                      axi4_mm_clk,
     input logic                      axi4_mm_rst_n,
 
-    input logic [511:0]              hapb_wdata,  // based on HAPB AXI writes
-    input logic                      hapb_wvalid,
-    input logic                      hapb_wready,
-
     output logic [63:0]              csr_ahppb_mig_start_cnt,
     output logic [63:0]              csr_ahppb_mig_done_cnt,
-    input logic [63:0]               csr_batch_ack_cnt,
-    input logic [63:0]               csr_ahppb_batch_info[MIG_GRP_SIZE],
-    input logic [63:0]               csr_ahppb_src_addr[MIG_GRP_SIZE],
 
     output logic                     ahppb_mig_in_progress,
+    input logic                      hppb_new_addr_available,
+    input logic [63:0]               hppb_src_addr[MIG_GRP_SIZE/2],
+    input logic [63:0]               hppb_src_addr1[MIG_GRP_SIZE/2],
+    input logic [63:0]               hppb_dst_addr[MIG_GRP_SIZE/2],
+    input logic [63:0]               hppb_dst_addr1[MIG_GRP_SIZE/2],
+
     output logic [63:0]              ahppb_src_addr[MIG_GRP_SIZE],
     output logic [63:0]              ahppb_dst_addr[MIG_GRP_SIZE],
     output logic [1:0]               ahppb_ack_sts[MIG_GRP_SIZE],   // 00 == wait, 01 == ack, 10 == nack
@@ -174,43 +172,37 @@ import mig_params::*;
     end
 
 // ADDRESSES
-    logic [63:0]      old_batch_ack_cnt;
-    logic             stored_hapb_vld;
-    logic [511:0]     stored_hapb_wdata;
-    logic [63:0]      ahppb_src_addr_curr[MIG_GRP_SIZE];
+    logic [63:0]        ahppb_src_addr_curr[MIG_GRP_SIZE];
 
-    logic             new_dst_available;
+    logic               new_addr_pair_available;
+
+    logic [63:0]        ahppb_src_addr_store[MIG_GRP_SIZE];
+    logic [63:0]        ahppb_dst_addr_store[MIG_GRP_SIZE];
 
     always_ff @( posedge axi4_mm_clk ) begin
         if (~axi4_mm_rst_n) begin
             csr_ahppb_mig_start_cnt <= '0;
 
-            ahppb_mig_in_progress <= '0;
-            stored_hapb_vld <= '0;
-            stored_hapb_wdata <= '0;
+            ahppb_src_addr_store <= '{default: '0};
+            ahppb_dst_addr_store <= '{default: '0};
             ahppb_src_addr_curr = '{default: '0};
 
-            old_batch_ack_cnt <= '1;
-            new_dst_available <= '0;
+            ahppb_mig_in_progress <= '0;
+
+            new_addr_pair_available <= '0;
 
             ahppb_ack_sts <= '{default: '0};
         end else begin
 
             ahppb_ack_sts <= '{default: '0};    // only need to raise ACK/NACK for one cycle TODO:: check if this works
 
-            if (hapb_wready && hapb_wvalid) begin
-                stored_hapb_vld <= '1;
-                stored_hapb_wdata <= hapb_wdata;
-            end
-
             if (ahppb_new_addr_available) begin
                 csr_ahppb_mig_start_cnt <= csr_ahppb_mig_start_cnt + 1'b1;
 
                 ahppb_mig_in_progress <= '1;
-                stored_hapb_vld <= '0;
 
                 ahppb_src_addr_curr <= ahppb_src_addr;
-                new_dst_available <= '0;
+                new_addr_pair_available <= '0;
             end
 
             if (new_mig_cycle_done) begin
@@ -218,11 +210,12 @@ import mig_params::*;
                 ahppb_ack_sts <= '{default: '0};
             end
 
-            if (old_batch_ack_cnt != csr_batch_ack_cnt) begin
-                new_dst_available <= '1;
-                old_batch_ack_cnt <= csr_batch_ack_cnt;
+            if (hppb_new_addr_available) begin
+                new_addr_pair_available <= '1;
                 for (int i = 0; i < MIG_GRP_SIZE; i++) begin
-                    ahppb_ack_sts[i] <= csr_ahppb_batch_info[i][63:62];
+                    ahppb_ack_sts[i] <= 2'b01; // ACK (always ACK? FIXME)
+                    ahppb_src_addr_store[i] <= i < MIG_GRP_SIZE/2 ? hppb_src_addr[i] : hppb_src_addr1[i - (MIG_GRP_SIZE/2)];
+                    ahppb_dst_addr_store[i] <= i < MIG_GRP_SIZE/2 ? hppb_dst_addr[i] : hppb_dst_addr1[i - (MIG_GRP_SIZE/2)];
                 end
             end
 
@@ -233,21 +226,12 @@ import mig_params::*;
         ahppb_src_addr = '{default:'0};
         ahppb_dst_addr = '{default:'0};
 
-        // FIXME
-        // ahppb_new_addr_available = ~ahppb_mig_in_progress && (stored_hapb_vld || (hapb_wready && hapb_wvalid)) && (new_dst_available);
-        ahppb_new_addr_available = ~ahppb_mig_in_progress && /*(stored_hapb_vld || (hapb_wready && hapb_wvalid)) &&*/ (new_dst_available);
+        ahppb_new_addr_available = ~ahppb_mig_in_progress && (new_addr_pair_available);
 
         if (ahppb_new_addr_available) begin
             for (int i = 0; i < MIG_GRP_SIZE; i++) begin
-                ahppb_src_addr[i] = csr_ahppb_src_addr[i];
-                ahppb_dst_addr[i] = {20'b0, csr_ahppb_batch_info[i][31:0], 12'b0};
-                /*
-                ahppb_dst_addr[i] = dst_addr_base + dst_base_offset*4096*MIG_GRP_SIZE + i*4096;
-                ahppb_src_addr[i] = {20'b0, stored_hapb_wdata[i*32 +: 31], 13'b0};
-                if (hapb_wready && hapb_wvalid) begin
-                    ahppb_src_addr[i] = {20'b0, hapb_wdata[i*32 +: 31], 13'b0}; // can we add we switch to control who does this?
-                end
-                */
+                ahppb_src_addr[i] = ahppb_src_addr_store[i];
+                ahppb_dst_addr[i] = ahppb_dst_addr_store[i];
             end
         end
     end

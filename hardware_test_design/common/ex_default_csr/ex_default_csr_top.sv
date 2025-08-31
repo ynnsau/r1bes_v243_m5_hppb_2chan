@@ -61,14 +61,18 @@ import mig_params::*;
    output logic [32:0]  csr_addr_ub,
    output logic [32:0]  csr_addr_lb,
 
-    output logic [5:0]  csr_aruser,
-    output logic [5:0]  csr_awuser,
-    output logic [63:0] csr_hapb_head,
-    output logic [63:0] csr_ahppb_batch_info     [MIG_GRP_SIZE],
-    output logic [63:0] csr_batch_ack_cnt,
-    output logic [63:0] csr_ahppb_src_addr       [MIG_GRP_SIZE],
-    input logic [63:0]  csr_ahppb_mig_start_cnt,
-    input logic [63:0]  csr_ahppb_mig_done_cnt,
+    output logic [5:0]   csr_aruser,
+    output logic [5:0]   csr_awuser,
+    output logic [63:0]  csr_hapb_head,
+    input logic [63:0]  csr_hapb_valid_count,
+
+    output logic [63:0]  csr_addr_pair_buf_pAddr,
+    output logic [63:0]  csr_addr_pair_vld_cnt,
+    output logic [63:0]  csr_huge_pg_addr_pair,
+    output logic [63:0]  csr_mig_done_cnt_buf_pAddr,
+
+    input logic [63:0]   csr_ahppb_mig_start_cnt,
+    input logic [63:0]   csr_ahppb_mig_done_cnt,
 
     input logic [63:0]              clst_ip_og_cnt[8],
     input logic [63:0]              clst_ip_fin_cnt[8],
@@ -110,9 +114,13 @@ import mig_params::*;
         .csr_aruser(csr_aruser),
         .csr_awuser(csr_awuser),
         .csr_hapb_head(csr_hapb_head),
-        .csr_ahppb_batch_info(csr_ahppb_batch_info),
-        .csr_batch_ack_cnt(csr_batch_ack_cnt),
-        .csr_ahppb_src_addr(csr_ahppb_src_addr),
+        .csr_hapb_valid_count(csr_hapb_valid_count),
+
+        .csr_addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr),
+        .csr_addr_pair_vld_cnt(csr_addr_pair_vld_cnt),
+        .csr_huge_pg_addr_pair(csr_huge_pg_addr_pair),
+        .csr_mig_done_cnt_buf_pAddr(csr_mig_done_cnt_buf_pAddr),
+
         .csr_ahppb_mig_start_cnt(csr_ahppb_mig_start_cnt),
         .csr_ahppb_mig_done_cnt(csr_ahppb_mig_done_cnt),
 

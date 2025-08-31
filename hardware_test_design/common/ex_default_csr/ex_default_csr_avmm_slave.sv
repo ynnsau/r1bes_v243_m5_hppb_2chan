@@ -69,11 +69,15 @@ import mig_params::*;
     output logic [5:0]   csr_aruser,
     output logic [5:0]   csr_awuser,
     output logic [63:0]  csr_hapb_head,
-    output logic [63:0]  csr_ahppb_batch_info   [MIG_GRP_SIZE],     // TODO will need only half
-    output logic [63:0]  csr_batch_ack_cnt,
-    output logic [63:0]  csr_ahppb_src_addr     [MIG_GRP_SIZE],
-    input logic [63:0]  csr_ahppb_mig_start_cnt,
-    input logic [63:0]  csr_ahppb_mig_done_cnt,
+    input logic [63:0]  csr_hapb_valid_count,
+
+    output logic [63:0]  csr_addr_pair_buf_pAddr,
+    output logic [63:0]  csr_addr_pair_vld_cnt,
+    output logic [63:0]  csr_huge_pg_addr_pair,
+    output logic [63:0]  csr_mig_done_cnt_buf_pAddr,
+
+    input logic [63:0]   csr_ahppb_mig_start_cnt,
+    input logic [63:0]   csr_ahppb_mig_done_cnt,
 
     input logic [63:0]              clst_ip_og_cnt[8],
     input logic [63:0]              clst_ip_fin_cnt[8],
@@ -178,6 +182,9 @@ import mig_params::*;
                 data[100 + 2*8 + i] <= clst_host_og_cnt[i];
                 data[100 + 3*8 + i] <= clst_host_fin_cnt[i];
             end
+
+            data[27] <= csr_hapb_valid_count;
+
 
         end
     end 
@@ -454,13 +461,14 @@ import mig_params::*;
 
         // reg_24 used for hot page pushing src_addr buff pAddr
         csr_hapb_head = data[24];
-        csr_batch_ack_cnt = data[33];
-        for (int i = 34; i < 34 + MIG_GRP_SIZE; i++) begin
-            csr_ahppb_batch_info[i-34] = data[i];
-        end
-        for (int i = (34 + MIG_GRP_SIZE); i < (34 + MIG_GRP_SIZE) + MIG_GRP_SIZE; i++) begin
-            csr_ahppb_src_addr[i-((34 + MIG_GRP_SIZE))] = data[i]; // TODO Temporary, need to replace with: HAPB pushed addresses
-        end
+        // reg_25 used for hot page pushing dst_addr buff pAddr
+        csr_addr_pair_buf_pAddr = data[25];
+        // reg_26 used for hot page pushing dst_addr buff validity count        for reading
+        csr_addr_pair_vld_cnt = data[26];
+
+        csr_huge_pg_addr_pair = data[31];
+
+        csr_mig_done_cnt_buf_pAddr = data[32];
 
         case(address_shift3) 
             'd11: begin
