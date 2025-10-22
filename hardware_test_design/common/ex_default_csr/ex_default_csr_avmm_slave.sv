@@ -30,7 +30,7 @@
 module ex_default_csr_avmm_slave 
 import mig_params::*;
 #(
-    parameter REGFILE_SIZE = 128,
+    parameter REGFILE_SIZE = 160,
     parameter UPDATE_SIZE  = 8      // first 8 read only, remaining r-w
 )(
  
@@ -73,7 +73,12 @@ import mig_params::*;
     output logic [63:0]  csr_batch_ack_cnt,
     output logic [63:0]  csr_ahppb_src_addr     [MIG_GRP_SIZE],
     input logic [63:0]  csr_ahppb_mig_start_cnt,
-    input logic [63:0]  csr_ahppb_mig_done_cnt
+    input logic [63:0]  csr_ahppb_mig_done_cnt,
+
+    input logic [63:0]              clst_ip_og_cnt[8],
+    input logic [63:0]              clst_ip_fin_cnt[8],
+    input logic [63:0]              clst_host_og_cnt[8],
+    input logic [63:0]              clst_host_fin_cnt[8]
 
 );
 
@@ -166,7 +171,15 @@ import mig_params::*;
 
             data[18] <= csr_ahppb_mig_start_cnt;
             data[19] <= csr_ahppb_mig_done_cnt;
-        end    
+
+            for (int i = 0; i < 8; i++) begin
+                data[100 + 0*8 + i] <= clst_ip_og_cnt[i];
+                data[100 + 1*8 + i] <= clst_ip_fin_cnt[i];
+                data[100 + 2*8 + i] <= clst_host_og_cnt[i];
+                data[100 + 3*8 + i] <= clst_host_fin_cnt[i];
+            end
+
+        end
     end 
 
     //Read logic

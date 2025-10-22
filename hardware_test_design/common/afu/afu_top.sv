@@ -32,6 +32,7 @@
 import ed_cxlip_top_pkg::*;
 import ed_mc_axi_if_pkg::*;
 import m5_pkg::*;
+import mig_params::*;
 
 
 module afu_top#(
@@ -67,7 +68,12 @@ module afu_top#(
     input  ed_mc_axi_if_pkg::t_to_mc_axi4    [MC_CHANNEL-1:0] cxlip2iafu_to_mc_axi4,
     output ed_mc_axi_if_pkg::t_to_mc_axi4    [MC_CHANNEL-1:0] iafu2mc_to_mc_axi4 ,
     input  ed_mc_axi_if_pkg::t_from_mc_axi4  [MC_CHANNEL-1:0] mc2iafu_from_mc_axi4,
-    output ed_mc_axi_if_pkg::t_from_mc_axi4  [MC_CHANNEL-1:0] iafu2cxlip_from_mc_axi4
+    output ed_mc_axi_if_pkg::t_from_mc_axi4  [MC_CHANNEL-1:0] iafu2cxlip_from_mc_axi4,
+
+    input logic[63:0]                               iafu_snp_page_addr[MIG_GRP_SIZE],
+    output logic                                    iafu_snp_inv[4],
+    output logic [5:0]                              iafu_snp_pg_off[4],
+    output logic [$clog2(MIG_GRP_SIZE)-1:0]         iafu_snp_idx[4]
 
 );
 localparam PAGE_ADDR_SIZE   = 22;
@@ -170,6 +176,21 @@ hot_tracker_top
   .mig_addr                 (page_mig_addr),
   .mig_addr_ready           (page_mig_addr_ready),
   .mem_chan_rd_en           (mem_chan_rd_en)
+);
+
+iafu_snooper iafu_snooper (
+
+    .afu_clk(afu_clk),
+    .afu_rstn(afu_rstn),
+    .cxlip2iafu_to_mc_axi4(cxlip2iafu_to_mc_axi4),
+    .mc2iafu_from_mc_axi4(mc2iafu_from_mc_axi4),
+
+    .iafu_snp_page_addr(iafu_snp_page_addr),
+    .iafu_snp_inv(iafu_snp_inv),
+    .iafu_snp_pg_off(iafu_snp_pg_off),
+    .iafu_snp_idx(iafu_snp_idx)//,
+
+    // input logic[63:0]   other_signals[TBD] 
 );
 
 endmodule

@@ -35,6 +35,7 @@ import mig_params::*;
     input logic [63:0]               ahppb_araddr[MIG_GRP_SIZE],
     input logic [5:0]                ahppb_aruser[MIG_GRP_SIZE],   // 4'b0000": non-cacheable, 4'b0001: cacheable shared, 4'b0010: cacheable owned
     input logic                      ahppb_arvalid[MIG_GRP_SIZE],
+    input logic                      ahppb_arvalid_intended[MIG_GRP_SIZE],
     output logic                     ahppb_arready[MIG_GRP_SIZE],
 
     output logic [11:0]              ahppb_rid[MIG_GRP_SIZE],
@@ -130,7 +131,12 @@ import mig_params::*;
     input logic                     hppb1_rlast,  // no use
     input logic                     hppb1_ruser,  // no use
     input logic                     hppb1_rvalid,
-    output logic                      hppb1_rready
+    output logic                      hppb1_rready,
+
+    output logic [63:0]              clst_ip_og_cnt[8],
+    output logic [63:0]              clst_ip_fin_cnt[8],
+    output logic [63:0]              clst_host_og_cnt[8],
+    output logic [63:0]              clst_host_fin_cnt[8]
 
 );
 
@@ -252,50 +258,42 @@ import mig_params::*;
 //      CLST_ready might cause CLST to get queued up for a while: Take care of this scenario
 
     logic using_clst_invalidate;
-    logic                     clst_invalidate_reg[MIG_GRP_SIZE];
-    logic [5:0]               clst_page_offset_reg[MIG_GRP_SIZE];
-    logic [MIG_GRP_SIZE == 1 ? 0 : ($clog2(MIG_GRP_SIZE)-1):0]    clst_inv_idx, clst_inv_idx_reg;
-    logic intended_clst_ready;
-
-    always_ff @( posedge axi4_mm_clk ) begin
-        if (~axi4_mm_rst_n) begin
-            clst_invalidate_reg <= '{default: '0};
-            clst_page_offset_reg <= '{default: '0};
-            clst_inv_idx_reg <= '0;
-        end else begin
-            if (using_clst_invalidate) begin
-                clst_invalidate_reg <= clst_invalidate;
-                clst_page_offset_reg <= clst_page_offset;
-                clst_inv_idx_reg <= clst_inv_idx;
-            end
-            if (intended_clst_ready) begin
-                clst_invalidate_reg <= '{default: '0};
-            end
-        end
-    end
-
+    logic matching_clst;
     always_comb begin
-        clst_invalidate = clst_invalidate_reg;
-        clst_page_offset = clst_page_offset_reg;
-        clst_inv_idx = clst_inv_idx_reg;
+        clst_invalidate = '{default: '0};//clst_invalidate_reg;
+        clst_page_offset = '{default: '0};
+        // clst_inv_idx = clst_inv_idx_reg;
 
         using_clst_invalidate = '0;
-    
+        matching_clst = '0;
         for (int i = 0; i < MIG_GRP_SIZE; i++) begin
-            if (clst_invalidate_common && (clst_page_offset_common[51:6] == ahppb_src_addr_curr[i][51:6])) begin
+            if (/*csr_ahppb_clst_en != '0 &&*/ clst_invalidate_common && (clst_page_offset_common[51:12] == ahppb_src_addr_curr[i][51:12])) begin
                 // clst_invalidate[i] = '1; // TODO   
-                clst_invalidate[i] = '0;       
-                clst_page_offset[i] = clst_page_offset_common[5:0];
+                // clst_page_offset[i] = clst_page_offset_common[11:6];
                 // using_clst_invalidate = '1;      // TODO
-                using_clst_invalidate = '0;
-                clst_inv_idx = i;
+                matching_clst = '1;
                 break;
             end
         end
 
-        clst_ready = '1;//ahppb_arvalid[clst_inv_idx] & ahppb_arready[clst_inv_idx];
-        intended_clst_ready = ahppb_arvalid[clst_inv_idx] & ahppb_arready[clst_inv_idx];
+        clst_ready = '1;
     end
+
+always_ff @( posedge axi4_mm_clk ) begin
+    if (!axi4_mm_rst_n) begin
+        clst_ip_og_cnt <= '{default: '0};
+        clst_ip_fin_cnt <= '{default: '0};
+        clst_host_og_cnt <= '{default: '0};
+        clst_host_fin_cnt <= '{default: '0};
+    end else begin
+        if (matching_clst) begin
+            clst_ip_og_cnt[clst_page_offset_common[55:52]] <= clst_ip_og_cnt[clst_page_offset_common[55:52]] + 1'b1;
+            clst_ip_fin_cnt[clst_page_offset_common[59:56]] <= clst_ip_fin_cnt[clst_page_offset_common[59:56]] + 1'b1;
+            clst_host_og_cnt[clst_page_offset_common[63:60]] <= clst_host_og_cnt[clst_page_offset_common[63:60]] + 1'b1;
+            clst_host_fin_cnt[clst_page_offset_common[67:64]] <= clst_host_fin_cnt[clst_page_offset_common[67:64]] + 1'b1;
+        end
+    end
+end
 
 // WRITE
 
@@ -445,7 +443,7 @@ import mig_params::*;
         ahppb_arready = '{default: '0};
         chosen_ar_pg = '0;
         for (int i = MIG_GRP_SIZE/2 - 1; i >= 0; i--) begin
-            if (ahppb_arvalid[i]) begin     // 0th page has the highest priority
+            if (ahppb_arvalid_intended[i]) begin     // 0th page has the highest priority
                 chosen_ar_pg = i;
             end
         end
@@ -459,7 +457,7 @@ import mig_params::*;
 
         chosen_ar_pg1 = (MIG_GRP_SIZE/2);
         for (int i = MIG_GRP_SIZE - 1; i >= MIG_GRP_SIZE/2; i--) begin
-            if (ahppb_arvalid[i]) begin     // 0th page has the highest priority
+            if (ahppb_arvalid_intended[i]) begin     // 0th page has the highest priority
                 chosen_ar_pg1 = i;
             end
         end

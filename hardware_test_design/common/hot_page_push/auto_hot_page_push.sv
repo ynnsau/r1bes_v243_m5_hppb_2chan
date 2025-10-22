@@ -11,6 +11,11 @@ import mig_params::*;
     input logic                             clst_invalidate,
     input logic  [5:0]                      clst_page_offset,           // assuming all special logic is handled outside, this is just page offset
 
+    output logic[63:0]                      iafu_snp_page_addr,
+    input logic                             iafu_snp_inv[4],
+    input logic [5:0]                       iafu_snp_pg_off[4],
+    input logic [$clog2(MIG_GRP_SIZE)-1:0]  iafu_snp_idx[4],
+
     output logic [63:0]                     mig_done_cnt,
 
     input logic [5:0]                       csr_aruser,
@@ -28,6 +33,7 @@ import mig_params::*;
     output logic [63:0]                     ahppb_araddr,
     output logic [5:0]                      ahppb_aruser,   // 4'b0000": non-cacheable, 4'b0001: cacheable shared, 4'b0010: cacheable owned
     output logic                            ahppb_arvalid,
+    output logic                            ahppb_arvalid_intended,
     input                                   ahppb_arready,
 
 // read response channel
@@ -74,10 +80,58 @@ import mig_params::*;
 // 1'b1 = non-cache read, issued during copy_type == '1 sequentially
 
 // HPPB FIFO
-    logic fifo_wrreq, fifo_rdreq, fifo_full, fifo_empty;
-    logic [517:0] fifo_rdata, fifo_wdata; // page_offset, data
-    logic               nack_raised;
-    logic               ack_raised;
+    logic                               fifo_wrreq, fifo_rdreq, fifo_full, fifo_empty;
+    logic [517:0]                       fifo_rdata, fifo_wdata; // page_offset, data
+    logic                               nack_raised;
+    logic                               ack_raised;
+
+    enum logic {
+        STATE_RD_RESET,
+        STATE_RD_ADDR
+    } state_rd, next_state_rd;
+    
+    typedef enum bit {
+        cache_own_rd_code  = 1'b0,
+        non_cache_rd_code  = 1'b1
+    } read_code_type;
+
+    logic                               mig_done_cnt_incr;
+    logic                               mig_is_ongoing;
+
+    logic [1:0]                         old_ack_sts;
+    logic                               just_started_rd;
+
+    logic [63:0]                        src_addr_base;
+    logic [5:0]                         rd_pg_offset;
+
+    logic                               do_axi_read_work;
+    logic [511:0]                       ahppb_rdata_reg1, ahppb_rdata_reg2, bram_rdata;
+    logic [11:0]                        ahppb_rid_reg1, ahppb_rid_reg2;
+    logic                               ahppb_rvld_reg1, ahppb_rvld_reg2;
+    logic                               update_bram;
+    logic [PG_NUM_ENTRIES - 1:0]        local_data_array_vld;
+    logic [PG_NUM_ENTRIES - 1:0]        data_array_dirty;
+
+    logic                               copy_type;   // 0 == initial, 1 == post-ack
+    logic                               new_data_in_bram, stale_data_in_bram;
+
+    enum logic [1:0] {
+        STATE_WR_RESET,
+        STATE_WR_ADDR,
+        STATE_WR_DATA
+    } state_wr, next_state_wr;
+
+    logic                               do_axi_write_work;
+    logic [511:0]                       axi_wdata_stored;
+    logic [63:0]                        dst_addr_base;
+
+    logic [63:0]                        curr_wreq_cnt;
+    logic [63:0]                        curr_rreq_cnt;
+    logic                               wait_for_outgoing_req_to_die;       // if NACK happens randomly
+
+    (* preserve_for_debug *) logic      ack_sts_change /* synthesis keep */;
+
+    logic rd_pg_offset_non_zero;
 
     fifo_ahppb fifo_ahppb_data (
         .aclr (~axi4_mm_rst_n || nack_raised),
@@ -90,43 +144,13 @@ import mig_params::*;
         .empty (fifo_empty)     //   output,   width = 1,            .empty
     );
 
-    logic               mig_done_cnt_incr;
-    logic               mig_is_ongoing;
-
-    logic [1:0]        old_ack_sts;
-
-    (* preserve_for_debug *) logic        ack_sts_change /* synthesis keep */;
     assign ack_sts_change = old_ack_sts != ack_sts;
-
     assign  ack_raised  = mig_is_ongoing && (old_ack_sts != ack_sts) && (ack_sts == 2'b01);   // TODO assumes that sts only changes once per batch
     assign  nack_raised = mig_is_ongoing && (old_ack_sts != ack_sts) && (ack_sts == 2'b10);
 
 /* ---------------------------------
     AXI Read
 -----------------------------------*/
-
-    enum logic {
-        STATE_RD_RESET,
-        STATE_RD_ADDR
-    } state_rd, next_state_rd;
-    
-    typedef enum bit {
-        cache_own_rd_code  = 1'b0,
-        non_cache_rd_code  = 1'b1
-    } read_code_type;
-
-    logic [63:0]                        src_addr_base;
-    logic [5:0]                         rd_pg_offset;
-
-    logic                               do_axi_read_work;
-    logic [511:0]                       ahppb_rdata_reg1, ahppb_rdata_reg2, bram_rdata;
-    logic [11:0]                        ahppb_rid_reg1, ahppb_rid_reg2;
-    logic                               ahppb_rvld_reg1, ahppb_rvld_reg2;
-    logic                               update_bram;
-    logic [PG_NUM_ENTRIES - 1:0]        local_data_array_vld;
-
-    logic                               copy_type;   // 0 == initial, 1 == post-ack
-    logic                               new_data_in_bram, stale_data_in_bram;
 
 	bram_ahppb bram_ahppb (
 		.data      (stale_data_in_bram ? ahppb_rdata_reg2 : ahppb_rdata),      //   input,  width = 512,      data.datain
@@ -140,10 +164,11 @@ import mig_params::*;
 
     assign  update_bram =  mig_is_ongoing & (~nack_raised) & 
                             (new_data_in_bram || stale_data_in_bram);
-    
     assign new_data_in_bram = (ahppb_rready & ahppb_rvalid & (copy_type == 1'b0));      // basically when the data is really "new"
-    
-    assign stale_data_in_bram = (ahppb_rvld_reg2 && copy_type == 1'b1 && ahppb_rid_reg2[10] == non_cache_rd_code && (local_data_array_vld[ahppb_rid_reg2[5:0]] == '0 || bram_rdata != ahppb_rdata_reg2));    // no need to "update the bram data" itself in this case
+    assign stale_data_in_bram = (ahppb_rvld_reg2 && copy_type == 1'b1 
+                                && ahppb_rid_reg2[10] == non_cache_rd_code 
+                                && (local_data_array_vld[ahppb_rid_reg2[5:0]] == '0 
+                                    || bram_rdata != ahppb_rdata_reg2));    // no need to "update the bram data" itself in this case
 
     function void set_rd_default();
         ahppb_arvalid = 1'b0;
@@ -154,25 +179,25 @@ import mig_params::*;
         ahppb_rready = 1'b0;
     endfunction
 
-    logic just_started_rd;
 
     assign debug_signal_3 = ~fifo_full & mig_is_ongoing & ~nack_raised;
     assign debug_signal_4 = src_addr_base != '0;
     assign debug_signal_5 = just_started_rd || (rd_pg_offset != '0);
-
     assign do_axi_read_work =   ~fifo_full & (src_addr_base != '0) & mig_is_ongoing & ~nack_raised 
-                                & (just_started_rd || (rd_pg_offset != '0));
+                                & (just_started_rd || (rd_pg_offset_non_zero));
 
 
     always_ff @( posedge axi4_mm_clk ) begin
         if (!axi4_mm_rst_n) begin
             state_rd <= STATE_RD_RESET;
             rd_pg_offset <= '0;
+            rd_pg_offset_non_zero <= '0;
             src_addr_base <= '0;
             copy_type <= 1'b0;
             just_started_rd <= '0;
 
             local_data_array_vld <= '{default: '0};
+            data_array_dirty <= '{default: '0};
             old_ack_sts <= '0;
 
             ahppb_rdata_reg1 <= '0;
@@ -181,6 +206,7 @@ import mig_params::*;
             ahppb_rdata_reg2 <= '0;
             ahppb_rid_reg2 <= '0;
             ahppb_rvld_reg2 <= '0;
+            iafu_snp_page_addr <= '0;
 
         end else begin
             state_rd <= next_state_rd;
@@ -198,9 +224,14 @@ import mig_params::*;
                 just_started_rd <= src_addr != '0;
             end
 
-            if (ahppb_arready & ahppb_arvalid) begin
+            if (ahppb_arready & (state_rd == STATE_RD_ADDR && do_axi_read_work)) begin
                 rd_pg_offset <= rd_pg_offset + 1'b1;        // gets overwritten to 0 if ACK/NACK happened
                 just_started_rd <= '0;
+                if (rd_pg_offset == '0) begin
+                    rd_pg_offset_non_zero <= '1;
+                end else if (rd_pg_offset == '1) begin
+                    rd_pg_offset_non_zero <= '0;
+                end
             end
             if (update_bram) begin
                 if (new_data_in_bram) begin
@@ -213,16 +244,29 @@ import mig_params::*;
             if (ack_raised) begin
                 copy_type <= 1'b1;
                 rd_pg_offset <= '0;
+                rd_pg_offset_non_zero <= '0;
                 just_started_rd <= '1;
             end
 
+            if (mig_is_ongoing) begin
+                iafu_snp_page_addr <= src_addr_base;       // byte aligned address
+                for (int i = 0; i < 4; i++) begin
+                    if (iafu_snp_idx[i] == pusher_pos && iafu_snp_inv[i]) begin
+                        data_array_dirty[iafu_snp_pg_off[i]] <= '1;
+                    end
+                end
+            end
+
             if (mig_done_cnt_incr || nack_raised) begin  // mig_is_done only if copy_type == 1
+                iafu_snp_page_addr <= '0;
                 old_ack_sts <= '0;
                 copy_type <= 1'b0;
                 rd_pg_offset <= '0;
+                rd_pg_offset_non_zero <= '0;
                 just_started_rd <= '0;
                 src_addr_base <= '0;
                 local_data_array_vld <= '{default: '0};     // important, otherwise we might be breaking fifo_wrreq assumptions if data is repeated b/w pages
+                data_array_dirty <= '{default: '0};
             end
         end
     end
@@ -247,11 +291,13 @@ import mig_params::*;
 
 // Reads AXI signals + FIFO enqueue
     always_comb begin
+        ahppb_arvalid_intended = '0;
         set_rd_default();
         ahppb_rready = 1'b1;// always receive from rresp channel
         unique case(state_rd)
             STATE_RD_ADDR: begin
-                ahppb_arvalid = do_axi_read_work;
+                ahppb_arvalid_intended = do_axi_read_work;
+                ahppb_arvalid = do_axi_read_work & (~local_data_array_vld[rd_pg_offset] | data_array_dirty[rd_pg_offset]);
                 ahppb_araddr = src_addr_base + rd_pg_offset * 512/8;       // byte aligned address
                 if (copy_type == 1'b0) begin
                     ahppb_arid = {1'b0, cache_own_rd_code, {(4 - (MIG_GRP_ID_SIZE + 1)){1'b0}}, pusher_pos, rd_pg_offset};
@@ -280,17 +326,6 @@ import mig_params::*;
 /* ---------------------------------
     AXI Write
 -----------------------------------*/
-
-    enum logic [1:0] {
-        STATE_WR_RESET,
-        STATE_WR_ADDR,
-        STATE_WR_DATA
-    } state_wr, next_state_wr;
-
-    logic           do_axi_write_work;
-    logic [511:0]   axi_wdata_stored;
-    logic [63:0]    dst_addr_base;
-
 
     function void set_wr_default();
         ahppb_awvalid = 1'b0;
@@ -385,12 +420,10 @@ import mig_params::*;
     end
 
 
-    assign ahppb_ack_wait = ~mig_is_ongoing || ((~do_axi_read_work && ~do_axi_write_work) && (copy_type == 1'b0) && ~ack_raised && ~nack_raised);
+    assign ahppb_ack_wait = ~mig_is_ongoing || ((~do_axi_read_work && ~do_axi_write_work) 
+                            && (copy_type == 1'b0) && ~ack_raised && ~nack_raised);
 
 // MIGRATION DONE LOGIC
-    logic [63:0]            curr_wreq_cnt;
-    logic [63:0]            curr_rreq_cnt;
-    logic                   wait_for_outgoing_req_to_die;       // if NACK happens randomly
     always_ff @(posedge axi4_mm_clk) begin : blockName
         if (~axi4_mm_rst_n) begin
             curr_rreq_cnt <= '0;
@@ -436,67 +469,3 @@ import mig_params::*;
 
 
 endmodule
-
-
-
-// module dual_w_port_fifo_ahppb
-// #(
-//     parameter FIFO_AHPPB_DEPTH = 64,
-//     parameter FIFO_AHPPB_WIDTH = 518
-// )
-// (
-//     input logic rst,
-//     input logic [FIFO_AHPPB_WIDTH-1:0] data1,    //   input,  width = 518,  fifo_input.datain
-//     input logic wrreq1,    //   input,    width = 1,            .wrreq
-//     input logic [FIFO_AHPPB_WIDTH-1:0] data2,    //   input,  width = 518,  fifo_input.datain
-//     input logic wrreq2,    //   input,    width = 1,            .wrreq
-
-//     input logic rdreq,    //   input,    width = 1,            .rdreq
-//     input logic clock,   //   input,    width = 1,            .clk
-//     output logic [FIFO_AHPPB_WIDTH-1:0] q,    //   output, width = 518, fifo_output.dataout
-//     output logic full,     //   output,   width = 1,            .full
-//     output logic empty     //   output,   width = 1,            .empty
-// );
-//     localparam FIFO_PTR_WIDTH = $clog2(FIFO_AHPPB_DEPTH);
-
-//     logic [FIFO_AHPPB_WIDTH-1:0] fifo_data [FIFO_AHPPB_DEPTH];
-//     logic [FIFO_PTR_WIDTH:0] head_ptr, tail_ptr, next_tail_ptr;
-
-//     always_ff @( posedge clock ) begin
-//         if (rst) begin
-//             fifo_data <= '{default: '0};
-//             head_ptr <= '0;
-//             tail_ptr <= '0;
-//         end else begin
-//             if (rdreq) begin
-//                 head_ptr <= head_ptr + 1'b1;
-//             end
-//             if (wrreq1 && wrreq2) begin
-//                 fifo_data[tail_ptr[FIFO_PTR_WIDTH-1:0]] <= data1;
-//                 fifo_data[next_tail_ptr[FIFO_PTR_WIDTH-1:0]] <= data2;
-//                 tail_ptr <= tail_ptr + 2'b10;
-//             end else if (wrreq1) begin
-//                 fifo_data[tail_ptr[FIFO_PTR_WIDTH-1:0]] <= data1;
-//                 tail_ptr <= tail_ptr + 1'b1;
-//             end else if (wrreq2) begin
-//                 fifo_data[tail_ptr[FIFO_PTR_WIDTH-1:0]] <= data2;
-//                 tail_ptr <= tail_ptr + 1'b1;
-//             end
-//         end
-//     end
-
-//     always_comb begin
-//         next_tail_ptr = tail_ptr + 1'b1;
-
-//         q = fifo_data[head_ptr[FIFO_PTR_WIDTH-1:0]];
-
-//         empty = tail_ptr == head_ptr;
-//         // basically we want to say FIFO is full if there is exactly entry left 
-//         full = next_tail_ptr[FIFO_PTR_WIDTH-1:0] == head_ptr[FIFO_PTR_WIDTH-1:0] && next_tail_ptr[FIFO_PTR_WIDTH] != head_ptr[FIFO_PTR_WIDTH];
-//         if (rst) begin
-//             empty = '1;
-//             full = '0;
-//         end
-//     end
-
-// endmodule
