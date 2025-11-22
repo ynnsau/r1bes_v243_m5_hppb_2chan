@@ -96,7 +96,7 @@ import mig_params::*;
     input logic [63:0] csr_hppb_rresp_err_cnt,
     input logic [63:0] csr_hppb_bresp_err_cnt,
     input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
+    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt,
 
    // for prefetch module
    input logic [63:0] prefetch_abt_cnt, // abort counter access

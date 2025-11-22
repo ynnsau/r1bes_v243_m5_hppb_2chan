@@ -56,43 +56,8 @@ module hot_page_push
     output logic [63:0]    max_outstanding_rreq_cnt,
     output logic [63:0]    max_outstanding_wreq_cnt,
 
-
-// read address channel
-    output logic [11:0]               hppb_arid,
-    output logic [63:0]               hppb_araddr,
-    output logic [5:0]                hppb_aruser,   // 4'b0000": non-cacheable, 4'b0001: cacheable shared, 4'b0010: cacheable owned
-    output logic                      hppb_arvalid,
-    input                             hppb_arready,
-
-// read response channel
-    input [11:0]                      hppb_rid,
-    input [511:0]                     hppb_rdata,  
-    input [1:0]                       hppb_rresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    input                             hppb_rlast,  // no use
-    input                             hppb_ruser,  // no use
-    input                             hppb_rvalid,
-    output logic                      hppb_rready,
-
-// write address channel
-    output logic [11:0]               hppb_awid,
-    output logic [63:0]               hppb_awaddr, 
-    output logic [5:0]                hppb_awuser,
-    output logic                      hppb_awvalid,
-    input                             hppb_awready,
-
-// write data channel
-    output logic [511:0]              hppb_wdata,
-    output logic [(512/8)-1:0]        hppb_wstrb,
-    output logic                      hppb_wlast,
-    output logic                      hppb_wvalid,
-    input                             hppb_wready,
-
-// write response channel
-    input [11:0]                      hppb_bid,
-    input [1:0]                       hppb_bresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    input [3:0]                       hppb_buser,  // must be tied to 4'b0000
-    input                             hppb_bvalid,
-    output logic                      hppb_bready
+    axi_ports.aw_req hppb_axi_w_ch,
+    axi_ports.ar_req hppb_axi_r_ch
 );
 
 
@@ -112,11 +77,11 @@ logic [63:0]    curr_outstanding_wreq_cnt;
     logic [($clog2(MIG_GRP_SIZE)-1) + 518:0] fifo_rdata, fifo_wdata;
 
     fifo_hppb fifo_hppb_data (
-        .data  (fifo_wdata),  //   input,  width = 520,  fifo_input.datain
+        .data  (fifo_wdata),  //   input,  width = 522,  fifo_input.datain
         .wrreq (fifo_wrreq), //   input,    width = 1,            .wrreq
         .rdreq (fifo_rdreq), //   input,    width = 1,            .rdreq
         .clock (axi4_mm_clk), //   input,    width = 1,            .clk
-        .q     (fifo_rdata),     //  output,  width = 520, fifo_output.dataout
+        .q     (fifo_rdata),     //  output,  width = 522, fifo_output.dataout
         .full  (fifo_full),  //  output,    width = 1,            .full
         .empty (fifo_empty)  //  output,    width = 1,            .empty
     );
@@ -141,12 +106,12 @@ logic    mig_done_cnt_incr;
     logic do_axi_read_work;
 
     function void set_rd_default();
-        hppb_arvalid = 1'b0;
-        hppb_arid = 'b0;
-        hppb_araddr = 'b0;
-        hppb_aruser = 'b0;
+        hppb_axi_r_ch.arvalid = 1'b0;
+        hppb_axi_r_ch.arid = 'b0;
+        hppb_axi_r_ch.araddr = 'b0;
+        hppb_axi_r_ch.aruser = 'b0;
 
-        hppb_rready = 1'b1;      // always receive from rresp channel
+        hppb_axi_r_ch.rready = 1'b1;      // always receive from rresp channel
     endfunction
 
 
@@ -179,7 +144,7 @@ logic    mig_done_cnt_incr;
                 new_rd_pg <= '1;
             end
 
-            if (hppb_arready & hppb_arvalid & ~rd_pg_num_change) begin
+            if (hppb_axi_r_ch.arready & hppb_axi_r_ch.arvalid & ~rd_pg_num_change) begin
                 rd_pg_offset <= rd_pg_offset + 1'b1;
                 new_rd_pg <= '0; // new as long as no reads have been accepted (non-zero value indicates rd_pg_offset == '0)
             end
@@ -196,7 +161,7 @@ logic    mig_done_cnt_incr;
                 end
             end
             STATE_RD_ADDR: begin
-                if (~do_axi_read_work && hppb_arready) begin //|| (hppb_arready & hppb_arvalid)) begin
+                if (~do_axi_read_work && hppb_axi_r_ch.arready) begin //|| (hppb_axi_r_ch.arready & hppb_axi_r_ch.arvalid)) begin
                     next_state_rd = STATE_RD_RESET;
                 end
             end
@@ -217,15 +182,15 @@ logic    mig_done_cnt_incr;
         fifo_wrreq = '0;
         unique case(state_rd)
             STATE_RD_ADDR: begin
-                hppb_arvalid = do_axi_read_work & ~rd_pg_num_change & (curr_outstanding_rreq_cnt < 256);  // only a valid request as long as the migration isn't stale (non-zero offset or new page), and there are spots
-                hppb_arid = {1'b0, rd_pg_num, rd_pg_offset};
-                hppb_aruser = {1'b1, csr_aruser[4:0]}; 
-                hppb_araddr = src_addr_base[rd_pg_num] + rd_pg_offset * 512/8;       // byte aligned address
+                hppb_axi_r_ch.arvalid = do_axi_read_work & ~rd_pg_num_change & (curr_outstanding_rreq_cnt < 256);  // only a valid request as long as the migration isn't stale (non-zero offset or new page), and there are spots
+                hppb_axi_r_ch.arid = {1'b0, rd_pg_num, rd_pg_offset};
+                hppb_axi_r_ch.aruser = {1'b1, csr_aruser[4:0]}; 
+                hppb_axi_r_ch.araddr = src_addr_base[rd_pg_num] + rd_pg_offset * 512/8;       // byte aligned address
             end
             default:;
         endcase
-        fifo_wdata = {hppb_rid[($clog2(MIG_GRP_SIZE)-1) + 6:0], hppb_rdata};
-        if (hppb_rready & (hppb_rvalid & hppb_rlast)) begin        // Assuming only one packet at a time, rlast?
+        fifo_wdata = {hppb_axi_r_ch.rid[($clog2(MIG_GRP_SIZE)-1) + 6:0], hppb_axi_r_ch.rdata};
+        if (hppb_axi_r_ch.rready & (hppb_axi_r_ch.rvalid & hppb_axi_r_ch.rlast)) begin        // Assuming only one packet at a time, rlast?
             fifo_wrreq = '1;
         end
 
@@ -253,16 +218,16 @@ logic    mig_done_cnt_incr;
     logic    atleast_one_valid_dst;
 
     function void set_wr_default();
-        hppb_awvalid = 1'b0;
-        hppb_awaddr = 'b0;
-        hppb_awid = 'b0;
-        hppb_awuser = 'b0; 
+        hppb_axi_w_ch.awvalid = 1'b0;
+        hppb_axi_w_ch.awaddr = 'b0;
+        hppb_axi_w_ch.awid = 'b0;
+        hppb_axi_w_ch.awuser = 'b0; 
 
-        hppb_wvalid = 1'b0;
-        hppb_wlast = 1'b0;
-        hppb_wstrb = 64'h0;
+        hppb_axi_w_ch.wvalid = 1'b0;
+        hppb_axi_w_ch.wlast = 1'b0;
+        hppb_axi_w_ch.wstrb = 64'h0;
 
-        hppb_bready = 1'b1;      // always receive from bresp channel
+        hppb_axi_w_ch.bready = 1'b1;      // always receive from bresp channel
     endfunction
 
 
@@ -285,9 +250,9 @@ logic    mig_done_cnt_incr;
         else begin
             state_wr <= next_state_wr;
 
-            if (hppb_bvalid & hppb_bready) begin
-                w_req_tracker[hppb_bid[($clog2(MIG_GRP_SIZE)-1) + 6:6]] <= w_req_tracker[hppb_bid[($clog2(MIG_GRP_SIZE)-1) + 6:6]] + 1'b1;
-                w_req_tracker_valid[hppb_bid[($clog2(MIG_GRP_SIZE)-1) + 6:6]] <= '1;
+            if (hppb_axi_w_ch.bvalid & hppb_axi_w_ch.bready) begin
+                w_req_tracker[hppb_axi_w_ch.bid[($clog2(MIG_GRP_SIZE)-1) + 6:6]] <= w_req_tracker[hppb_axi_w_ch.bid[($clog2(MIG_GRP_SIZE)-1) + 6:6]] + 1'b1;
+                w_req_tracker_valid[hppb_axi_w_ch.bid[($clog2(MIG_GRP_SIZE)-1) + 6:6]] <= '1;
             end
 
             for (int i = 0; i < MIG_GRP_SIZE; i++) begin
@@ -316,14 +281,14 @@ logic    mig_done_cnt_incr;
                 end
             end
             STATE_WR_ADDR: begin
-                if (hppb_awvalid & hppb_awready & ~(hppb_wvalid & hppb_wready)) begin
+                if (hppb_axi_w_ch.awvalid & hppb_axi_w_ch.awready & ~(hppb_axi_w_ch.wvalid & hppb_axi_w_ch.wready)) begin
                     next_state_wr = STATE_WR_DATA;
                 end else if (~do_axi_write_work) begin  // should never even trigger, the only way WR is in STATE_WR_ADDR is if the FIFO wasn't empty in the previous cycle
                     next_state_wr = STATE_WR_RESET;
                 end
             end
             STATE_WR_DATA: begin
-                if (hppb_wvalid & hppb_wready) begin
+                if (hppb_axi_w_ch.wvalid & hppb_axi_w_ch.wready) begin
                     next_state_wr = do_axi_write_work ? STATE_WR_ADDR : STATE_WR_RESET;
                 end
             end
@@ -335,27 +300,27 @@ logic    mig_done_cnt_incr;
     always_comb begin
         set_wr_default();
         fifo_rdreq = '0;
-        hppb_wdata = axi_wdata_stored;
+        hppb_axi_w_ch.wdata = axi_wdata_stored;
         unique case(state_wr)
             STATE_WR_ADDR: begin
                 // can't expect to move anything if there's nothing to move or if the page is at address zero: second condition is handled by src already
-                hppb_awvalid = ~fifo_empty & (dst_addr_base[fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:518]] != '0);
-                hppb_awuser = csr_awuser; 
-                hppb_awid = {1'b0, fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:512]};
-                hppb_awaddr = dst_addr_base[fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:518]] + fifo_rdata[517:512] * 512/8;       // byte aligned address
+                hppb_axi_w_ch.awvalid = ~fifo_empty & (dst_addr_base[fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:518]] != '0);
+                hppb_axi_w_ch.awuser = csr_awuser; 
+                hppb_axi_w_ch.awid = {1'b0, fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:512]};
+                hppb_axi_w_ch.awaddr = dst_addr_base[fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:518]] + fifo_rdata[517:512] * 512/8;       // byte aligned address
 
                 // fifo_rdreq only happens once when handshake occurs
-                fifo_rdreq = hppb_awready & ~fifo_empty;
+                fifo_rdreq = hppb_axi_w_ch.awready & ~fifo_empty;
 
-                hppb_wvalid = fifo_rdreq;
-                hppb_wlast = 1'b1;
-                hppb_wstrb = 64'hffffffffffffffff;
+                hppb_axi_w_ch.wvalid = fifo_rdreq;
+                hppb_axi_w_ch.wlast = 1'b1;
+                hppb_axi_w_ch.wstrb = 64'hffffffffffffffff;
 
             end
             STATE_WR_DATA: begin
-                hppb_wvalid = 1'b1;
-                hppb_wlast = 1'b1;
-                hppb_wstrb = 64'hffffffffffffffff;
+                hppb_axi_w_ch.wvalid = 1'b1;
+                hppb_axi_w_ch.wlast = 1'b1;
+                hppb_axi_w_ch.wstrb = 64'hffffffffffffffff;
             end
 
             default:;
@@ -552,27 +517,27 @@ logic    mig_done_cnt_incr;
             if (curr_outstanding_rreq_cnt > max_outstanding_rreq_cnt) begin
                 max_outstanding_rreq_cnt <= curr_outstanding_rreq_cnt;
             end
-            if (((hppb_arvalid & hppb_arready) & ~(hppb_rvalid & hppb_rready))) begin     // XOR
+            if (((hppb_axi_r_ch.arvalid & hppb_axi_r_ch.arready) & ~(hppb_axi_r_ch.rvalid & hppb_axi_r_ch.rready))) begin     // XOR
                 curr_outstanding_rreq_cnt <= curr_outstanding_rreq_cnt + 1'b1;
             end
-            if ((~(hppb_arvalid & hppb_arready) & (hppb_rvalid & hppb_rready))) begin
+            if ((~(hppb_axi_r_ch.arvalid & hppb_axi_r_ch.arready) & (hppb_axi_r_ch.rvalid & hppb_axi_r_ch.rready))) begin
                 curr_outstanding_rreq_cnt <= curr_outstanding_rreq_cnt - 1'b1;
             end
 
             if (curr_outstanding_wreq_cnt > max_outstanding_wreq_cnt) begin
                 max_outstanding_wreq_cnt <= curr_outstanding_wreq_cnt;
             end
-            if (((hppb_awvalid & hppb_awready) & ~(hppb_wvalid & hppb_wready))) begin     // XOR
+            if (((hppb_axi_w_ch.awvalid & hppb_axi_w_ch.awready) & ~(hppb_axi_w_ch.wvalid & hppb_axi_w_ch.wready))) begin     // XOR
                 curr_outstanding_wreq_cnt <= curr_outstanding_wreq_cnt + 1'b1;
             end
-            if ((~(hppb_awvalid & hppb_awready) & (hppb_wvalid & hppb_wready))) begin
+            if ((~(hppb_axi_w_ch.awvalid & hppb_axi_w_ch.awready) & (hppb_axi_w_ch.wvalid & hppb_axi_w_ch.wready))) begin
                 curr_outstanding_wreq_cnt <= curr_outstanding_wreq_cnt - 1'b1;
             end
 
-            if (hppb_bresp != '0) begin
+            if (hppb_axi_w_ch.bresp != '0) begin
                 hppb_bresp_err_cnt  <= hppb_bresp_err_cnt + 1'b1;
             end
-            if (hppb_rresp != '0) begin
+            if (hppb_axi_r_ch.rresp != '0) begin
                 hppb_rresp_err_cnt  <= hppb_rresp_err_cnt + 1'b1;
             end
 

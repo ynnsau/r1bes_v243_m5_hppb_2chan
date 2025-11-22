@@ -40,26 +40,7 @@ module hot_addr_push
 
     input logic [5:0]                   csr_awuser,
 
-    // write address channel
-    output logic [11:0]                 hapb_awid,
-    output logic [63:0]                 hapb_awaddr, 
-    output logic [5:0]                  hapb_awuser,
-    output logic                        hapb_awvalid,
-    input                               hapb_awready,
-
-    // write data channel
-    output logic [511:0]                hapb_wdata,
-    output logic [(512/8)-1:0]          hapb_wstrb,
-    output logic                        hapb_wlast,
-    output logic                        hapb_wvalid,
-    input                               hapb_wready,
-
-    // write response channel
-    input [11:0]                        hapb_bid,
-    input [1:0]                         hapb_bresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    input [3:0]                         hapb_buser,  // must be tied to 4'b0000
-    input                               hapb_bvalid,
-    output logic                        hapb_bready
+    axi_ports.aw_req                    hapb_axi_w_ch
 );
 
 
@@ -116,15 +97,15 @@ enum logic [4:0] {
 functions
 -----------------------------------*/
 function void set_default();
-    hapb_awvalid = 1'b0;
-    hapb_wvalid = 1'b0;
-    hapb_bready = 1'b0;
-    hapb_wdata = hot_addr_pg_ptr == '0 ? hot_addr_pg_data[((HAPB_LOCAL_BUFF_SIZE/(ADDR_SIZE-1)) - 16) * 32 +: 512] : hot_addr_pg_data[(hot_addr_pg_ptr[$clog2(HAPB_LOCAL_BUFF_SIZE/(ADDR_SIZE-1)) - 1 : 4] - 1'b1) * 512 +: 512];
-    hapb_awaddr = 'b0;
-    hapb_awid = 'b0;
-    hapb_awuser = 'b0; 
-    hapb_wlast = 1'b0;
-    hapb_wstrb = 64'h0;
+    hapb_axi_w_ch.awvalid = 1'b0;
+    hapb_axi_w_ch.wvalid = 1'b0;
+    hapb_axi_w_ch.bready = 1'b0;
+    hapb_axi_w_ch.wdata = hot_addr_pg_ptr == '0 ? hot_addr_pg_data[((HAPB_LOCAL_BUFF_SIZE/(ADDR_SIZE-1)) - 16) * 32 +: 512] : hot_addr_pg_data[(hot_addr_pg_ptr[$clog2(HAPB_LOCAL_BUFF_SIZE/(ADDR_SIZE-1)) - 1 : 4] - 1'b1) * 512 +: 512];
+    hapb_axi_w_ch.awaddr = 'b0;
+    hapb_axi_w_ch.awid = 'b0;
+    hapb_axi_w_ch.awuser = 'b0; 
+    hapb_axi_w_ch.wlast = 1'b0;
+    hapb_axi_w_ch.wstrb = 64'h0;
 
     page_mig_addr_ready = '0;
 endfunction
@@ -159,10 +140,10 @@ always_ff @(posedge axi4_mm_clk) begin
         unique case(state) 
 
             STATE_WR_SUB: begin
-                if (hapb_awvalid & hapb_awready) begin
+                if (hapb_axi_w_ch.awvalid & hapb_axi_w_ch.awready) begin
                     aw_handshake <= 1'b1;
                 end
-                if (hapb_wvalid & hapb_wready) begin  // nc-p-write can start, otherwise wait 
+                if (hapb_axi_w_ch.wvalid & hapb_axi_w_ch.wready) begin  // nc-p-write can start, otherwise wait 
                     w_handshake <= 1'b1;
                     // the next installment for HAPB has already been sent, invalidate for next request
                     hot_addr_pg_valid <= '0;
@@ -171,7 +152,7 @@ always_ff @(posedge axi4_mm_clk) begin
             end
 
             STATE_WR_SUB_RESP: begin
-                if (hapb_bvalid & hapb_bready) begin  // nc-p-write done
+                if (hapb_axi_w_ch.bvalid & hapb_axi_w_ch.bready) begin  // nc-p-write done
                     aw_handshake <= 1'b0;
                     w_handshake <= 1'b0;
 
@@ -225,19 +206,19 @@ always_comb begin
             end
         end
         STATE_WR_SUB: begin
-            if (hapb_awready & hapb_wready) begin
+            if (hapb_axi_w_ch.awready & hapb_axi_w_ch.wready) begin
                 next_state = STATE_WR_SUB_RESP;
             end
-            else if (hapb_wvalid == 1'b0) begin
-                if (hapb_awready) begin
+            else if (hapb_axi_w_ch.wvalid == 1'b0) begin
+                if (hapb_axi_w_ch.awready) begin
                     next_state = STATE_WR_SUB_RESP;
                 end
                 else begin
                     next_state = STATE_WR_SUB;
                 end
             end
-            else if (hapb_awvalid == 1'b0) begin
-                if (hapb_wready) begin
+            else if (hapb_axi_w_ch.awvalid == 1'b0) begin
+                if (hapb_axi_w_ch.wready) begin
                     next_state = STATE_WR_SUB_RESP;
                 end
                 else begin
@@ -250,7 +231,7 @@ always_comb begin
         end
 
         STATE_WR_SUB_RESP: begin
-            if (hapb_bvalid & hapb_bready) begin
+            if (hapb_axi_w_ch.bvalid & hapb_axi_w_ch.bready) begin
                 next_state = STATE_RESET; 
             end
             else begin
@@ -266,30 +247,30 @@ end
 
 always_comb begin
     set_default();
-    hapb_bready = 1'b1;
+    hapb_axi_w_ch.bready = 1'b1;
     unique case(state)
         STATE_RESET: begin
             page_mig_addr_ready = ~hot_addr_pg_ready;
         end
         STATE_WR_SUB: begin
             if (aw_handshake == 1'b0) begin
-                hapb_awvalid = 1'b1;
+                hapb_axi_w_ch.awvalid = 1'b1;
             end
             else begin
-                hapb_awvalid = 1'b0;
+                hapb_axi_w_ch.awvalid = 1'b0;
             end
-            hapb_awid = 12'd0;
-            hapb_awuser = csr_awuser; 
-            hapb_awaddr = hapb_pAddr_base + (hapb_pAddr_offset*512)/8;
+            hapb_axi_w_ch.awid = 12'd0;
+            hapb_axi_w_ch.awuser = csr_awuser; 
+            hapb_axi_w_ch.awaddr = hapb_pAddr_base + (hapb_pAddr_offset*512)/8;
 
             if (w_handshake == 1'b0) begin
-                hapb_wvalid = 1'b1;
+                hapb_axi_w_ch.wvalid = 1'b1;
             end
             else begin
-                hapb_wvalid = 1'b0;
+                hapb_axi_w_ch.wvalid = 1'b0;
             end
-            hapb_wlast = 1'b1;
-            hapb_wstrb = 64'hffffffffffffffff;
+            hapb_axi_w_ch.wlast = 1'b1;
+            hapb_axi_w_ch.wstrb = 64'hffffffffffffffff;
         end
 
         STATE_WR_SUB_RESP: begin

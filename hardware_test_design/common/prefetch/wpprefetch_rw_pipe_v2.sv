@@ -5,59 +5,8 @@ import wppprefetch_pkg::*;
     input logic axi4_mm_rst_n,
 
     // read address channel
-    output logic [11:0]               arid,
-    output logic [63:0]               araddr,   // output nc read address
-    output logic [9:0]                arlen,    // must tie to 10'd0
-    output logic [2:0]                arsize,   // must tie to 3'b110
-    output logic [1:0]                arburst,  // must tie to 2'b00
-    output logic [2:0]                arprot,   // must tie to 3'b000
-    output logic [3:0]                arqos,    // must tie to 4'b0000
-    output logic [5:0]                aruser,   // 4'b0000": non-cacheable, 4'b0001: cacheable shared, 4'b0010: cachebale owned
-    output logic                      arvalid,
-    output logic [3:0]                arcache,  // must tie to 4'b0000
-    output logic [1:0]                arlock,   // must tie to 2'b00
-    output logic [3:0]                arregion, // must tie to 4'b0000
-    input logic                       arready,
-
-    // read response channel
-    input logic [11:0]                rid,
-    input logic [511:0]               rdata,  
-    input logic [1:0]                 rresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    input logic                       rlast,  // no use
-    input logic                       ruser,  // no use
-    input logic                       rvalid,
-    output logic                      rready,
-
-    // write address channel
-    output logic [11:0]               awid,
-    output logic [63:0]               awaddr,   // output ncp write address?
-    output logic [9:0]                awlen,    // must tie to 10'd0
-    output logic [2:0]                awsize,   // must tie to 3'b110 (64B/T)
-    output logic [1:0]                awburst,  // must tie to 2'b00
-    output logic [2:0]                awprot,   // must tie to 3'b000
-    output logic [3:0]                awqos,    // must tie to 4'b0000
-    output logic [6:0]                awuser,
-    output logic                      awvalid,
-    output logic [3:0]                awcache,  // must tie to 4'b0000
-    output logic [1:0]                awlock,   // must tie to 2'b00
-    output logic [3:0]                awregion, // must tie to 4'b0000
-    output logic [5:0]                awatop,   // must tie to 6'b000000
-    input  logic                      awready,
-
-    // write data channel
-    output logic [511:0]              wdata,
-    output logic [(512/8)-1:0]        wstrb,
-    output logic                      wlast,
-    output logic                      wuser,  // must tie to 1'b0
-    output logic                      wvalid,
-    input  logic                      wready,
-
-    // write response channel
-    input [11:0]                      bid,    // no use
-    input [1:0]                       bresp,  // no use: 2'b00: OKAY, 2'b01: EXOKAY, 2'b10: SLVERR
-    input [3:0]                       buser,  // must tie to 4'b0000
-    input logic                       bvalid,
-    output logic                      bready,
+    axi_ports.ar_req                  wppp_axi_r_ch,
+    axi_ports.aw_req                  wppp_axi_w_ch,
 
     // control logic 
     // set physical address of target cache line to prefetch_page_addr
@@ -143,8 +92,8 @@ wppp_lut lut_inst(
     .flush_lut(csr_flush_lut),
     .write_lut(write_lut),
     .read_lut(read_lut),
-    .curr_arid(arid[9:0]),
-    .curr_araddr(araddr),
+    .curr_arid(wppp_axi_r_ch.arid[9:0]),
+    .curr_araddr(wppp_axi_r_ch.araddr),
     .curr_rid(curr_rid),
     .lut_valid(lut_valid),
     .lut_in_use(lut_in_use),
@@ -154,19 +103,19 @@ wppp_lut lut_inst(
 wppp_hb_req hb_req_inst(
     .axi4_mm_clk(axi4_mm_clk),
     .axi4_mm_rst_n(axi4_mm_rst_n),
-    .arid(arid),
-    .araddr(araddr),
-    .arlen(arlen),
-    .arsize(arsize),
-    .arburst(arburst),
-    .arprot(arprot),
-    .arqos(arqos),
-    .aruser(aruser),
-    .arvalid(arvalid),
-    .arcache(arcache),
-    .arlock(arlock),
-    .arregion(arregion),
-    .arready(arready),
+    .arid(wppp_axi_r_ch.arid),
+    .araddr(wppp_axi_r_ch.araddr),
+    .arlen(wppp_axi_r_ch.arlen),
+    .arsize(wppp_axi_r_ch.arsize),
+    .arburst(wppp_axi_r_ch.arburst),
+    .arprot(wppp_axi_r_ch.arprot),
+    .arqos(wppp_axi_r_ch.arqos),
+    .aruser(wppp_axi_r_ch.aruser),
+    .arvalid(wppp_axi_r_ch.arvalid),
+    .arcache(wppp_axi_r_ch.arcache),
+    .arlock(wppp_axi_r_ch.arlock),
+    .arregion(wppp_axi_r_ch.arregion),
+    .arready(wppp_axi_r_ch.arready),
     .start_prefetch(start_prefetch),
     .prefetch_page_addr(prefetch_page_addr),
     .lut_in_use(lut_in_use),
@@ -179,13 +128,13 @@ wppp_hb_req hb_req_inst(
 wppp_hb_resp hb_resp_inst(
     .axi4_mm_clk(axi4_mm_clk),
     .axi4_mm_rst_n(axi4_mm_rst_n),
-    .rid(rid),
-    .rdata(rdata),
-    .rresp(rresp),
-    .rlast(rlast),
-    .ruser(ruser),
-    .rvalid(rvalid),
-    .rready(rready),
+    .rid(wppp_axi_r_ch.rid),
+    .rdata(wppp_axi_r_ch.rdata),
+    .rresp(wppp_axi_r_ch.rresp),
+    .rlast(wppp_axi_r_ch.rlast),
+    .ruser(wppp_axi_r_ch.ruser),
+    .rvalid(wppp_axi_r_ch.rvalid),
+    .rready(wppp_axi_r_ch.rready),
     .read_lut(read_lut),
     .curr_rid(curr_rid),
     .lut_valid(lut_valid),
@@ -209,31 +158,31 @@ generate
         wppp_ncp_pipe ncp_pipe_inst(
             .axi4_mm_clk(axi4_mm_clk),
             .axi4_mm_rst_n(axi4_mm_rst_n),
-            .awid(awid),
-            .awaddr(awaddr),
-            .awlen(awlen),
-            .awsize(awsize),
-            .awburst(awburst),
-            .awprot(awprot),
-            .awqos(awqos),
-            .awuser(awuser),
-            .awvalid(awvalid),
-            .awcache(awcache),
-            .awlock(awlock),
-            .awregion(awregion),
-            .awatop(awatop),
-            .awready(awready),
-            .wdata(wdata),
-            .wstrb(wstrb),
-            .wlast(wlast),
-            .wuser(wuser),
-            .wvalid(wvalid),
-            .wready(wready),
-            .bid(bid),
-            .bresp(bresp),
-            .buser(buser),
-            .bvalid(bvalid),
-            .bready(bready),
+            .awid(wppp_axi_w_ch.awid),
+            .awaddr(wppp_axi_w_ch.awaddr),
+            .awlen(wppp_axi_w_ch.awlen),
+            .awsize(wppp_axi_w_ch.awsize),
+            .awburst(wppp_axi_w_ch.awburst),
+            .awprot(wppp_axi_w_ch.awprot),
+            .awqos(wppp_axi_w_ch.awqos),
+            .awuser(wppp_axi_w_ch.awuser),
+            .awvalid(wppp_axi_w_ch.awvalid),
+            .awcache(wppp_axi_w_ch.awcache),
+            .awlock(wppp_axi_w_ch.awlock),
+            .awregion(wppp_axi_w_ch.awregion),
+            .awatop(wppp_axi_w_ch.awatop),
+            .awready(wppp_axi_w_ch.awready),
+            .wdata(wppp_axi_w_ch.wdata),
+            .wstrb(wppp_axi_w_ch.wstrb),
+            .wlast(wppp_axi_w_ch.wlast),
+            .wuser(wppp_axi_w_ch.wuser),
+            .wvalid(wppp_axi_w_ch.wvalid),
+            .wready(wppp_axi_w_ch.wready),
+            .bid(wppp_axi_w_ch.bid),
+            .bresp(wppp_axi_w_ch.bresp),
+            .buser(wppp_axi_w_ch.buser),
+            .bvalid(wppp_axi_w_ch.bvalid),
+            .bready(wppp_axi_w_ch.bready),
             .filter2ncp_pipe(filter2ncp_pipe)
         );
     end
@@ -241,31 +190,31 @@ generate
         wppp_ncp ncp_inst(
             .axi4_mm_clk(axi4_mm_clk),
             .axi4_mm_rst_n(axi4_mm_rst_n),
-            .awid(awid),
-            .awaddr(awaddr),
-            .awlen(awlen),
-            .awsize(awsize),
-            .awburst(awburst),
-            .awprot(awprot),
-            .awqos(awqos),
-            .awuser(awuser),
-            .awvalid(awvalid),
-            .awcache(awcache),
-            .awlock(awlock),
-            .awregion(awregion),
-            .awatop(awatop),
-            .awready(awready),
-            .wdata(wdata),
-            .wstrb(wstrb),
-            .wlast(wlast),
-            .wuser(wuser),
-            .wvalid(wvalid),
-            .wready(wready),
-            .bid(bid),
-            .bresp(bresp),
-            .buser(buser),
-            .bvalid(bvalid),
-            .bready(bready),
+            .awid(wppp_axi_w_ch.awid),
+            .awaddr(wppp_axi_w_ch.awaddr),
+            .awlen(wppp_axi_w_ch.awlen),
+            .awsize(wppp_axi_w_ch.awsize),
+            .awburst(wppp_axi_w_ch.awburst),
+            .awprot(wppp_axi_w_ch.awprot),
+            .awqos(wppp_axi_w_ch.awqos),
+            .awuser(wppp_axi_w_ch.awuser),
+            .awvalid(wppp_axi_w_ch.awvalid),
+            .awcache(wppp_axi_w_ch.awcache),
+            .awlock(wppp_axi_w_ch.awlock),
+            .awregion(wppp_axi_w_ch.awregion),
+            .awatop(wppp_axi_w_ch.awatop),
+            .awready(wppp_axi_w_ch.awready),
+            .wdata(wppp_axi_w_ch.wdata),
+            .wstrb(wppp_axi_w_ch.wstrb),
+            .wlast(wppp_axi_w_ch.wlast),
+            .wuser(wppp_axi_w_ch.wuser),
+            .wvalid(wppp_axi_w_ch.wvalid),
+            .wready(wppp_axi_w_ch.wready),
+            .bid(wppp_axi_w_ch.bid),
+            .bresp(wppp_axi_w_ch.bresp),
+            .buser(wppp_axi_w_ch.buser),
+            .bvalid(wppp_axi_w_ch.bvalid),
+            .bready(wppp_axi_w_ch.bready),
             .filter2ncp_pipe(filter2ncp_pipe),
             .success_count(success_count)
         );
@@ -294,18 +243,18 @@ w4096_d64 u0 (
 //         ncp_write_out.push_valid = 1'b1;
 //         ncp_write_out.push_data = filter2ncp_pipe.push_data;
 //     end
-//     awid = filter2ncp_pipe.push_id;
-//     awuser = 7'b0100010; // NCP to host
-//     awvalid = filter2ncp_pipe.push_valid;
-//     awaddr = filter2ncp_pipe.push_addr;
+//     wppp_axi_w_ch.awid = filter2ncp_pipe.push_id;
+//     wppp_axi_w_ch.awuser = 7'b0100010; // NCP to host
+//     wppp_axi_w_ch.awvalid = filter2ncp_pipe.push_valid;
+//     wppp_axi_w_ch.awaddr = filter2ncp_pipe.push_addr;
 // end
 
 // /* ncp wirte data */
 // always_comb begin
-//     wlast = 1'b1;
-//     wstrb = 64'hFFFFFFFFFFFFFFFF; // all bytes valid
-//     wvalid = ncp_addr2write_pipe.push_valid;
-//     wdata = ncp_addr2write_pipe.push_data;
+//     wppp_axi_w_ch.wlast = 1'b1;
+//     wppp_axi_w_ch.wstrb = 64'hFFFFFFFFFFFFFFFF; // all bytes valid
+//     wppp_axi_w_ch.wvalid = ncp_addr2write_pipe.push_valid;
+//     wppp_axi_w_ch.wdata = ncp_addr2write_pipe.push_data;
 // end
 
 // logic lut_valid;
@@ -318,7 +267,7 @@ w4096_d64 u0 (
 //     end
 //     else begin
 //         if (write_lut) begin // writing to LUT
-//             id2addr_valids[arid] <= 1'b1;
+//             id2addr_valids[wppp_axi_r_ch.arid] <= 1'b1;
 //         end
 //         if (read_lut) begin // reading from LUT
 //             id2addr_valids[curr_rid] <= 1'b0;
@@ -327,11 +276,11 @@ w4096_d64 u0 (
 // end
 
 // w4096_d64 id2addr_lut (
-//     .data_a    (araddr),    //   input,  width = 64,    data_a.datain_a
+//     .data_a    (wppp_axi_r_ch.araddr),    //   input,  width = 64,    data_a.datain_a
 //     .q_a       (),       //  output,  width = 64,       q_a.dataout_a
 //     .data_b    (),    //   input,  width = 64,    data_b.datain_b
 //     .q_b       (push_page_addr_r),       //  output,  width = 64,       q_b.dataout_b
-//     .address_a (arid), //   input,  width = 12, address_a.address_a
+//     .address_a (wppp_axi_r_ch.arid), //   input,  width = 12, address_a.address_a
 //     .address_b (curr_rid), //   input,  width = 12, address_b.address_b
 //     .wren_a    (write_lut),    //   input,   width = 1,    wren_a.wren_a
 //     .wren_b    ('0),    //   input,   width = 1,    wren_b.wren_b
