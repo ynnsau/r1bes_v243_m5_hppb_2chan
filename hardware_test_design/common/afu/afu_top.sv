@@ -29,6 +29,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 
+import wppprefetch_pkg::*;
 import ed_cxlip_top_pkg::*;
 import ed_mc_axi_if_pkg::*;
 import m5_pkg::*;
@@ -63,12 +64,21 @@ module afu_top#(
     input                   page_mig_addr_ready,
     output                  mem_chan_rd_en,
 
+    // input prefetch_rw_state_t prefetch_rw_curr_state, // state of the prefetch_read_write
+    input wppprefetch_rw_state_t prefetch_rw_curr_state, // state of the prefetch_read_write
+    input logic [63:0] curr_working_address, // address that prefetching is working on
+    output logic addr_seen, 
+    output logic abort_op,
+
     // April 2023 - Supporting out of order responses with AXI4
     input  ed_mc_axi_if_pkg::t_to_mc_axi4    [MC_CHANNEL-1:0] cxlip2iafu_to_mc_axi4,
     output ed_mc_axi_if_pkg::t_to_mc_axi4    [MC_CHANNEL-1:0] iafu2mc_to_mc_axi4 ,
     input  ed_mc_axi_if_pkg::t_from_mc_axi4  [MC_CHANNEL-1:0] mc2iafu_from_mc_axi4,
-    output ed_mc_axi_if_pkg::t_from_mc_axi4  [MC_CHANNEL-1:0] iafu2cxlip_from_mc_axi4
+    output ed_mc_axi_if_pkg::t_from_mc_axi4  [MC_CHANNEL-1:0] iafu2cxlip_from_mc_axi4,
 
+    input logic [63:0]  hint_mech_addr, // single uncacheable entry
+    output logic [63:0] hint_enq_address,       // enqueued physical address, 64 bits
+    output logic [8:0]  hint_enq_num_of_cl      // number of cache lines to enqueue, 9 bits
 );
 localparam PAGE_ADDR_SIZE   = 22;
 
@@ -76,6 +86,24 @@ localparam PAGE_ADDR_SIZE   = 22;
 //Passthrough User can implement the AFU logic here 
 assign iafu2mc_to_mc_axi4      = cxlip2iafu_to_mc_axi4;
 assign iafu2cxlip_from_mc_axi4 = mc2iafu_from_mc_axi4;
+
+always_ff @(posedge afu_clk) begin
+    if (~afu_rstn) begin
+        addr_seen <= '0;   
+        abort_op <= '0;     
+    end else begin
+        unique case (prefetch_rw_curr_state)
+            HB_READ_DATA: begin
+                if ((cxlip2iafu_to_mc_axi4[0].araddr[51:0] == curr_working_address[51:0]) 
+                    || (cxlip2iafu_to_mc_axi4[1].araddr[51:0] == curr_working_address[51:0])
+                   ) begin
+                    addr_seen <= 1'b1;
+                end
+            end
+            default: addr_seen <= '0;
+        endcase
+    end
+end
 
 m5_pkg::queue_struct_t chan0_queue_struct;
 m5_pkg::queue_struct_t chan1_queue_struct;
@@ -125,6 +153,38 @@ always_comb begin
     endcase
 end
 
+logic [$clog2(512/64)-1:0]      hint_mech_data_ptr;
+logic                           hint_mech_valid;
+logic [511:0]                   hint_mech_data;
+always_ff @( posedge afu_clk ) begin : blockName
+    if (~afu_rstn) begin
+        hint_mech_data_ptr <= '0;
+        hint_mech_valid <= 1'b0;
+        hint_mech_data <= '0;
+    end else begin
+        if (hint_enq_address != '0) begin
+            hint_mech_data_ptr <= hint_mech_data_ptr + '1;
+        end
+        if (hint_mech_data_ptr == '1) begin
+            hint_mech_valid <= 1'b0;
+        end
+        if (iafu2mc_to_mc_axi4[0].awvalid && hint_mech_addr[51:0] == cxlip2iafu_to_mc_axi4[0].awaddr[51:0]) begin
+            hint_mech_data_ptr <= '0;
+            hint_mech_valid <= 1'b1;
+            hint_mech_data <= cxlip2iafu_to_mc_axi4[0].wdata;
+        end
+    end
+end
+
+
+always_comb begin
+    hint_enq_address = '0;
+    hint_enq_num_of_cl = '0;
+    if (hint_mech_valid) begin
+        hint_enq_address =    hint_mech_data[(hint_mech_data_ptr*64) +: 34];      // 34 bits
+        hint_enq_num_of_cl =  hint_mech_data[((hint_mech_data_ptr*64)+34) +: 30]; // 30 bits
+    end
+end
 always_ff @ (posedge afu_clk) begin
     if(!afu_rstn) begin
         tracker_buff_empty_r <= 1'b0;

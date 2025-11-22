@@ -28,9 +28,9 @@
 //
 
 module ex_default_csr_avmm_slave 
-// import mig_params::*;
+import mig_params::*;
 #(
-    parameter REGFILE_SIZE = 64,
+    parameter REGFILE_SIZE = 96,    //  
     parameter UPDATE_SIZE  = 8      // first 8 read only, remaining r-w
 )(
  
@@ -74,10 +74,12 @@ module ex_default_csr_avmm_slave
 
 
    output logic [5:0] csr_aruser,
-   output logic [5:0] csr_awuser,
+   output logic [6:0] csr_awuser,
 
-   output logic [32:0]  csr_addr_ub,
-   output logic [32:0]  csr_addr_lb,
+   output logic [33:0]  csr_addr_ub,
+   output logic [33:0]  csr_addr_lb,
+   output logic [63:0] csr_prefetch_fifo_ahead_offset,
+   output logic csr_flush_lut,
 
     // HPPB Performance
     input logic [63:0] csr_hppb_min_mig_time,
@@ -96,12 +98,15 @@ module ex_default_csr_avmm_slave
     input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
     input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
 
-//    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
-//    output logic [63:0] csr_ahppb_addr_pair_addr_head,
-//    input logic [63:0]  csr_need_new_base_cnt,
+   // for prefetch module
+   input logic [63:0] prefetch_abt_cnt, // abort counter access
+   input logic [63:0] prefetch_ok_cnt, // ok counter access
+   output logic ruser_poison_ctrl,
+   output logic [31:0] csr_prefetch_interval,
+//    output logic [31:0] hb_stall_cnt
 
-//    output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
-//    output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
+    // hint mechanism
+    output logic [63:0] csr_hint_mech_addr
 );
 
     logic [63:0] data [REGFILE_SIZE];    // CSR regfile
@@ -135,6 +140,31 @@ module ex_default_csr_avmm_slave
     logic[63:0]               h_pfn_addr_cvtr_b4_module;
     logic[63:0]               h_pfn_addr_cvtr;
     logic                     is_h_pfn;
+
+    // ==============================
+    // input --> register 
+    // ==============================
+    logic read_flag;
+    logic write_flag;
+    logic [63:0] debug_counter;
+    logic [63:0] memRead_counter;
+    logic [63:0] memWrite_counter;
+    logic [63:0] memRead_counter_buf;
+    logic [63:0] memWrite_counter_buf;
+    logic [63:0] memRead_counter_aclk;
+    logic [63:0] memWrite_counter_aclk;
+    logic [63:0] page_mig_counter;
+    logic [31:0] page_mig_addr_reg;
+    logic [31:0] h_pfn_overflow_counter;
+    logic [5:0]  sync_cnt;
+    
+    // prefetch abort and success counter buffer
+    logic [63:0] prefetch_abt_cnt_buf;
+    logic [63:0] prefetch_ok_cnt_buf;
+
+    // prefetch read counter (slower clk domain)
+    logic [63:0] prefetch_abt_cnt_aclk;
+    logic [63:0] prefetch_ok_cnt_aclk;
 
 
     assign h_pfn_valid_pfn_guarded = (page_mig_addr != '1);
@@ -190,7 +220,7 @@ module ex_default_csr_avmm_slave
                     data[i] <= writedata & mask;
                 end
             end
-            data[18] <= csr_hppb_min_mig_time;
+            // data[18] <= csr_hppb_min_mig_time;
             data[19] <= csr_hppb_max_mig_time;
             // data[20] <= csr_hppb_min_pg0_mig_time;
             data[20] <= csr_hppb_max_pg0_mig_time;
@@ -210,6 +240,9 @@ module ex_default_csr_avmm_slave
             // data[29] <= csr_hppb_max_outstanding_rreq_cnt;
             // data[30] <= csr_hppb_max_outstanding_wreq_cnt;
 
+            // prefetch stats registers
+            data[62] <= prefetch_abt_cnt_aclk;
+            data[63] <= prefetch_ok_cnt_aclk;
         end    
     end 
 
@@ -316,23 +349,6 @@ module ex_default_csr_avmm_slave
     end
 
 
-    // ==============================
-    // input --> register 
-    // ==============================
-    logic read_flag;
-    logic write_flag;
-    logic [63:0] debug_counter;
-    logic [63:0] memRead_counter;
-    logic [63:0] memWrite_counter;
-    logic [63:0] memRead_counter_buf;
-    logic [63:0] memWrite_counter_buf;
-    logic [63:0] memRead_counter_aclk;
-    logic [63:0] memWrite_counter_aclk;
-    logic [63:0] page_mig_counter;
-    logic [31:0] page_mig_addr_reg;
-    logic [31:0] h_pfn_overflow_counter;
-    logic [5:0]  sync_cnt;
-
 
     always_ff @( posedge afu_clk ) begin
         if (~reset_n) begin
@@ -350,11 +366,14 @@ module ex_default_csr_avmm_slave
             end else if (cxlip2iafu_write_eclk_chan0 & cxlip2iafu_write_eclk_chan1) begin
                 memWrite_counter <= memWrite_counter + 2;
             end
+
             // Assign the counter to the counter buffer every 2^6 cycles
             sync_cnt <= sync_cnt + 1'b1;
             if (sync_cnt == 0) begin
                 memRead_counter_buf     <= memRead_counter;
                 memWrite_counter_buf    <= memWrite_counter;
+                prefetch_abt_cnt_buf    <= prefetch_abt_cnt;
+                prefetch_ok_cnt_buf     <= prefetch_ok_cnt;
             end
         end
     end
@@ -363,6 +382,10 @@ module ex_default_csr_avmm_slave
         // A naive two-stage synchronizer
         memRead_counter_aclk    <= memRead_counter_buf;
         memWrite_counter_aclk   <= memWrite_counter_buf;
+
+        // latch the prefetch abort and ok counters to slower domain
+        prefetch_abt_cnt_aclk   <= prefetch_abt_cnt_buf;
+        prefetch_ok_cnt_aclk    <= prefetch_ok_cnt_buf;
     end
 
     task reset_reg();
@@ -468,18 +491,21 @@ module ex_default_csr_avmm_slave
         // reg_12
 
         // reg_13 -- ar/aw-user for hot page push op
-        csr_aruser = data[13][5:0];
-        csr_awuser = data[13][37:32];
+        csr_aruser = data[13][5:0]; // 6 bits
+        csr_awuser = data[13][38:32]; // 7 bits
 
         // reg_14 -- retrived from deadbeef test, this will be used for 
         //      address modulo to get the true PA address wrt CPU 
         cxl_addr_offset = data[14];
 
         // reg_15 -- monitor lower bound
-        csr_addr_lb = data[15][32:0];
+        csr_addr_lb = data[15][33:0];
         
         // reg_16 -- monitor upper bound
-        csr_addr_ub = data[16][32:0];
+        csr_addr_ub = data[16][33:0];
+
+        csr_prefetch_fifo_ahead_offset = data[17];
+        csr_flush_lut = data[18][0];
 
         // reg_24-31 used by prefetech data debug ---------- not used for now
 
@@ -512,6 +538,14 @@ module ex_default_csr_avmm_slave
             default: begin
             end
         endcase
+
+        // hb_stall_cnt = data[60][31:0];
+
+        // prefetch interval, MSB: prefetch enable bit, enable = 1, the rest: interval value
+        csr_prefetch_interval = data[60][31:0]; 
+        ruser_poison_ctrl = data[61][0];
+
+        csr_hint_mech_addr = data[64];
     end
 
 

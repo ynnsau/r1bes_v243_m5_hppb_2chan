@@ -28,7 +28,7 @@
 //
 
 module ex_default_csr_top
-// import mig_params::*;
+import mig_params::*;
 (
     input  logic        csr_avmm_clk,
     input  logic        csr_avmm_rstn,  
@@ -69,9 +69,11 @@ module ex_default_csr_top
     input  logic [63:0] csr_hppb_test_mig_done_cnt,
 
    output logic [5:0] csr_aruser,
-   output logic [5:0] csr_awuser,
-   output logic [32:0]  csr_addr_ub,
-   output logic [32:0]  csr_addr_lb,
+   output logic [6:0] csr_awuser,
+   output logic [33:0]  csr_addr_ub,
+   output logic [33:0]  csr_addr_lb,
+   output logic [63:0] csr_prefetch_fifo_ahead_offset,
+   output logic csr_flush_lut,
 
 
     // HPPB Performance
@@ -89,15 +91,15 @@ module ex_default_csr_top
     input logic [63:0] csr_hppb_rresp_err_cnt,
     input logic [63:0] csr_hppb_bresp_err_cnt,
     input logic [63:0] csr_hppb_max_outstanding_rreq_cnt,
-    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt
+    input logic [63:0] csr_hppb_max_outstanding_wreq_cnt,
 
-//    output logic [63:0] csr_host_ack_cnt [MIG_GRP_SIZE],
-//    output logic [63:0] csr_ahppb_addr_pair_addr_head,
-//    input logic [63:0]  csr_need_new_base_cnt,
+   output logic ruser_poison_ctrl,
+   output logic [31:0] csr_prefetch_interval,
+   input logic [63:0] prefetch_abt_cnt, // for prefetching stat, abort count
+   input logic [63:0] prefetch_ok_cnt, // for prefetching stat, success count
+//    output logic [31:0] hb_stall_cnt
 
-//    output logic [63:0]  csr_ahppb_src_addr_vld_cnt,
-//    output logic [63:0]  csr_ahppb_src_addr[MIG_GRP_SIZE]
-
+    output logic [63:0] csr_hint_mech_addr
 );
 
 //CSR block
@@ -155,17 +157,19 @@ module ex_default_csr_top
         .csr_hppb_max_outstanding_rreq_cnt(csr_hppb_max_outstanding_rreq_cnt),
         .csr_hppb_max_outstanding_wreq_cnt(csr_hppb_max_outstanding_wreq_cnt),
 
-        // .csr_host_ack_cnt(csr_host_ack_cnt),
-        // .csr_ahppb_addr_pair_addr_head(csr_ahppb_addr_pair_addr_head),
-        // .csr_need_new_base_cnt(csr_need_new_base_cnt),
-
        .csr_aruser(csr_aruser),
        .csr_awuser(csr_awuser),
        .csr_addr_ub(csr_addr_ub),
-       .csr_addr_lb(csr_addr_lb)//,
+       .csr_addr_lb(csr_addr_lb),
+        .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
+        .csr_flush_lut(csr_flush_lut),
+        .ruser_poison_ctrl(ruser_poison_ctrl),
 
-    //    .csr_ahppb_src_addr_vld_cnt(csr_ahppb_src_addr_vld_cnt),
-    //    .csr_ahppb_src_addr(csr_ahppb_src_addr)
+       .prefetch_abt_cnt(prefetch_abt_cnt), // abort counter access
+       .prefetch_ok_cnt(prefetch_ok_cnt), // ok counter access
+       .csr_prefetch_interval(csr_prefetch_interval),
+    //    .hb_stall_cnt(hb_stall_cnt) // for prefetch read write module, the reset amount
+        .csr_hint_mech_addr(csr_hint_mech_addr)
    );
 
 //USER LOGIC Implementation 

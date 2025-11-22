@@ -19,7 +19,7 @@ set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name FAMILY "Agilex 7"
 set_global_assignment -name DEVICE AGIB027R29A1E2VR3
 set_global_assignment -name FLOW_DISABLE_ASSEMBLER OFF
-set_global_assignment -name NUM_PARALLEL_PROCESSORS 16
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_global_assignment -name GENERATE_COMPRESSED_SOF ON
 
 set_global_assignment -name VID_OPERATION_MODE "PMBUS MASTER"
@@ -55,8 +55,22 @@ source ./constraints/cxltyp2_quartus_constraints_ed_en.tcl
 
 source ./constraints/qsf_device_pinout.tcl
 
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/prefetch_hint_fifo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wpprefetch_rw_pipe_v2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wpprefetch_rw_pipe.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_filter_check.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_hb_resp.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_hb_req.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_lut.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_ncp.sv
+set_global_assignment -name IP_FILE common/ip/fifo/fifo_8w_523d.ip
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/prefetch_one.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/prefetch_fifo.sv
+set_global_assignment -name IP_FILE common/ip/fifo/fifo_64w_32d.ip
+
 set_global_assignment -name SYSTEMVERILOG_FILE common/afu/afu_top.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/ex_default_csr/h_pfn_buffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/prefetch_dummy.sv
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_w32_d256.ip
 set_global_assignment -name IP_FILE common/ip/BRAM/port_1_ram.ip
 set_global_assignment -name IP_FILE common/ip/bram/w64_d8192.ip
@@ -255,3 +269,9 @@ set_global_assignment -name IP_FILE common/ip/fifo/fifo_36w_64d.ip
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE m5_impl.stp
 set_global_assignment -name SIGNALTAP_FILE m5_impl.stp
+set_global_assignment -name OPTIMIZATION_MODE "SUPERIOR PERFORMANCE WITH MAXIMUM PLACEMENT EFFORT"
+set_global_assignment -name PRESERVE_FOR_DEBUG_ENABLE ON
+set_global_assignment -name POWER_THERMAL_SOLVER_MODE FIND_TA
+set_global_assignment -name BOARD default
+set_global_assignment -name IP_FILE ip/bram/w4096_d64.ip
+set_global_assignment -name IP_FILE common/ip/fifo/fifo_32w_73d.ip
