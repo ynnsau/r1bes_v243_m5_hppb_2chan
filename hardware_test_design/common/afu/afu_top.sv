@@ -77,6 +77,7 @@ module afu_top#(
     output ed_mc_axi_if_pkg::t_from_mc_axi4  [MC_CHANNEL-1:0] iafu2cxlip_from_mc_axi4,
 
     input logic [63:0]  hint_mech_addr, // single uncacheable entry
+    output logic hint_enq_sel,          // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
     output logic [63:0] hint_enq_address,       // enqueued physical address, 64 bits
     output logic [8:0]  hint_enq_num_of_cl      // number of cache lines to enqueue, 9 bits
 );
@@ -156,11 +157,14 @@ end
 logic [$clog2(512/64)-1:0]      hint_mech_data_ptr;
 logic                           hint_mech_valid;
 logic [511:0]                   hint_mech_data;
+logic wppp_sel;
+assign hint_enq_sel = wppp_sel;
 always_ff @( posedge afu_clk ) begin : blockName
     if (~afu_rstn) begin
         hint_mech_data_ptr <= '0;
         hint_mech_valid <= 1'b0;
         hint_mech_data <= '0;
+        wppp_sel <= '1;
     end else begin
         if (hint_enq_address != '0) begin
             hint_mech_data_ptr <= hint_mech_data_ptr + '1;
@@ -172,6 +176,7 @@ always_ff @( posedge afu_clk ) begin : blockName
             hint_mech_data_ptr <= '0;
             hint_mech_valid <= 1'b1;
             hint_mech_data <= cxlip2iafu_to_mc_axi4[0].wdata;
+            wppp_sel <= ~wppp_sel; // ping-pong between 0 or 1
         end
     end
 end

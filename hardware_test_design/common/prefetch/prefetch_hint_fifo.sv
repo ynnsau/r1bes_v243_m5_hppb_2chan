@@ -18,17 +18,17 @@ import wppprefetch_pkg::*;
 
 
   	output logic is_prefetch_o,			// signal start of prefetching
-  	output logic [63:0] prefetch_addr_o,	// address to prefetch, byte level address
+  	output logic [63:0] prefetch_addr_o	// address to prefetch, byte level address
 
     // unused signals, kept for interface compatibility, will remove later
-    input logic get_next_addr,
-    input logic addr_issued,
-  	output logic [63:0] is_direct_ncp_o, // address to prefetch, byte level address
-    input logic [63:0] csr_prefetch_fifo_ahead_offset,
-    input logic [63:0] chan0_address_i, 
-    input logic chan0_address_valid,
-    input logic [63:0] chan1_address_i, 
-    input logic chan1_address_valid
+    // input logic get_next_addr,
+    // input logic addr_issued,
+  	// output logic [63:0] is_direct_ncp_o, // address to prefetch, byte level address
+    // input logic [63:0] csr_prefetch_fifo_ahead_offset,
+    // input logic [63:0] chan0_address_i, 
+    // input logic chan0_address_valid,
+    // input logic [63:0] chan1_address_i, 
+    // input logic chan1_address_valid
 );
 
 localparam max_range = 64'h1 << 34;	// 2^34 = 16GB

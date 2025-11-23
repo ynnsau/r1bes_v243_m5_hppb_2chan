@@ -1171,8 +1171,8 @@ axi_w_stub axi_w_stub0 (.axi_w_ch(stub0_axi_ports.aw_req));
 axi_r_stub axi_r_stub1 (.axi_r_ch(stub1_axi_ports.ar_req));
 axi_w_stub axi_w_stub1 (.axi_w_ch(stub1_axi_ports.aw_req));
 
-axi_r_stub axi_r_wppp1 (.axi_r_ch(wppp_axi1_ports.ar_req));
-axi_w_stub axi_w_wppp1 (.axi_w_ch(wppp_axi1_ports.aw_req));
+// axi_r_stub axi_r_wppp1 (.axi_r_ch(wppp_axi1_ports.ar_req));
+// axi_w_stub axi_w_wppp1 (.axi_w_ch(wppp_axi1_ports.aw_req));
 
 
 // AXI-MM interface - write address channel
@@ -1725,48 +1725,61 @@ cafu_csr0_avmm_wrapper_inst
           CACHELINE PUSH (WPPP)
 =================================================*/
 
-// prefetch_rw_state_t prefetch_rw_curr_state; // current state of the prefetch_read_write module
-// prefetch_rw_v2_state_t prefetch_rw_curr_state; // current state of the prefetch_read_write module
-wppprefetch_rw_state_t prefetch_rw_curr_state; // current state of the prefetch_read_write module
+wppprefetch_rw_state_t prefetch_rw_curr_state; // current state of the prefetch_read_write module, not used for pipelined wppp
 logic [63:0] curr_working_address;          // address that prefetching (nc-r or nc-p-write) is working on
 logic prefetch_end, addr_seen, abort_op; 
-logic [63:0] prefetch_abt_cnt; // for prefetching stat, abort count
-logic [63:0] prefetch_ok_cnt;  // for prefetching stat, success count    
+logic [63:0] prefetch_abt_cnt_0, prefetch_abt_cnt_1; // for prefetching stat, abort count
+logic [63:0] prefetch_ok_cnt_0, prefetch_ok_cnt_1;  // for prefetching stat, success count    
 
 // for dummy
-logic start_prefetch;                       // signal to start prefetching (maybe having a counter to prefetch periodically)
 logic direct_ncp;
-logic [63:0] prefetch_page_addr;
 logic [33:0]  csr_addr_ub;
 logic [33:0]  csr_addr_lb;
 logic [5:0] csr_aruser;
 logic [5:0] csr_awuser;
 logic [31:0] csr_prefetch_interval;
 logic ruser_poison_ctrl;
-
-logic prefetch_get_next_addr, prefetch_addr_issued;
 logic [63:0] csr_prefetch_fifo_ahead_offset;
+logic prefetch_get_next_addr, prefetch_addr_issued;
 
 // for filter
 logic [63:0] faraddr;
 logic farvalid, frvalid, frdata;
 logic csr_flush_lut;
 
-// for prefetch hint fifo
-logic enqueue_valid_i;
-logic [63:0] enqueue_address_i;
-logic [8:0] enqueue_num_of_cl_i;
+// for two wppp insts
+logic start_prefetch_0, start_prefetch_1;            // signal to start prefetching (maybe having a counter to prefetch periodically)
+logic [63:0] prefetch_page_addr_0, prefetch_page_addr_1;
 
+// for prefetch hint fifo
+logic enqueue_valid_i_0;
+logic [63:0] enqueue_address_i_0;
+logic [8:0] enqueue_num_of_cl_i_0;
+
+logic enqueue_valid_i_1;
+logic [63:0] enqueue_address_i_1;
+logic [8:0] enqueue_num_of_cl_i_1;
+
+logic hint_enq_sel;  // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
 logic [63:0]  hint_enq_address;
 logic [8:0]   hint_enq_num_of_cl;
 logic [63:0]  csr_hint_mech_addr_aclk, csr_hint_mech_addr_eclk;
 
-assign enqueue_valid_i = hint_enq_address != '0;
-assign enqueue_address_i = hint_enq_address;
-assign enqueue_num_of_cl_i = hint_enq_num_of_cl;
+assign enqueue_valid_i_0 = (hint_enq_address != '0) & (hint_enq_sel == 0);
+assign enqueue_address_i_0 = hint_enq_address;
+assign enqueue_num_of_cl_i_0 = hint_enq_num_of_cl;
+
+assign enqueue_valid_i_1 = (hint_enq_address != '0) & (hint_enq_sel == 1);
+assign enqueue_address_i_1 = hint_enq_address;
+assign enqueue_num_of_cl_i_1 = hint_enq_num_of_cl;
+
+// filter always return 1 for now... actual filter is under construction
+assign frvalid = '1;
+assign frdata = '1;
+
 // prefetch dummy
 // prefetch_one prefetch_one_inst(
-prefetch_hint_fifo prefetch_hint_fifo_inst( // TODO: check with DL
+prefetch_hint_fifo prefetch_hint_fifo_inst_0( // TODO: check with DL
     .clk_i(ip2hdm_clk),
     .reset_ni(ip2hdm_reset_n),				
     .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
@@ -1774,61 +1787,106 @@ prefetch_hint_fifo prefetch_hint_fifo_inst( // TODO: check with DL
     .address_upper_i(csr_addr_ub),		// 8GB offset range, upper bound
     .csr_prefetch_interval_i(csr_prefetch_interval),	
 	 
-    .enqueue_valid_i(enqueue_valid_i),
-    .enqueue_address_i(enqueue_address_i),       // enqueued physical address, 64 bits
-    .enqueue_num_of_cl_i(enqueue_num_of_cl_i),      // number of cache lines to enqueue, 9 bits
-    .is_prefetch_o(start_prefetch),
-    .prefetch_addr_o(prefetch_page_addr),
+    .enqueue_valid_i(enqueue_valid_i_0),
+    .enqueue_address_i(enqueue_address_i_0),       // enqueued physical address, 64 bits
+    .enqueue_num_of_cl_i(enqueue_num_of_cl_i_0),      // number of cache lines to enqueue, 9 bits
+    .is_prefetch_o(start_prefetch_0),
+    .prefetch_addr_o(prefetch_page_addr_0)
 
-    // prefetch fifo signals
-    .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
-    .chan0_address_i(ip2hdm_aximm0_araddr),
-    .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
-    .chan1_address_i(ip2hdm_aximm1_araddr),
-    .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
-    .get_next_addr(prefetch_get_next_addr),
-    .addr_issued(prefetch_addr_issued),
-    .is_direct_ncp_o(direct_ncp)
+    // prefetch fifo signals, not used for hint fifo
+    // .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
+    // .chan0_address_i(ip2hdm_aximm0_araddr),
+    // .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
+    // .chan1_address_i(ip2hdm_aximm1_araddr),
+    // .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
+    // .get_next_addr(prefetch_get_next_addr),
+    // .addr_issued(prefetch_addr_issued),
+    // .is_direct_ncp_o(direct_ncp)
 );
-
-// filter always return 1 for now... actual filter is under construction
-assign frvalid = '1;
-assign frdata = '1;
-
 // wppprefetch_rw wppprefetch_rw_inst(
 // wppprefetch_rw_pipeline wppprefetch_rw_inst(
-wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst(
+wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
   .axi4_mm_clk                           (ip2hdm_clk),      // clk
   .axi4_mm_rst_n                         (ip2hdm_reset_n),  // reset
-
- // .direct_ncp(direct_ncp), // connect to the prefetch dummy
-  // .end_prefetch(prefetch_end),  // not used for now
-
-  .prefetch_page_addr(prefetch_page_addr),
-  .start_prefetch(start_prefetch), // connect to the prefetch dummy
+  .prefetch_page_addr(prefetch_page_addr_0),
+  .start_prefetch(start_prefetch_0), // connect to the prefetch dummy
   .csr_aruser(csr_aruser),
   .csr_awuser(csr_awuser),
   .csr_flush_lut(csr_flush_lut),
-  // .clst_d1_tvalid(ip2cafu_axistd1_tvalid),
-  // .clst_d1_tdata(ip2cafu_axistd1_tdata),
-  // .prefetch_rw_curr_state(prefetch_rw_curr_state),
-  // .curr_working_address(curr_working_address), 
-  // .addr_seen(addr_seen), // signal provided by AFU to allow prefetching
+
   .abort_op('0),        // signal provided by AFU to abort current prefetching operation
-  .prefetch_abt_cnt(prefetch_abt_cnt), // for prefetching stat, abort count
-  .prefetch_ok_cnt(prefetch_ok_cnt),  // for prefetching stat, success count
-  .get_next_addr(prefetch_get_next_addr),
-  .addr_issued(prefetch_addr_issued),
+  .prefetch_abt_cnt(prefetch_abt_cnt_0), // for prefetching stat, abort count
+  .prefetch_ok_cnt(prefetch_ok_cnt_0),  // for prefetching stat, success count
+
+  .get_next_addr(), // not used
+  .addr_issued(), // not used
 
   // for write-protection filter
-  .faraddr(faraddr),
-  .farvalid(farvalid),
+  .faraddr(), // not used
+  .farvalid(), // not used
   .frvalid(frvalid),
   .frdata(frdata),
 
   .wppp_axi_r_ch(wppp_axi0_ports.ar_req),
   .wppp_axi_w_ch(wppp_axi0_ports.aw_req)
+
+  // .direct_ncp(direct_ncp), // connect to the prefetch dummy
+  // .end_prefetch(prefetch_end),  // not used for now
+  // .clst_d1_tvalid(ip2cafu_axistd1_tvalid),
+  // .clst_d1_tdata(ip2cafu_axistd1_tdata),
+  // .prefetch_rw_curr_state(prefetch_rw_curr_state),
+  // .curr_working_address(curr_working_address), 
+  // .addr_seen(addr_seen), // signal provided by AFU to allow prefetching
 );
+
+prefetch_hint_fifo prefetch_hint_fifo_inst_1( // TODO: check with DL
+    .clk_i(ip2hdm_clk),
+    .reset_ni(ip2hdm_reset_n),				
+    .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
+    .address_lower_i(csr_addr_lb),		// 8GB offset range, lower bound
+    .address_upper_i(csr_addr_ub),		// 8GB offset range, upper bound
+    .csr_prefetch_interval_i(csr_prefetch_interval),	
+	 
+    .enqueue_valid_i(enqueue_valid_i_1),
+    .enqueue_address_i(enqueue_address_i_1),       // enqueued physical address, 64 bits
+    .enqueue_num_of_cl_i(enqueue_num_of_cl_i_1),      // number of cache lines to enqueue, 9 bits
+    .is_prefetch_o(start_prefetch_1),
+    .prefetch_addr_o(prefetch_page_addr_1)
+
+    // prefetch fifo signals, not used for hint fifo
+    // .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
+    // .chan0_address_i(ip2hdm_aximm0_araddr),
+    // .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
+    // .chan1_address_i(ip2hdm_aximm1_araddr),
+    // .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
+    // .get_next_addr(prefetch_get_next_addr),
+    // .addr_issued(prefetch_addr_issued),
+    // .is_direct_ncp_o(direct_ncp)
+);
+
+wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst(
+  .axi4_mm_clk                           (ip2hdm_clk),      // clk
+  .axi4_mm_rst_n                         (ip2hdm_reset_n),  // reset
+  .prefetch_page_addr(prefetch_page_addr_1),
+  .start_prefetch(start_prefetch_1), // connect to the prefetch dummy
+  .csr_aruser(csr_aruser),
+  .csr_awuser(csr_awuser),
+  .csr_flush_lut(csr_flush_lut),
+  .abort_op('0),        // signal provided by AFU to abort current prefetching operation
+  .prefetch_abt_cnt(prefetch_abt_cnt_1), // for prefetching stat, abort count
+  .prefetch_ok_cnt(prefetch_ok_cnt_1),  // for prefetching stat, success count
+  .get_next_addr(), // not used
+  .addr_issued(), // not used
+
+  // for write-protection filter
+  .faraddr(), // not_used
+  .farvalid(), // not_used
+  .frvalid(frvalid), 
+  .frdata(frdata),
+  .wppp_axi_r_ch(wppp_axi1_ports.ar_req),
+  .wppp_axi_w_ch(wppp_axi1_ports.aw_req)
+);
+
 
 /*================================================
       Hot Page Push (HPPB) signals
@@ -2081,8 +2139,8 @@ axi_arbiter #(.ARB_BIT_POS(11)) axi_arbiter_merge1
   .axi_r_ch(axi1_ports.ar_req),
   .axi_w_ch(axi1_ports.aw_req),
 
-  .p0_axi_r_ch(wppp_axi1_ports.ar_resp),  // stubbed
-  .p0_axi_w_ch(wppp_axi1_ports.aw_resp),  // stubbed
+  .p0_axi_r_ch(wppp_axi1_ports.ar_resp),
+  .p0_axi_w_ch(wppp_axi1_ports.aw_resp),  
 
   .p1_axi_r_ch(hppb_merge_axi1_ports.ar_resp),
   .p1_axi_w_ch(hppb_merge_axi1_ports.aw_resp)
@@ -2740,8 +2798,8 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     .csr_addr_lb            (csr_addr_lb),
     .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
     .csr_flush_lut          (csr_flush_lut),
-    .prefetch_abt_cnt   (prefetch_abt_cnt), // for prefetching stat, abort count
-    .prefetch_ok_cnt    (prefetch_ok_cnt),  // for prefetching stat, success count
+    .prefetch_abt_cnt   (prefetch_abt_cnt_0 + prefetch_abt_cnt_1), // for prefetching stat, abort count
+    .prefetch_ok_cnt    (prefetch_ok_cnt_0 + prefetch_ok_cnt_1),  // for prefetching stat, success count
     // .hb_stall_cnt      (hb_stall_cnt)     // for prefetching stat, heartbeat stall count
     // old comment TODO hppb related
 
@@ -2830,6 +2888,7 @@ afu_top afu_top_inst
     .iafu2cxlip_from_mc_axi4          ( iafu2cxlip_from_mc_axi4  ),
 
     .hint_mech_addr(csr_hint_mech_addr_eclk),
+    .hint_enq_sel(hint_enq_sel),
     .hint_enq_address(hint_enq_address),
     .hint_enq_num_of_cl(hint_enq_num_of_cl) 
 );
