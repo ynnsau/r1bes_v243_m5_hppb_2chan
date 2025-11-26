@@ -171,7 +171,7 @@ always_ff @( posedge afu_clk ) begin : blockName
         wppp_sel <= '1;
     end else begin
         if (hint_enq_address != '0) begin
-            hint_mech_data_ptr <= hint_mech_data_ptr + '1;
+            hint_mech_data_ptr <= hint_mech_data_ptr + 1'b1;
         end
         if (hint_mech_data_ptr == '1) begin
             hint_mech_valid <= 1'b0;
@@ -190,8 +190,8 @@ always_comb begin
     hint_enq_address = '0;
     hint_enq_num_of_cl = '0;
     if (hint_mech_valid) begin
-        hint_enq_address =    hint_mech_data[(hint_mech_data_ptr*64) +: 34];      // 34 bits
-        hint_enq_num_of_cl =  hint_mech_data[((hint_mech_data_ptr*64)+34) +: 30]; // 30 bits
+        hint_enq_address =    hint_mech_data[(hint_mech_data_ptr*64) +: 50];      // 50 bits
+        hint_enq_num_of_cl =  hint_mech_data[((hint_mech_data_ptr*64)+50) +: 14]; // 14 bits
     end
 end
 
