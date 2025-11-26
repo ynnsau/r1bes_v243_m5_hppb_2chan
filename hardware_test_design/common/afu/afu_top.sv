@@ -172,6 +172,7 @@ always_ff @( posedge afu_clk ) begin : blockName
     end else begin
         if (hint_enq_address != '0) begin
             hint_mech_data_ptr <= hint_mech_data_ptr + 1'b1;
+            wppp_sel <= ~wppp_sel; // ping-pong between 0 or 1
         end
         if (hint_mech_data_ptr == '1) begin
             hint_mech_valid <= 1'b0;

@@ -63,7 +63,7 @@ wppprefetch_rw_pipe_t hb2filter_pipe, filter2ncp_pipe; // stage register
 
 assign prefetch_ok_cnt = {32'b00000000, success_count}; // statistics output
 assign prefetch_abt_cnt = 64'b0; // not implemented yet
-assign req_block = (request_count >= MAX_REQUEST_COUNT - 1);
+//assign req_block = (request_count >= MAX_REQUEST_COUNT - 1);
 
 
 // pipeline registers
@@ -71,18 +71,19 @@ always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
         hb2filter_pipe <= '0;
         filter2ncp_pipe <= '0;
-        request_count <= '0; // strange implementation
+//        request_count <= '0; // strange implementation
     end
     else begin
         hb2filter_pipe <= hb_resp_out; // hb -> filter
         filter2ncp_pipe <= filter_out; // filter -> ncp
-
-        if (write_lut && ~read_lut) begin
-            request_count <= request_count + 1;
-        end
-        else if (~write_lut && read_lut) begin
-            request_count <= request_count - 1;
-        end
+//		  if () begin
+//		  end
+//        if (write_lut && ~read_lut) begin
+//            request_count <= request_count + 1;
+//        end
+//        else if (~write_lut && read_lut) begin
+//            request_count <= request_count - 1;
+//        end
     end
 end
 
@@ -119,7 +120,8 @@ wppp_hb_req hb_req_inst(
     .start_prefetch(start_prefetch),
     .prefetch_page_addr(prefetch_page_addr),
     .lut_in_use(lut_in_use),
-    .abort_op(abort_op | req_block), // if request count exceed, also abort
+//    .abort_op(abort_op | req_block), // if request count exceed, also abort
+    .abort_op(abort_op),
     .addr_issued(addr_issued),
     .get_next_addr(get_next_addr),
     .write_lut(write_lut)
