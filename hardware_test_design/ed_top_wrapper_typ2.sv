@@ -1779,7 +1779,7 @@ assign frdata = '1;
 
 // prefetch dummy
 // prefetch_one prefetch_one_inst(
-prefetch_hint_fifo prefetch_hint_fifo_inst_0( // TODO: check with DL
+prefetch_hint_fifo prefetch_hint_fifo_inst_0(
     .clk_i(ip2hdm_clk),
     .reset_ni(ip2hdm_reset_n),				
     .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
@@ -1839,7 +1839,7 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
   // .addr_seen(addr_seen), // signal provided by AFU to allow prefetching
 );
 
-prefetch_hint_fifo prefetch_hint_fifo_inst_1( // TODO: check with DL
+prefetch_hint_fifo prefetch_hint_fifo_inst_1(
     .clk_i(ip2hdm_clk),
     .reset_ni(ip2hdm_reset_n),				
     .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
@@ -1899,6 +1899,8 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst(
   logic [63:0]  csr_addr_pair_vld_cnt_aclk,  csr_addr_pair_vld_cnt_eclk;
   logic [63:0]  csr_huge_pg_addr_pair_aclk,  csr_huge_pg_addr_pair_eclk;
   logic [63:0]  csr_mig_done_cnt_buf_pAddr_aclk,  csr_mig_done_cnt_buf_pAddr_eclk;
+  logic [63:0]  csr_hppb_snoop_addr_aclk, csr_hppb_snoop_addr_eclk;
+
 // HPPB DEBUGGING
   logic [63:0]  csr_hppb_test_mig_done_cnt;
 
@@ -1911,6 +1913,8 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst(
   logic         hppb_new_addr_available;
 
   logic [63:0]  hppb_mig_done_cnt, hppb1_mig_done_cnt;
+
+  logic [63:0]  hppb_snoop_addr_pair_vld_cnt;
 
   // Performance counters
   logic [63:0] csr_hppb_min_mig_time;
@@ -2046,7 +2050,7 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
   .dst_addr1(hppb1_dst_addr),
 
   .addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_eclk), //   Fixed after being set to something useful?
-  .addr_pair_vld_cnt(csr_addr_pair_vld_cnt_eclk),
+  .addr_pair_vld_cnt(hppb_snoop_addr_pair_vld_cnt/*csr_addr_pair_vld_cnt_eclk*/),
   .huge_pg_addr_pair(csr_huge_pg_addr_pair_eclk),
   .new_addr_available(hppb_new_addr_available),
   .mig_done_cnt_buf_pAddr(csr_mig_done_cnt_buf_pAddr_eclk), //   Fixed after being set to something useful?
@@ -2803,7 +2807,8 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     // .hb_stall_cnt      (hb_stall_cnt)     // for prefetching stat, heartbeat stall count
     // old comment TODO hppb related
 
-    .csr_hint_mech_addr(csr_hint_mech_addr_aclk)
+    .csr_hint_mech_addr(csr_hint_mech_addr_aclk),
+    .csr_hppb_snoop_addr(csr_hppb_snoop_addr_aclk)
  );
 
 /*================================================
@@ -2858,7 +2863,13 @@ bus_synchronizer #(
   .data_out (csr_mig_done_cnt_buf_pAddr_eclk)
 );
 
-
+bus_synchronizer #(
+  .SIGNAL_WIDTH(64)
+) bus_synchronizer_hppb_snoop_addr_inst (
+  .clk      (ip2hdm_clk),
+  .data_in  (csr_hppb_snoop_addr_aclk),
+  .data_out (csr_hppb_snoop_addr_eclk)
+);
 
 //--------------------------------------------------------------------
 // i-AFU
@@ -2890,7 +2901,10 @@ afu_top afu_top_inst
     .hint_mech_addr(csr_hint_mech_addr_eclk),
     .hint_enq_sel(hint_enq_sel),
     .hint_enq_address(hint_enq_address),
-    .hint_enq_num_of_cl(hint_enq_num_of_cl) 
+    .hint_enq_num_of_cl(hint_enq_num_of_cl),
+
+    .hppb_snoop_addr(csr_hppb_snoop_addr_eclk),
+    .hppb_snoop_addr_pair_vld_cnt(hppb_snoop_addr_pair_vld_cnt)
 );
 
 

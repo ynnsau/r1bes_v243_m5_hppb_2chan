@@ -3,3 +3,11 @@ hardware_test_design/qdb
 hardware_test_design/support_logic
 hardware_test_design/output_files
 hardware_test_design/tmp-clearbox/
+intel_rtile_cxl_top_cxltyp2_ed/
+hardware_test_design/cxltyp2_ed_ioaux_right_param_table.hex
+hardware_test_design/common/ip/fifo/fifo_32w_73d/
+hardware_test_design/common/ip/fifo/fifo_64w_32d/
+hardware_test_design/common/ip/fifo/fifo_8w_523d/
+hardware_test_design/ip/bram/w32_d1024/
+hardware_test_design/ip/bram/w4096_d64/
+hardware_test_design/ip/bram/w64_d8192/

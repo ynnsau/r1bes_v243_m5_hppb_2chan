@@ -99,7 +99,8 @@ import mig_params::*;
    input logic [63:0] prefetch_ok_cnt, // for prefetching stat, success count
 //    output logic [31:0] hb_stall_cnt
 
-    output logic [63:0] csr_hint_mech_addr
+    output logic [63:0] csr_hint_mech_addr,
+    output logic [63:0] csr_hppb_snoop_addr
 );
 
 //CSR block
@@ -169,7 +170,8 @@ import mig_params::*;
        .prefetch_ok_cnt(prefetch_ok_cnt), // ok counter access
        .csr_prefetch_interval(csr_prefetch_interval),
     //    .hb_stall_cnt(hb_stall_cnt) // for prefetch read write module, the reset amount
-        .csr_hint_mech_addr(csr_hint_mech_addr)
+        .csr_hint_mech_addr(csr_hint_mech_addr),
+        .csr_hppb_snoop_addr(csr_hppb_snoop_addr)
    );
 
 //USER LOGIC Implementation 

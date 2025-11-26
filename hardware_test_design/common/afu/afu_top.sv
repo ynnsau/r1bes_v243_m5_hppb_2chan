@@ -79,7 +79,10 @@ module afu_top#(
     input logic [63:0]  hint_mech_addr, // single uncacheable entry
     output logic hint_enq_sel,          // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
     output logic [63:0] hint_enq_address,       // enqueued physical address, 64 bits
-    output logic [8:0]  hint_enq_num_of_cl      // number of cache lines to enqueue, 9 bits
+    output logic [8:0]  hint_enq_num_of_cl,      // number of cache lines to enqueue, 9 bits
+
+    input logic [63:0]  hppb_snoop_addr,
+    output logic [63:0] hppb_snoop_addr_pair_vld_cnt
 );
 localparam PAGE_ADDR_SIZE   = 22;
 
@@ -154,6 +157,7 @@ always_comb begin
     endcase
 end
 
+// HINT MECH SNOOP
 logic [$clog2(512/64)-1:0]      hint_mech_data_ptr;
 logic                           hint_mech_valid;
 logic [511:0]                   hint_mech_data;
@@ -190,6 +194,18 @@ always_comb begin
         hint_enq_num_of_cl =  hint_mech_data[((hint_mech_data_ptr*64)+34) +: 30]; // 30 bits
     end
 end
+
+// HPPB ADDR_PAIR_VLD_CNT SNOOP
+always_ff @( posedge afu_clk ) begin
+    if (~afu_rstn) begin
+        hppb_snoop_addr_pair_vld_cnt <= '0;
+    end else begin
+        if (iafu2mc_to_mc_axi4[0].awvalid && hppb_snoop_addr == cxlip2iafu_to_mc_axi4[0].awaddr) begin
+            hppb_snoop_addr_pair_vld_cnt <= cxlip2iafu_to_mc_axi4[0].wdata[63:0];
+        end
+    end
+end
+
 always_ff @ (posedge afu_clk) begin
     if(!afu_rstn) begin
         tracker_buff_empty_r <= 1'b0;

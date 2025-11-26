@@ -106,7 +106,8 @@ import mig_params::*;
 //    output logic [31:0] hb_stall_cnt
 
     // hint mechanism
-    output logic [63:0] csr_hint_mech_addr
+    output logic [63:0] csr_hint_mech_addr,
+    output logic [63:0] csr_hppb_snoop_addr
 );
 
     logic [63:0] data [REGFILE_SIZE];    // CSR regfile
@@ -546,6 +547,7 @@ import mig_params::*;
         ruser_poison_ctrl = data[61][0];
 
         csr_hint_mech_addr = data[64];
+        csr_hppb_snoop_addr = data[65];
     end
 
 
