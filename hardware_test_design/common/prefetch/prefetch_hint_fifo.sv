@@ -14,7 +14,7 @@ import wppprefetch_pkg::*;
 
     input logic enqueue_valid_i,
     input logic [63:0] enqueue_address_i,       // enqueued physical address, 64 bits
-    input logic [8:0] enqueue_num_of_cl_i,      // number of cache lines to enqueue, 9 bits
+    input logic [15:0] enqueue_num_of_cl_i,      // number of cache lines to enqueue, 9 bits
 
 
   	output logic is_prefetch_o,			// signal start of prefetching
@@ -44,6 +44,7 @@ logic [63:0] new_prefetch_addr_r, end_addr_reg, queue_front_addr;
 logic [63:0] candidate_addr;
 (* preserve_for_debug *) logic addr_gt_lb, addr_lt_ub;
 wppp_hint_fifo_entry_t fifo_in, fifo_out;
+logic [73:0] fifo_in_up, fifo_out_up;
 
 assign is_prefetch_o = prefetch_enable & is_prefetch_r; // only allow prefetch when enabled
 assign dequeue_valid = next_entry_ready & ~queue_empty; // only dequeue when done with the current entry
@@ -52,21 +53,24 @@ assign addr_lt_ub = candidate_addr <= end_addr_reg;
 
 // instantiate fifo here
 fifo_32w_73d hint_fifo(
-	.data(fifo_in),
+	.data(fifo_in_up/*fifo_in*/),
 	.wrreq(enqueue_valid_i),
 	.rdreq(dequeue_valid),
 	.clock(clk_i),
-	.q(fifo_out),
+	.q(fifo_out_up/*fifo_out*/),
 	.usedw(),
 	.full(queue_full),
 	.empty(queue_empty)
 );
 
 always_comb begin
-    fifo_in.hint_addr = enqueue_address_i;
-    fifo_in.hint_num_of_cl = enqueue_num_of_cl_i;
-    queue_front_addr = fifo_out.hint_addr;
-    total_cl_cnt = {55'b0, fifo_out.hint_num_of_cl};
+    // fifo_in.hint_addr = enqueue_address_i;
+    // fifo_in.hint_num_of_cl = enqueue_num_of_cl_i;
+    fifo_in_up = {enqueue_num_of_cl_i[13:0], enqueue_address_i[49:0]};
+    // queue_front_addr = fifo_out.hint_addr;
+    // total_cl_cnt = {55'b0, fifo_out.hint_num_of_cl};
+    queue_front_addr = fifo_out_up[49:0];
+    total_cl_cnt = {50'b0, fifo_out_up[63:50]};
     prefetch_addr_o = new_prefetch_addr_r;
     candidate_addr = queue_front_addr + (cl_cnt << shift_bits);
 end

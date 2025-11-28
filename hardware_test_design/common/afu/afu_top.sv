@@ -79,7 +79,7 @@ module afu_top#(
     input logic [63:0]  hint_mech_addr, // single uncacheable entry
     output logic hint_enq_sel,          // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
     output logic [63:0] hint_enq_address,       // enqueued physical address, 64 bits
-    output logic [8:0]  hint_enq_num_of_cl,      // number of cache lines to enqueue, 9 bits
+    output logic [15:0]  hint_enq_num_of_cl,      // number of cache lines to enqueue, 9 bits
 
     input logic [63:0]  hppb_snoop_addr,
     output logic [63:0] hppb_snoop_addr_pair_vld_cnt
@@ -170,7 +170,7 @@ always_ff @( posedge afu_clk ) begin : blockName
         hint_mech_data <= '0;
         wppp_sel <= '1;
     end else begin
-        if (hint_enq_address != '0) begin
+        if (hint_mech_valid) begin
             hint_mech_data_ptr <= hint_mech_data_ptr + 1'b1;
             wppp_sel <= ~wppp_sel; // ping-pong between 0 or 1
         end

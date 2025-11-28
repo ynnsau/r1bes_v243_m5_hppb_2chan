@@ -1754,15 +1754,15 @@ logic [63:0] prefetch_page_addr_0, prefetch_page_addr_1;
 // for prefetch hint fifo
 logic enqueue_valid_i_0;
 logic [63:0] enqueue_address_i_0;
-logic [8:0] enqueue_num_of_cl_i_0;
+logic [15:0] enqueue_num_of_cl_i_0;
 
 logic enqueue_valid_i_1;
 logic [63:0] enqueue_address_i_1;
-logic [8:0] enqueue_num_of_cl_i_1;
+logic [15:0] enqueue_num_of_cl_i_1;
 
 logic hint_enq_sel;  // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
 logic [63:0]  hint_enq_address;
-logic [8:0]   hint_enq_num_of_cl;
+logic [15:0]   hint_enq_num_of_cl;
 logic [63:0]  csr_hint_mech_addr_aclk, csr_hint_mech_addr_eclk;
 
 assign enqueue_valid_i_0 = (hint_enq_address != '0) & (hint_enq_sel == 0);
