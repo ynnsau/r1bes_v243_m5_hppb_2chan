@@ -55,6 +55,7 @@ source ./constraints/cxltyp2_quartus_constraints_ed_en.tcl
 
 source ./constraints/qsf_device_pinout.tcl
 
+set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/page_tbl_update.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/axi_arbiter/axi_arbiter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/prefetch_hint_fifo.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wpprefetch_rw_pipe_v2.sv
@@ -268,7 +269,7 @@ set_instance_assignment -name VIRTUAL_PIN ON -to i_phy_* -entity cxltyp2_ed
 set_global_assignment -name POWER_APPLY_THERMAL_MARGIN ADDITIONAL
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_36w_64d.ip
 set_global_assignment -name ENABLE_SIGNALTAP ON
-set_global_assignment -name USE_SIGNALTAP_FILE mig_merge.stp
+set_global_assignment -name USE_SIGNALTAP_FILE m5_impl.stp
 set_global_assignment -name SIGNALTAP_FILE m5_impl.stp
 set_global_assignment -name OPTIMIZATION_MODE "SUPERIOR PERFORMANCE WITH MAXIMUM PLACEMENT EFFORT"
 set_global_assignment -name PRESERVE_FOR_DEBUG_ENABLE ON
@@ -276,3 +277,4 @@ set_global_assignment -name POWER_THERMAL_SOLVER_MODE FIND_TA
 set_global_assignment -name BOARD default
 set_global_assignment -name IP_FILE ip/bram/w4096_d64.ip
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_32w_73d.ip
+set_global_assignment -name IP_FILE ip/bram_pgmap_table.ip

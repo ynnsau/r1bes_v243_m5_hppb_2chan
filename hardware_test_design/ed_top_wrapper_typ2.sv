@@ -1760,18 +1760,18 @@ logic enqueue_valid_i_1;
 logic [63:0] enqueue_address_i_1;
 logic [15:0] enqueue_num_of_cl_i_1;
 
-logic hint_enq_sel;  // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
-logic [63:0]  hint_enq_address;
-logic [15:0]   hint_enq_num_of_cl;
+logic hint_enq_sel_i, hint_enq_sel_o;  // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
+logic [63:0]  hint_enq_address_i, hint_enq_address_o;
+logic [15:0]   hint_enq_num_of_cl_i, hint_enq_num_of_cl_o;
 logic [63:0]  csr_hint_mech_addr_aclk, csr_hint_mech_addr_eclk;
 
-assign enqueue_valid_i_0 = (hint_enq_address != '0) & (hint_enq_sel == 0);
-assign enqueue_address_i_0 = hint_enq_address;
-assign enqueue_num_of_cl_i_0 = hint_enq_num_of_cl;
+assign enqueue_valid_i_0 = (hint_enq_address_o != '0) & (hint_enq_sel_o == 0);
+assign enqueue_address_i_0 = hint_enq_address_o;
+assign enqueue_num_of_cl_i_0 = hint_enq_num_of_cl_o;
 
-assign enqueue_valid_i_1 = (hint_enq_address != '0) & (hint_enq_sel == 1);
-assign enqueue_address_i_1 = hint_enq_address;
-assign enqueue_num_of_cl_i_1 = hint_enq_num_of_cl;
+assign enqueue_valid_i_1 = (hint_enq_address_o != '0) & (hint_enq_sel_o == 1);
+assign enqueue_address_i_1 = hint_enq_address_o;
+assign enqueue_num_of_cl_i_1 = hint_enq_num_of_cl_o;
 
 // filter always return 1 for now... actual filter is under construction
 assign frvalid = '1;
@@ -1906,6 +1906,7 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst(
 
 
 // Other signals
+  logic [63:0]  hppb_all_src_addr [ACTUAL_MIG_GRP_SIZE];
   logic [63:0]  hppb_src_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb1_src_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb_addr_pair_addr [ACTUAL_MIG_GRP_SIZE/2];
@@ -2116,6 +2117,32 @@ axi_arbiter #(.ARB_BIT_POS(10)) axi_arbiter_hppb1
 //   .hppb_addr_pair_axi_r_ch(hppb_addr_pair_axi_ports.ar_resp),
 //   .hppb_mig_done_axi_w_ch(hppb_mig_done_axi_ports.aw_resp)
 // );
+
+always_comb begin
+    for (int i = 0; i < ACTUAL_MIG_GRP_SIZE; i++) begin
+      if (i < (ACTUAL_MIG_GRP_SIZE/2)) begin
+        hppb_all_src_addr[i] = hppb_src_addr[i];
+      end else begin
+        hppb_all_src_addr[i] = hppb1_src_addr[i - (ACTUAL_MIG_GRP_SIZE/2)];
+      end
+    end
+end
+
+page_tbl_update #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) page_tbl_update_inst
+(
+    .clk(ip2hdm_clk),
+    .rst_n(ip2hdm_reset_n),
+    .hppb_tbl_update(hppb_new_addr_available),
+    .hppb_src_addr(hppb_all_src_addr),
+
+    .hint_enq_sel_i(hint_enq_sel_i),
+    .hint_enq_address_i(hint_enq_address_i),
+    .hint_enq_num_of_cl_i(hint_enq_num_of_cl_i),
+
+    .hint_enq_sel_o(hint_enq_sel_o),
+    .hint_enq_address_o(hint_enq_address_o),
+    .hint_enq_num_of_cl_o(hint_enq_num_of_cl_o)
+);
 
 
 `ifdef BYPASS_ATE 
@@ -2899,9 +2926,9 @@ afu_top afu_top_inst
     .iafu2cxlip_from_mc_axi4          ( iafu2cxlip_from_mc_axi4  ),
 
     .hint_mech_addr(csr_hint_mech_addr_eclk),
-    .hint_enq_sel(hint_enq_sel),
-    .hint_enq_address(hint_enq_address),
-    .hint_enq_num_of_cl(hint_enq_num_of_cl),
+    .hint_enq_sel(hint_enq_sel_i),
+    .hint_enq_address(hint_enq_address_i),
+    .hint_enq_num_of_cl(hint_enq_num_of_cl_i),
 
     .hppb_snoop_addr(csr_hppb_snoop_addr_eclk),
     .hppb_snoop_addr_pair_vld_cnt(hppb_snoop_addr_pair_vld_cnt)

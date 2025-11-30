@@ -11,3 +11,4 @@ hardware_test_design/common/ip/fifo/fifo_8w_523d/
 hardware_test_design/ip/bram/w32_d1024/
 hardware_test_design/ip/bram/w4096_d64/
 hardware_test_design/ip/bram/w64_d8192/
+hardware_test_design/ip/bram_pgmap_table/
