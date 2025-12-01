@@ -152,7 +152,7 @@ import wppprefetch_pkg::*;
     output logic [1:0]                awlock,   // must tie to 2'b00
     output logic [3:0]                awregion, // must tie to 4'b0000
     output logic [5:0]                awatop,   // must tie to 6'b000000
-    input                             awready,
+    input  logic                      awready,
 
     // write data channel
     output logic [511:0]              wdata,
@@ -169,7 +169,8 @@ import wppprefetch_pkg::*;
     input logic                       bvalid,
     output logic                      bready,
 
-    input wppprefetch_rw_pipe_t filter2ncp_pipe
+    input wppprefetch_rw_pipe_t filter2ncp_pipe,
+    output logic [31:0] success_count
 ); // contain mini pipe
 
 /* const */
@@ -187,51 +188,7 @@ assign  bready       = '1	; // always ready to accept write response
 
 /* internal */
 // for simplicity, discard pipe in if wready is begin back pressured
-
-logic aw_lock, w_lock;
+// logic aw_lock, w_lock;
 wppprefetch_rw_pipe_t pipe_in_reg, addr2data_pipe;
 
-always_comb begin
-    awid = pipe_in_reg.push_id;
-    awaddr = pipe_in_reg.push_addr;
-    awuser = 7'b0100010; // NCP to host
-    awvalid = pipe_in_reg.push_valid;
-
-    wlast = 1'b1;
-    wstrb = 64'hFFFFFFFFFFFFFFFF; // all bytes valid
-    wvalid = 1'b0;
-    wdata = '0;
-    if (w_lock) begin
-        wvalid = 1'b1;
-        wdata = addr2data_pipe.push_data;
-    end
-end
-
-always_ff @(posedge axi4_mm_clk) begin
-    if (!axi4_mm_rst_n) begin
-        pipe_in_reg <= '0;
-        addr2data_pipe <= '0;
-        aw_lock <= 1'b0;
-        w_lock <= 1'b0;
-    end
-    else begin
-        if (awvalid & awready) begin
-            aw_lock <= 1'b0; // release aw lock
-            if (w_lock == 0) begin
-                w_lock <= 1'b1;
-                addr2data_pipe <= pipe_in_reg;
-                pipe_in_reg <= '0; // clear pipe in reg
-            end
-        end
-        else if (!aw_lock && filter2ncp_pipe.push_valid) begin // take new input if input is valid and not locked
-            aw_lock <= 1'b1;
-            pipe_in_reg <= filter2ncp_pipe;
-        end
-
-        if (wvalid & wready) begin
-            w_lock <= 1'b0; // release w lock
-            addr2data_pipe <= '0;
-        end
-    end
-end
 endmodule

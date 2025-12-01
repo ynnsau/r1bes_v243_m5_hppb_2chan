@@ -10,13 +10,17 @@ import wppprefetch_pkg::*;
 
     // control logic 
     // set physical address of target cache line to prefetch_page_addr
-    input logic [63:0] prefetch_page_addr, // byte level address, XXX, this may change during the states 
-    input logic start_prefetch,
-    // output logic end_prefetch,
-    // output logic [511:0] prefetch_page_data,
-
+    // input logic [63:0] prefetch_page_addr, // byte level address, XXX, this may change during the states 
+    // input logic start_prefetch,
     input logic [5:0] csr_aruser,
     input logic [6:0] csr_awuser,
+	input logic [63:0] start_address_i, 	        // user defined starting address
+    input logic enable_prefetch_i,
+	input logic [33:0] address_lower_i,		// 16GB range
+	input logic [33:0] address_upper_i,		// 16GB range
+    input logic enqueue_valid_i,
+    input logic [63:0] enqueue_address_i,       // enqueued physical address, 64 bits
+    input logic [15:0] enqueue_num_of_cl_i,      // number of cache lines to enqueue, 9 bits
 
     input logic clst_d1_tvalid,
     input logic [71:0] clst_d1_tdata,
@@ -58,32 +62,27 @@ logic write_lut, read_lut;
 logic lut_valid, lut_in_use;
 logic [31:0] request_count;
 wppprefetch_rw_state_t filter_state, next_filter_state;
-wppprefetch_rw_pipe_t hb_resp_out, filter_out; // stage out
-wppprefetch_rw_pipe_t hb2filter_pipe, filter2ncp_pipe; // stage register
+wppprefetch_rw_pipe_t hb_resp_out; // , filter_out; // stage out
+wppprefetch_rw_pipe_t hb2ncp_pipe; // stage register
+// wppprefetch_rw_pipe_t hb2filter_pipe, filter2ncp_pipe; // stage register
+
 
 assign prefetch_ok_cnt = {32'b00000000, success_count}; // statistics output
 assign prefetch_abt_cnt = 64'b0; // not implemented yet
-//assign req_block = (request_count >= MAX_REQUEST_COUNT - 1);
+
 
 
 // pipeline registers
 always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
-        hb2filter_pipe <= '0;
-        filter2ncp_pipe <= '0;
-//        request_count <= '0; // strange implementation
+        // hb2filter_pipe <= '0;
+        // filter2ncp_pipe <= '0;
+        hb2ncp_pipe <= '0;
     end
     else begin
-        hb2filter_pipe <= hb_resp_out; // hb -> filter
-        filter2ncp_pipe <= filter_out; // filter -> ncp
-//		  if () begin
-//		  end
-//        if (write_lut && ~read_lut) begin
-//            request_count <= request_count + 1;
-//        end
-//        else if (~write_lut && read_lut) begin
-//            request_count <= request_count - 1;
-//        end
+        // hb2filter_pipe <= hb_resp_out; // hb -> filter
+        // filter2ncp_pipe <= filter_out; // filter -> ncp
+        hb2ncp_pipe <= hb_resp_out; // hb -> ncp
     end
 end
 
@@ -117,14 +116,23 @@ wppp_hb_req hb_req_inst(
     .arlock(wppp_axi_r_ch.arlock),
     .arregion(wppp_axi_r_ch.arregion),
     .arready(wppp_axi_r_ch.arready),
-    .start_prefetch(start_prefetch),
-    .prefetch_page_addr(prefetch_page_addr),
+
+	.start_address_i(start_address_i), 	    // user defined starting address
+    .enable_prefetch_i(enable_prefetch_i),
+	.address_lower_i(address_lower_i),		// 16GB range
+	.address_upper_i(address_upper_i),		// 16GB range
+    .enqueue_valid_i(enqueue_valid_i),
+    .enqueue_address_i(enqueue_address_i),       // enqueued physical address, 64 bits
+    .enqueue_num_of_cl_i(enqueue_num_of_cl_i),      // number of cache lines to enqueue, 9 bits
+
     .lut_in_use(lut_in_use),
-//    .abort_op(abort_op | req_block), // if request count exceed, also abort
     .abort_op(abort_op),
-    .addr_issued(addr_issued),
-    .get_next_addr(get_next_addr),
     .write_lut(write_lut)
+
+    // .start_prefetch(start_prefetch),
+    // .prefetch_page_addr(prefetch_page_addr),
+    // .addr_issued(addr_issued),
+    // .get_next_addr(get_next_addr),
 );
 
 wppp_hb_resp hb_resp_inst(
@@ -142,17 +150,6 @@ wppp_hb_resp hb_resp_inst(
     .lut_valid(lut_valid),
     .push_page_addr_r(push_page_addr_r),
     .hb_resp_out(hb_resp_out)
-);
-
-wppp_filter_check filter_check_inst(
-    .axi4_mm_clk(axi4_mm_clk),
-    .axi4_mm_rst_n(axi4_mm_rst_n),
-    .faraddr(faraddr),
-    .farvalid(farvalid),
-    .frvalid(frvalid),
-    .frdata(frdata),
-    .hb2filter_pipe(hb2filter_pipe),
-    .filter_out(filter_out)
 );
 
 generate
@@ -185,7 +182,7 @@ generate
             .buser(wppp_axi_w_ch.buser),
             .bvalid(wppp_axi_w_ch.bvalid),
             .bready(wppp_axi_w_ch.bready),
-            .filter2ncp_pipe(filter2ncp_pipe)
+            .filter2ncp_pipe(hb2ncp_pipe)
         );
     end
     else begin
@@ -217,7 +214,7 @@ generate
             .buser(wppp_axi_w_ch.buser),
             .bvalid(wppp_axi_w_ch.bvalid),
             .bready(wppp_axi_w_ch.bready),
-            .filter2ncp_pipe(filter2ncp_pipe),
+            .filter2ncp_pipe(hb2ncp_pipe),
             .success_count(success_count)
         );
     end

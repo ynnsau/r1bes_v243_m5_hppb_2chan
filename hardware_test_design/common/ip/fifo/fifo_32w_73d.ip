@@ -332,7 +332,7 @@ https://fpgasoftware.intel.com/eula.-->
         <ipxact:parameter parameterId="GUI_LegacyRREQ" type="int">
           <ipxact:name>GUI_LegacyRREQ</ipxact:name>
           <ipxact:displayName>Which kind of read access do you want with the 'rdreq' signal?</ipxact:displayName>
-          <ipxact:value>1</ipxact:value>
+          <ipxact:value>0</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_RAM_BLOCK_TYPE" type="string">
           <ipxact:name>GUI_RAM_BLOCK_TYPE</ipxact:name>

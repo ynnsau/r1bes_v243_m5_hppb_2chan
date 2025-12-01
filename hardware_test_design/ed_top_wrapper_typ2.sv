@@ -1779,40 +1779,48 @@ assign frdata = '1;
 
 // prefetch dummy
 // prefetch_one prefetch_one_inst(
-prefetch_hint_fifo prefetch_hint_fifo_inst_0(
-    .clk_i(ip2hdm_clk),
-    .reset_ni(ip2hdm_reset_n),				
-    .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
-    .address_lower_i(csr_addr_lb),		// 8GB offset range, lower bound
-    .address_upper_i(csr_addr_ub),		// 8GB offset range, upper bound
-    .csr_prefetch_interval_i(csr_prefetch_interval),	
+// prefetch_hint_fifo prefetch_hint_fifo_inst_0(
+//     .clk_i(ip2hdm_clk),
+//     .reset_ni(ip2hdm_reset_n),				
+//     .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
+//     .address_lower_i(csr_addr_lb),		// 8GB offset range, lower bound
+//     .address_upper_i(csr_addr_ub),		// 8GB offset range, upper bound
+//     .csr_prefetch_interval_i(csr_prefetch_interval),	
 	 
-    .enqueue_valid_i(enqueue_valid_i_0),
-    .enqueue_address_i(enqueue_address_i_0),       // enqueued physical address, 64 bits
-    .enqueue_num_of_cl_i(enqueue_num_of_cl_i_0),      // number of cache lines to enqueue, 9 bits
-    .is_prefetch_o(start_prefetch_0),
-    .prefetch_addr_o(prefetch_page_addr_0)
+//     .enqueue_valid_i(enqueue_valid_i_0),
+//     .enqueue_address_i(enqueue_address_i_0),       // enqueued physical address, 64 bits
+//     .enqueue_num_of_cl_i(enqueue_num_of_cl_i_0),      // number of cache lines to enqueue, 9 bits
+//     .is_prefetch_o(start_prefetch_0),
+//     .prefetch_addr_o(prefetch_page_addr_0)
 
-    // prefetch fifo signals, not used for hint fifo
-    // .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
-    // .chan0_address_i(ip2hdm_aximm0_araddr),
-    // .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
-    // .chan1_address_i(ip2hdm_aximm1_araddr),
-    // .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
-    // .get_next_addr(prefetch_get_next_addr),
-    // .addr_issued(prefetch_addr_issued),
-    // .is_direct_ncp_o(direct_ncp)
-);
+//     // prefetch fifo signals, not used for hint fifo
+//     // .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
+//     // .chan0_address_i(ip2hdm_aximm0_araddr),
+//     // .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
+//     // .chan1_address_i(ip2hdm_aximm1_araddr),
+//     // .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
+//     // .get_next_addr(prefetch_get_next_addr),
+//     // .addr_issued(prefetch_addr_issued),
+//     // .is_direct_ncp_o(direct_ncp)
+// );
 // wppprefetch_rw wppprefetch_rw_inst(
 // wppprefetch_rw_pipeline wppprefetch_rw_inst(
-wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
+wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_0(
   .axi4_mm_clk                           (ip2hdm_clk),      // clk
   .axi4_mm_rst_n                         (ip2hdm_reset_n),  // reset
-  .prefetch_page_addr(prefetch_page_addr_0),
-  .start_prefetch(start_prefetch_0), // connect to the prefetch dummy
+  // .prefetch_page_addr(prefetch_page_addr_0),
+  // .start_prefetch(start_prefetch_0), // connect to the prefetch dummy
   .csr_aruser(csr_aruser),
   .csr_awuser(csr_awuser),
   .csr_flush_lut(csr_flush_lut),
+
+  .start_address_i(cxl_start_pa), 	        // user defined starting address
+  .enable_prefetch_i(csr_prefetch_interval[31]),
+	.address_lower_i(csr_addr_lb),		// 16GB range
+	.address_upper_i(csr_addr_ub),		// 16GB range
+  .enqueue_valid_i(enqueue_valid_i_0),
+  .enqueue_address_i(enqueue_address_i_0),       // enqueued physical address, 64 bits
+  .enqueue_num_of_cl_i(enqueue_num_of_cl_i_0),      // number of cache lines to enqueue, 9 bits
 
   .abort_op('0),        // signal provided by AFU to abort current prefetching operation
   .prefetch_abt_cnt(prefetch_abt_cnt_0), // for prefetching stat, abort count
@@ -1839,39 +1847,48 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
   // .addr_seen(addr_seen), // signal provided by AFU to allow prefetching
 );
 
-prefetch_hint_fifo prefetch_hint_fifo_inst_1(
-    .clk_i(ip2hdm_clk),
-    .reset_ni(ip2hdm_reset_n),				
-    .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
-    .address_lower_i(csr_addr_lb),		// 8GB offset range, lower bound
-    .address_upper_i(csr_addr_ub),		// 8GB offset range, upper bound
-    .csr_prefetch_interval_i(csr_prefetch_interval),	
+// prefetch_hint_fifo prefetch_hint_fifo_inst_1(
+//     .clk_i(ip2hdm_clk),
+//     .reset_ni(ip2hdm_reset_n),				
+//     .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
+//     .address_lower_i(csr_addr_lb),		// 8GB offset range, lower bound
+//     .address_upper_i(csr_addr_ub),		// 8GB offset range, upper bound
+//     .csr_prefetch_interval_i(csr_prefetch_interval),	
 	 
-    .enqueue_valid_i(enqueue_valid_i_1),
-    .enqueue_address_i(enqueue_address_i_1),       // enqueued physical address, 64 bits
-    .enqueue_num_of_cl_i(enqueue_num_of_cl_i_1),      // number of cache lines to enqueue, 9 bits
-    .is_prefetch_o(start_prefetch_1),
-    .prefetch_addr_o(prefetch_page_addr_1)
+//     .enqueue_valid_i(enqueue_valid_i_1),
+//     .enqueue_address_i(enqueue_address_i_1),       // enqueued physical address, 64 bits
+//     .enqueue_num_of_cl_i(enqueue_num_of_cl_i_1),      // number of cache lines to enqueue, 9 bits
+//     .is_prefetch_o(start_prefetch_1),
+//     .prefetch_addr_o(prefetch_page_addr_1)
 
-    // prefetch fifo signals, not used for hint fifo
-    // .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
-    // .chan0_address_i(ip2hdm_aximm0_araddr),
-    // .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
-    // .chan1_address_i(ip2hdm_aximm1_araddr),
-    // .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
-    // .get_next_addr(prefetch_get_next_addr),
-    // .addr_issued(prefetch_addr_issued),
-    // .is_direct_ncp_o(direct_ncp)
-);
+//     // prefetch fifo signals, not used for hint fifo
+//     // .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
+//     // .chan0_address_i(ip2hdm_aximm0_araddr),
+//     // .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
+//     // .chan1_address_i(ip2hdm_aximm1_araddr),
+//     // .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
+//     // .get_next_addr(prefetch_get_next_addr),
+//     // .addr_issued(prefetch_addr_issued),
+//     // .is_direct_ncp_o(direct_ncp)
+// );
 
-wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst(
+wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
   .axi4_mm_clk                           (ip2hdm_clk),      // clk
   .axi4_mm_rst_n                         (ip2hdm_reset_n),  // reset
-  .prefetch_page_addr(prefetch_page_addr_1),
-  .start_prefetch(start_prefetch_1), // connect to the prefetch dummy
+  // .prefetch_page_addr(prefetch_page_addr_1),
+  // .start_prefetch(start_prefetch_1), // connect to the prefetch dummy
   .csr_aruser(csr_aruser),
   .csr_awuser(csr_awuser),
   .csr_flush_lut(csr_flush_lut),
+
+	.start_address_i(cxl_start_pa), 	        // user defined starting address
+  .enable_prefetch_i(csr_prefetch_interval[31]),
+	.address_lower_i(csr_addr_lb),		// 16GB range
+	.address_upper_i(csr_addr_ub),		// 16GB range
+  .enqueue_valid_i(enqueue_valid_i_1),
+  .enqueue_address_i(enqueue_address_i_1),       // enqueued physical address, 64 bits
+  .enqueue_num_of_cl_i(enqueue_num_of_cl_i_1),      // number of cache lines to enqueue, 9 bits
+
   .abort_op('0),        // signal provided by AFU to abort current prefetching operation
   .prefetch_abt_cnt(prefetch_abt_cnt_1), // for prefetching stat, abort count
   .prefetch_ok_cnt(prefetch_ok_cnt_1),  // for prefetching stat, success count
