@@ -70,7 +70,7 @@ fifo_32w_73d hint_fifo(
 );
 
 assign write_lut = arvalid & arready; // write LUT when read address is accepted
-assign dequeue_valid = (cl_counter == num_cl) & ~queue_empty; // dequeue when all cachelines are issued
+assign dequeue_valid = (cl_counter + 1'd1 == num_cl) & ~queue_empty; // dequeue when all cachelines are issued
 assign addr_in_range = (push_cl_addr >= addr_low_limit) && (push_cl_addr < addr_up_limit);
 
 always_ff @(posedge axi4_mm_clk) begin
@@ -98,7 +98,7 @@ end
 always_comb begin
     arvalid     = ~queue_empty & start_prefetch & ~abort_op & ~lut_in_use;
     arid        = {2'b0, curr_arid}; // zero extend to 12 bit
-    araddr      = push_cl_addr + + (cl_counter << 6); // each cache line is 64 bytes
+    araddr      = push_cl_addr + (cl_counter << 6); // each cache line is 64 bytes
     aruser      = 6'b100000;
 end
 
@@ -111,7 +111,7 @@ always_ff @(posedge axi4_mm_clk) begin
         if (arvalid & arready) begin
             curr_arid <= curr_arid + 10'd1;
             cl_counter <= cl_counter + 64'd1;
-            if (cl_counter == num_cl) begin
+            if (cl_counter + 1'd1 == num_cl) begin // 
                 cl_counter <= '0;
             end
         end

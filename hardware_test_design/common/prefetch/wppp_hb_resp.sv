@@ -42,20 +42,30 @@ always_comb begin
     end
 end
 
+always_comb begin
+	hb_resp_out = stage_2;
+	hb_resp_out.push_addr = push_page_addr_r;
+end
+
 always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
         stage_1 <= '0;
-        hb_resp_out <= '0;
+//        hb_resp_out <= '0;
+		  stage_2 <= '0;
     end
     else begin
         stage_1.push_valid <= stage_out_valid; // latch the valid
         stage_1.push_id <= {2'b0, curr_rid}; // zero extend to 12 bit
         stage_1.push_data <= rdata; // latch the data
-
-        hb_resp_out.push_valid <= stage_1.push_valid;
-        hb_resp_out.push_id <= stage_1.push_id;
-        hb_resp_out.push_data <= stage_1.push_data;
-        hb_resp_out.push_addr <= push_page_addr_r; // pass through from BRAM
+		  
+		  stage_2.push_valid <= stage_1.push_valid;
+		  stage_2.push_id <= stage_1.push_id;
+		  stage_2.push_data <= stage_1.push_data;
+		  
+//        hb_resp_out.push_valid <= stage_1.push_valid;
+//        hb_resp_out.push_id <= stage_1.push_id;
+//        hb_resp_out.push_data <= stage_1.push_data;
+//        hb_resp_out.push_addr <= push_page_addr_r; // pass through from BRAM
     end
 end
 endmodule
