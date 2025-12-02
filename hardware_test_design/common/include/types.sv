@@ -65,6 +65,12 @@ package wppprefetch_pkg;
         logic [511:0] push_data;
     } wppprefetch_rw_pipe_t;
 
+	 typedef struct packed {
+        logic [11:0] id;
+        logic [63:0] addr;
+        logic [511:0] data;
+    } ncp_fifo_t;
+
     typedef struct packed {
         logic [63:0] hint_addr;
         logic [8:0] hint_num_of_cl;

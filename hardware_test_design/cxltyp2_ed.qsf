@@ -278,3 +278,4 @@ set_global_assignment -name BOARD default
 set_global_assignment -name IP_FILE ip/bram/w4096_d64.ip
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_32w_73d.ip
 set_global_assignment -name IP_FILE ip/bram_pgmap_table.ip
+set_global_assignment -name IP_FILE common/ip/fifo/fifo_128w_588d.ip

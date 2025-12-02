@@ -187,8 +187,94 @@ assign  wuser        = '0   ;
 assign  bready       = '1	; // always ready to accept write response
 
 /* internal */
-// for simplicity, discard pipe in if wready is begin back pressured
-// logic aw_lock, w_lock;
-wppprefetch_rw_pipe_t pipe_in_reg, addr2data_pipe;
+logic full, empty;
+logic fifo_enq, fifo_deq;
+(* preserve_for_debug *) logic [6:0] curr_fifo_size;
+logic [31:0] success_cnt_r;
+ncp_fifo_t ncp_fifo_in, ncp_fifo_out;
+wppprefetch_rw_state_t ncp_state, next_ncp_state;
+
+assign success_count = success_cnt_r;
+
+fifo_128w_588d resp2ncp_fifo(
+	.data(ncp_fifo_in),  //  fifo_input.datain,  Data input of the memory.The data port is required for all FIFO operation.
+	.wrreq(fifo_enq), //            .wrreq,   wrreq input signal to request for write operation.The wrreq signal is required for all FIFO operation.
+	.rdreq(fifo_deq), //            .rdreq,   rdreq input signal to request for read operation.The rdreq signal is required for all FIFO operation.
+	.clock(axi4_mm_clk), //            .clk,     Positive-edge-triggered clock.
+	.q(ncp_fifo_out),     // fifo_output.dataout, Data output of the memory. This port is required for all FIFO operation.
+	.usedw(curr_fifo_size), //            .usedw,   Show the number of words stored in the FIFO.
+	.full(full),  //            .full,    When full signal is asserted, the FIFO IP core is considered full. Do not perform write request operation when the FIFO IP core is full.
+	.empty(empty)  //            .empty,   When empty signal is asserted, the FIFO IP core is considered empty.Do not perform read request operation when the FIFO IP core is empty.
+);
+
+// fifo enqueue drivers
+always_comb begin
+    fifo_enq = filter2ncp_pipe.push_valid & ~full;
+    ncp_fifo_in.id = filter2ncp_pipe.push_id;
+    ncp_fifo_in.addr = filter2ncp_pipe.push_addr;
+    ncp_fifo_in.data = filter2ncp_pipe.push_data;
+end
+
+always_ff @(posedge axi4_mm_clk) begin
+    if (!axi4_mm_rst_n) begin
+        ncp_state <= NCP_WRITE;
+        success_cnt_r <= '0;
+    end
+    else begin
+        ncp_state <= next_ncp_state;
+        unique case(ncp_state)
+            NCP_WRITE_DATA: begin
+                if (wready & wvalid) begin
+                    success_cnt_r <= success_cnt_r + 1;
+                end
+            end
+            default:;
+        endcase
+    end
+end
+
+/* state output */
+always_comb begin
+    awvalid = '0;
+    awuser = 7'b0100010; // NCP to host
+    awid = '0;
+    awaddr = '0;
+    wvalid = '0;
+    wstrb = 64'hFFFFFFFFFFFFFFFF; // all bytes valid
+    wlast = 1'b1;
+    wdata = '0;
+    unique case(ncp_state)
+        NCP_WRITE: begin
+            awvalid = (~empty); // only valid when fifo is not empty
+            awid = ncp_fifo_out.id;
+            awaddr = ncp_fifo_out.addr;
+        end
+        NCP_WRITE_DATA: begin
+            wvalid = 1'b1;
+            wdata = ncp_fifo_out.data;
+        end
+        default:;
+    endcase
+end
+
+/* state update */
+always_comb begin
+    next_ncp_state = ncp_state;
+    fifo_deq = 1'b0;
+    unique case(ncp_state)
+        NCP_WRITE: begin
+            if (awready & awvalid) begin
+                next_ncp_state = NCP_WRITE_DATA;
+            end
+        end
+        NCP_WRITE_DATA: begin
+            if (wready & wvalid) begin
+                fifo_deq = (~empty); // dequeue when fifo is not empty
+                next_ncp_state = NCP_WRITE;
+            end
+        end
+        default:;
+    endcase
+end
 
 endmodule
