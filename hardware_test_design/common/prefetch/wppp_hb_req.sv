@@ -57,6 +57,7 @@ logic [63:0] push_cl_addr;
 logic [63:0] addr_low_limit, addr_up_limit;
 logic start_prefetch;
 logic addr_in_range;
+(*preserve_for_debug *) logic [4:0] usedw;
 
 fifo_32w_73d hint_fifo(
 	.data(fifo_in_up/*fifo_in*/),
@@ -64,7 +65,7 @@ fifo_32w_73d hint_fifo(
 	.rdreq(dequeue_valid),
 	.clock(axi4_mm_clk),
 	.q(fifo_out_up/*fifo_out*/),
-	.usedw(),
+	.usedw(usedw),
 	.full(queue_full),
 	.empty(queue_empty)
 );
