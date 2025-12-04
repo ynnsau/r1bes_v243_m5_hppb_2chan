@@ -1926,11 +1926,12 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
   logic [63:0]  hppb_all_src_addr [ACTUAL_MIG_GRP_SIZE];
   logic [63:0]  hppb_src_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb1_src_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb_addr_pair_addr [ACTUAL_MIG_GRP_SIZE/2];
+  logic [63:0]  hppb_all_dst_addr [ACTUAL_MIG_GRP_SIZE];
+  logic [63:0]  hppb_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb1_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic         hppb_new_addr_available;
 
-  logic [63:0]  hppb_mig_done_cnt, hppb1_mig_done_cnt;
+  logic [63:0]  hppb_mig_done_cnt, hppb1_mig_done_cnt, hppb_mig_done_cnt_reg, hppb1_mig_done_cnt_reg;
 
   logic [63:0]  hppb_snoop_addr_pair_vld_cnt;
 
@@ -1960,7 +1961,7 @@ hot_page_push #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE/2)) hot_page_push
 
   .src_addr(hppb_src_addr),
   .new_addr_available(hppb_new_addr_available),
-  .dst_addr(hppb_addr_pair_addr),
+  .dst_addr(hppb_dst_addr),
 
   .mig_done_cnt(hppb_mig_done_cnt),
 
@@ -2027,6 +2028,17 @@ hot_page_push #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE/2)) hot_page_push_1
     .max_outstanding_wreq_cnt()
 );
 
+always_ff @(posedge ip2hdm_clk) begin
+  if (~ip2hdm_reset_n) begin
+    hppb_mig_done_cnt_reg <= '0;
+    hppb1_mig_done_cnt_reg <= '0;
+  end
+  else begin
+    hppb_mig_done_cnt_reg <= hppb_mig_done_cnt;
+    hppb1_mig_done_cnt_reg <= hppb1_mig_done_cnt;
+  end
+end
+
 hot_addr_push hot_addr_push
 (
   // Clocks
@@ -2036,7 +2048,7 @@ hot_addr_push hot_addr_push
   
   // Other signals
     .hapb_head(csr_hapb_head_eclk),
-    .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt),
+    .mig_done_cnt((hppb_mig_done_cnt_reg < hppb1_mig_done_cnt_reg) ? hppb_mig_done_cnt_reg : hppb1_mig_done_cnt_reg),
     .atleast_one_valid_src(atleast_one_valid_src | atleast_one_valid_src1),
     .hapb_valid_count(csr_hapb_valid_count),
 
@@ -2064,7 +2076,7 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
 
   .src_addr(hppb_src_addr),
   .src_addr1(hppb1_src_addr),
-  .dst_addr(hppb_addr_pair_addr),
+  .dst_addr(hppb_dst_addr),
   .dst_addr1(hppb1_dst_addr),
 
   .addr_pair_buf_pAddr(csr_addr_pair_buf_pAddr_eclk), //   Fixed after being set to something useful?
@@ -2078,7 +2090,7 @@ hot_page_addr_handler #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) hot_page_addr_handle
   .hppb_addr_pair_axi_r_ch(hppb_addr_pair_axi_ports.ar_req),
   .hppb_mig_done_axi_w_ch(hppb_mig_done_axi_ports.aw_req),
 
-  .mig_done_cnt((hppb_mig_done_cnt < hppb1_mig_done_cnt) ? hppb_mig_done_cnt : hppb1_mig_done_cnt)
+  .mig_done_cnt((hppb_mig_done_cnt_reg < hppb1_mig_done_cnt_reg) ? hppb_mig_done_cnt_reg : hppb1_mig_done_cnt_reg)
 );
 
 axi_arbiter #(.ARB_BIT_POS(10)) axi_arbiter_hppb0 
@@ -2139,8 +2151,10 @@ always_comb begin
     for (int i = 0; i < ACTUAL_MIG_GRP_SIZE; i++) begin
       if (i < (ACTUAL_MIG_GRP_SIZE/2)) begin
         hppb_all_src_addr[i] = hppb_src_addr[i];
+        hppb_all_dst_addr[i] = hppb_dst_addr[i];
       end else begin
         hppb_all_src_addr[i] = hppb1_src_addr[i - (ACTUAL_MIG_GRP_SIZE/2)];
+        hppb_all_dst_addr[i] = hppb1_dst_addr[i - (ACTUAL_MIG_GRP_SIZE/2)];
       end
     end
 end
@@ -2151,6 +2165,7 @@ page_tbl_update #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) page_tbl_update_inst
     .rst_n(ip2hdm_reset_n),
     .hppb_tbl_update(hppb_new_addr_available),
     .hppb_src_addr(hppb_all_src_addr),
+    .hppb_dst_addr(hppb_all_dst_addr),
 
     .hint_enq_sel_i(hint_enq_sel_i),
     .hint_enq_address_i(hint_enq_address_i),

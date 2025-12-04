@@ -184,7 +184,7 @@ logic    mig_done_cnt_incr;
             STATE_RD_ADDR: begin
                 hppb_axi_r_ch.arvalid = do_axi_read_work & ~rd_pg_num_change & (curr_outstanding_rreq_cnt < 256);  // only a valid request as long as the migration isn't stale (non-zero offset or new page), and there are spots
                 hppb_axi_r_ch.arid = {1'b0, rd_pg_num, rd_pg_offset};
-                hppb_axi_r_ch.aruser = {1'b1, csr_aruser[4:0]}; 
+                hppb_axi_r_ch.aruser = {src_addr_base[rd_pg_num] >= 64'h0000008080000000, csr_aruser[4:0]};//{1'b1, csr_aruser[4:0]}; 
                 hppb_axi_r_ch.araddr = src_addr_base[rd_pg_num] + rd_pg_offset * 512/8;       // byte aligned address
             end
             default:;
@@ -297,18 +297,20 @@ logic    mig_done_cnt_incr;
         endcase
     end
 
+    logic [63:0] dst_addr_base_from_fifo;
     always_comb begin
         set_wr_default();
         fifo_rdreq = '0;
         hppb_axi_w_ch.wdata = axi_wdata_stored;
+        dst_addr_base_from_fifo = '0;
         unique case(state_wr)
             STATE_WR_ADDR: begin
                 // can't expect to move anything if there's nothing to move or if the page is at address zero: second condition is handled by src already
-                hppb_axi_w_ch.awvalid = ~fifo_empty & (dst_addr_base[fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:518]] != '0);
-                hppb_axi_w_ch.awuser = csr_awuser; 
+                dst_addr_base_from_fifo = dst_addr_base[fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:518]];
+                hppb_axi_w_ch.awvalid = ~fifo_empty & (dst_addr_base_from_fifo != '0);
+                hppb_axi_w_ch.awuser = {dst_addr_base_from_fifo >= 64'h0000008080000000, csr_awuser[4:0]};//csr_awuser; 
                 hppb_axi_w_ch.awid = {1'b0, fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:512]};
-                hppb_axi_w_ch.awaddr = dst_addr_base[fifo_rdata[($clog2(MIG_GRP_SIZE)-1) + 518:518]] + fifo_rdata[517:512] * 512/8;       // byte aligned address
-
+                hppb_axi_w_ch.awaddr = dst_addr_base_from_fifo + fifo_rdata[517:512] * 512/8;       // byte aligned address
                 // fifo_rdreq only happens once when handshake occurs
                 fifo_rdreq = hppb_axi_w_ch.awready & ~fifo_empty;
 

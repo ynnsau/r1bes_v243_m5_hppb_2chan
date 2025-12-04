@@ -7,6 +7,7 @@ module page_tbl_update
     input  logic         rst_n,
     input  logic         hppb_tbl_update,   // only one pulse
     input  logic [63:0]  hppb_src_addr[MIG_GRP_SIZE],
+    input  logic [63:0]  hppb_dst_addr[MIG_GRP_SIZE],
 
     input  logic         hint_enq_sel_i,
     input  logic [63:0]  hint_enq_address_i,
@@ -17,7 +18,7 @@ module page_tbl_update
     output logic [15:0]  hint_enq_num_of_cl_o
 );
 
-    logic [63:0] page_tbl_in;
+    logic [63:0] page_tbl_in, page_tbl_in_next;
     logic [63:0] page_tbl_out;
     logic        update_en;
     logic [$clog2(MIG_GRP_SIZE)-1:0] pg_update_idx;
@@ -29,6 +30,7 @@ module page_tbl_update
     logic [15:0] page_tbl_hppb_addr;
 
     logic [63:0] hppb_src_addr_reg[MIG_GRP_SIZE];
+    logic [63:0] hppb_dst_addr_reg[MIG_GRP_SIZE];
     logic hppb_tbl_update_reg;
     bram_pgmap_table bram_pgmap_table (  // 0 == page in CXL, 1 == page in HOST 
         .data    (page_tbl_in),
@@ -46,9 +48,11 @@ module page_tbl_update
             update_en <= 1'b0;
             page_tbl_in <= '0;
             hppb_src_addr_reg <= '{default:'0};
+            hppb_dst_addr_reg <= '{default:'0};
         end else begin
             if (hppb_tbl_update) begin
                 hppb_src_addr_reg <= hppb_src_addr;
+                hppb_dst_addr_reg <= hppb_dst_addr;
                 hppb_tbl_update_reg <= 1'b1;
             end
             if (hppb_tbl_update_reg) begin
@@ -58,7 +62,7 @@ module page_tbl_update
             if (page_tbl_update_vld) begin
                 if (page_tbl_rmw == 1'b0) begin
                     // Read phase
-                    page_tbl_in <= page_tbl_out | page_tbl_update_pg_set;
+                    page_tbl_in <= page_tbl_in_next;
                     update_en <= 1'b1;
                 end else begin
                     // Write phase
@@ -75,28 +79,54 @@ module page_tbl_update
         end
     end
 
+    logic demotion;
     always_comb begin
-        page_tbl_update_pg_set =  1 << (hppb_src_addr_reg[pg_update_idx][17:12]);
-        page_tbl_hppb_addr = hppb_src_addr_reg[pg_update_idx][33:18];
+        page_tbl_update_pg_set = '0;
+        page_tbl_hppb_addr = '0;
+        demotion = 1'b0;
+        unique case({hppb_src_addr_reg[pg_update_idx] >= 64'h0000008080000000, hppb_dst_addr_reg[pg_update_idx] >= 64'h0000008080000000})
+            2'b00: begin // HOST to HOST
+                page_tbl_update_pg_set = 64'h0;
+            end
+            2'b01: begin // HOST to CXL
+                page_tbl_update_pg_set = ~(64'(1) << (hppb_dst_addr_reg[pg_update_idx][17:12]));
+                page_tbl_hppb_addr = hppb_dst_addr_reg[pg_update_idx][33:18];
+                demotion = 1'b1;
+            end
+            2'b10: begin // CXL to HOST
+                page_tbl_update_pg_set = 64'(1) << (hppb_src_addr_reg[pg_update_idx][17:12]);
+                page_tbl_hppb_addr = hppb_src_addr_reg[pg_update_idx][33:18];
+            end
+            2'b11: begin // CXL to CXL
+                page_tbl_update_pg_set = 64'h0;
+            end
+            default:;
+        endcase
+        page_tbl_in_next = demotion ? page_tbl_out & page_tbl_update_pg_set : page_tbl_out | page_tbl_update_pg_set;
+        // page_tbl_update_pg_set =  1 << (hppb_src_addr_reg[pg_update_idx][17:12]);
+        // page_tbl_hppb_addr = hppb_src_addr_reg[pg_update_idx][33:18];
     end
 
     logic [63:0] hint_enq_address_reg;
+    logic [63:0] hint_enq_address_o_next;
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             hint_enq_sel_o        <= '0;
             hint_enq_num_of_cl_o  <= '0;
             hint_enq_address_reg  <= '0;
+            hint_enq_address_o    <= '0;
         end else begin
             hint_enq_sel_o        <= hint_enq_sel_i;
             hint_enq_num_of_cl_o  <= hint_enq_num_of_cl_i;
             hint_enq_address_reg  <= hint_enq_address_i;
+            hint_enq_address_o    <= hint_enq_address_o_next;
         end
     end
 
     logic hint_enq_addr_cancel;
     always_comb begin
-        hint_enq_addr_cancel = (1 << hint_enq_address_reg[17:12]) & page_tbl_out;
-        hint_enq_address_o = (page_tbl_update_vld | hint_enq_addr_cancel) ? '0 : hint_enq_address_reg;  // single port
+        hint_enq_addr_cancel = ((1 << hint_enq_address_reg[17:12]) & page_tbl_out) != 0;
+        hint_enq_address_o_next = (page_tbl_update_vld | hint_enq_addr_cancel) ? '0 : hint_enq_address_reg;  // single port
     end
 
 endmodule
