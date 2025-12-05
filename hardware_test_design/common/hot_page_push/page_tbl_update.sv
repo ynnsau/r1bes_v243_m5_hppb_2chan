@@ -107,17 +107,24 @@ module page_tbl_update
         // page_tbl_hppb_addr = hppb_src_addr_reg[pg_update_idx][33:18];
     end
 
-    logic [63:0] hint_enq_address_reg;
-    logic [63:0] hint_enq_address_o_next;
+    logic [63:0]  hint_enq_address_reg;
+    logic [63:0]  hint_enq_address_o_next;
+    logic         hint_enq_sel_reg;
+    logic [15:0]  hint_enq_num_of_cl_reg;
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             hint_enq_sel_o        <= '0;
             hint_enq_num_of_cl_o  <= '0;
-            hint_enq_address_reg  <= '0;
             hint_enq_address_o    <= '0;
+            hint_enq_address_reg  <= '0;
+            hint_enq_sel_reg       <= '0;
+            hint_enq_num_of_cl_reg <= '0;
         end else begin
-            hint_enq_sel_o        <= hint_enq_sel_i;
-            hint_enq_num_of_cl_o  <= hint_enq_num_of_cl_i;
+            hint_enq_sel_reg      <= hint_enq_sel_i;
+            hint_enq_sel_o        <= hint_enq_sel_reg;
+            hint_enq_num_of_cl_reg <= hint_enq_num_of_cl_i;
+            hint_enq_num_of_cl_o  <= hint_enq_num_of_cl_reg;
+
             hint_enq_address_reg  <= hint_enq_address_i;
             hint_enq_address_o    <= hint_enq_address_o_next;
         end
