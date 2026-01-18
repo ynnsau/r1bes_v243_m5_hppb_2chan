@@ -50,7 +50,7 @@ import wppprefetch_pkg::*;
 );
 
 /* local param */
-localparam NCP_PIPE_ON = 1; // update this to use pipeline
+localparam NCP_PIPE_ON = 1; // update this to use pipeline, no changes required here
 localparam MAX_REQUEST_COUNT = 32'd256; // max prefetch request count
 // localparam SIM_ON = 0;
 
@@ -66,11 +66,8 @@ wppprefetch_rw_pipe_t hb_resp_out; // , filter_out; // stage out
 wppprefetch_rw_pipe_t hb2ncp_pipe; // stage register
 // wppprefetch_rw_pipe_t hb2filter_pipe, filter2ncp_pipe; // stage register
 
-
 assign prefetch_ok_cnt = {32'b00000000, success_count}; // statistics output
 assign prefetch_abt_cnt = 64'b0; // not implemented yet
-
-
 
 // pipeline registers
 always_ff @(posedge axi4_mm_clk) begin
@@ -215,6 +212,7 @@ generate
             .buser(wppp_axi_w_ch.buser),
             .bvalid(wppp_axi_w_ch.bvalid),
             .bready(wppp_axi_w_ch.bready),
+            .csr_awuser(csr_awuser),
             .filter2ncp_pipe(hb2ncp_pipe),
             .success_count(success_count)
         );

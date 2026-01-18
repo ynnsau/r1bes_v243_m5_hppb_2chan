@@ -70,6 +70,11 @@ import mig_params::*;
 
    output logic [5:0] csr_aruser,
    output logic [6:0] csr_awuser,
+
+   // user bits used by push engine
+   output logic [5:0] csr_push_aruser,
+   output logic [6:0] csr_push_awuser,
+
    output logic [33:0]  csr_addr_ub,
    output logic [33:0]  csr_addr_lb,
    output logic [63:0] csr_prefetch_fifo_ahead_offset,
@@ -160,6 +165,11 @@ import mig_params::*;
 
        .csr_aruser(csr_aruser),
        .csr_awuser(csr_awuser),
+       
+        // user bits used by push engine
+        .csr_push_aruser(csr_push_aruser),
+        .csr_push_awuser(csr_push_awuser),
+
        .csr_addr_ub(csr_addr_ub),
        .csr_addr_lb(csr_addr_lb),
         .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),

@@ -169,6 +169,8 @@ import wppprefetch_pkg::*;
     input logic                       bvalid,
     output logic                      bready,
 
+    input logic [6:0] csr_awuser,
+
     input wppprefetch_rw_pipe_t filter2ncp_pipe,
     output logic [31:0] success_count
 ); // contain mini pipe
@@ -236,7 +238,8 @@ end
 /* state output */
 always_comb begin
     awvalid = '0;
-    awuser = 7'b0100010; // NCP to host
+    // awuser = 7'b0100010; // NCP to host, default behavior
+    awuser = csr_awuser; // user defined
     awid = '0;
     awaddr = '0;
     wvalid = '0;

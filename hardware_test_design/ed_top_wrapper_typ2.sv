@@ -1765,6 +1765,9 @@ logic [63:0]  hint_enq_address_i, hint_enq_address_o;
 logic [15:0]   hint_enq_num_of_cl_i, hint_enq_num_of_cl_o;
 logic [63:0]  csr_hint_mech_addr_aclk, csr_hint_mech_addr_eclk;
 
+logic [5:0] csr_push_aruser;
+logic [6:0] csr_push_awuser;
+
 assign enqueue_valid_i_0 = (hint_enq_address_o != '0) & (hint_enq_sel_o == 0);
 assign enqueue_address_i_0 = hint_enq_address_o;
 assign enqueue_num_of_cl_i_0 = hint_enq_num_of_cl_o;
@@ -1810,8 +1813,8 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_0(
   .axi4_mm_rst_n                         (ip2hdm_reset_n),  // reset
   // .prefetch_page_addr(prefetch_page_addr_0),
   // .start_prefetch(start_prefetch_0), // connect to the prefetch dummy
-  .csr_aruser(csr_aruser),
-  .csr_awuser(csr_awuser),
+  .csr_aruser(csr_push_aruser),
+  .csr_awuser(csr_push_awuser),
   .csr_flush_lut(csr_flush_lut),
 
   .start_address_i(cxl_start_pa), 	        // user defined starting address
@@ -1837,48 +1840,15 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_0(
 
   .wppp_axi_r_ch(wppp_axi0_ports.ar_req),
   .wppp_axi_w_ch(wppp_axi0_ports.aw_req)
-
-  // .direct_ncp(direct_ncp), // connect to the prefetch dummy
-  // .end_prefetch(prefetch_end),  // not used for now
-  // .clst_d1_tvalid(ip2cafu_axistd1_tvalid),
-  // .clst_d1_tdata(ip2cafu_axistd1_tdata),
-  // .prefetch_rw_curr_state(prefetch_rw_curr_state),
-  // .curr_working_address(curr_working_address), 
-  // .addr_seen(addr_seen), // signal provided by AFU to allow prefetching
 );
-
-// prefetch_hint_fifo prefetch_hint_fifo_inst_1(
-//     .clk_i(ip2hdm_clk),
-//     .reset_ni(ip2hdm_reset_n),				
-//     .start_address_i(cxl_start_pa),   // start address for prefetching, 64-bit
-//     .address_lower_i(csr_addr_lb),		// 8GB offset range, lower bound
-//     .address_upper_i(csr_addr_ub),		// 8GB offset range, upper bound
-//     .csr_prefetch_interval_i(csr_prefetch_interval),	
-	 
-//     .enqueue_valid_i(enqueue_valid_i_1),
-//     .enqueue_address_i(enqueue_address_i_1),       // enqueued physical address, 64 bits
-//     .enqueue_num_of_cl_i(enqueue_num_of_cl_i_1),      // number of cache lines to enqueue, 9 bits
-//     .is_prefetch_o(start_prefetch_1),
-//     .prefetch_addr_o(prefetch_page_addr_1)
-
-//     // prefetch fifo signals, not used for hint fifo
-//     // .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
-//     // .chan0_address_i(ip2hdm_aximm0_araddr),
-//     // .chan0_address_valid(ip2hdm_aximm0_arvalid & iafu2cxlip_from_mc_axi4[0].arready),
-//     // .chan1_address_i(ip2hdm_aximm1_araddr),
-//     // .chan1_address_valid(ip2hdm_aximm1_arvalid & iafu2cxlip_from_mc_axi4[1].arready),
-//     // .get_next_addr(prefetch_get_next_addr),
-//     // .addr_issued(prefetch_addr_issued),
-//     // .is_direct_ncp_o(direct_ncp)
-// );
 
 wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
   .axi4_mm_clk                           (ip2hdm_clk),      // clk
   .axi4_mm_rst_n                         (ip2hdm_reset_n),  // reset
   // .prefetch_page_addr(prefetch_page_addr_1),
   // .start_prefetch(start_prefetch_1), // connect to the prefetch dummy
-  .csr_aruser(csr_aruser),
-  .csr_awuser(csr_awuser),
+  .csr_aruser(csr_push_aruser),
+  .csr_awuser(csr_push_awuser),
   .csr_flush_lut(csr_flush_lut),
 
 	.start_address_i(cxl_start_pa), 	        // user defined starting address
@@ -2857,6 +2827,11 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     .csr_prefetch_interval  (csr_prefetch_interval),
     .csr_aruser             (csr_aruser),
     .csr_awuser             (csr_awuser),
+
+    // user bits for push engine
+    .csr_push_aruser(csr_push_aruser),
+    .csr_push_awuser(csr_push_awuser),
+    
     .csr_addr_ub            (csr_addr_ub),
     .csr_addr_lb            (csr_addr_lb),
     .csr_prefetch_fifo_ahead_offset(csr_prefetch_fifo_ahead_offset),
