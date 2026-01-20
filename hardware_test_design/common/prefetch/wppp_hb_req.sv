@@ -22,8 +22,8 @@ import wppprefetch_pkg::*;
     // other signals
 	input logic [63:0] start_address_i, 	        // user defined starting address
     input logic enable_prefetch_i,
-	input logic [33:0] address_lower_i,		// 16GB range
-	input logic [33:0] address_upper_i,		// 16GB range
+	input logic [63:0] address_lower_i,		// 16GB range
+	input logic [63:0] address_upper_i,		// 16GB range
     input logic enqueue_valid_i,
     input logic [63:0] enqueue_address_i,       // enqueued physical address, 64 bits
     input logic [15:0] enqueue_num_of_cl_i,      // number of cache lines to enqueue, 9 bits
@@ -33,6 +33,7 @@ import wppprefetch_pkg::*;
     // input [63:0] prefetch_page_addr,
     // output logic addr_issued,
     // output logic get_next_addr,
+    input logic [5:0] csr_aruser, // aruser from csr
     input logic lut_in_use,
     input logic abort_op,
     output logic write_lut // writing the LUT entry
@@ -100,7 +101,7 @@ always_comb begin
     arvalid     = ~queue_empty & start_prefetch & ~abort_op & ~lut_in_use;
     arid        = {2'b0, curr_arid}; // zero extend to 12 bit
     araddr      = push_cl_addr + (cl_counter << 6); // each cache line is 64 bytes
-    aruser      = 6'b100000;
+    aruser      = csr_aruser; //6'b100000;
 end
 
 always_ff @(posedge axi4_mm_clk) begin

@@ -16,8 +16,8 @@ import wppprefetch_pkg::*;
     input logic [6:0] csr_awuser,
 	input logic [63:0] start_address_i, 	        // user defined starting address
     input logic enable_prefetch_i,
-	input logic [33:0] address_lower_i,		// 16GB range
-	input logic [33:0] address_upper_i,		// 16GB range
+	input logic [63:0] address_lower_i,		// 16GB range
+	input logic [63:0] address_upper_i,		// 16GB range
     input logic enqueue_valid_i,
     input logic [63:0] enqueue_address_i,       // enqueued physical address, 64 bits
     input logic [15:0] enqueue_num_of_cl_i,      // number of cache lines to enqueue, 9 bits
@@ -122,6 +122,8 @@ wppp_hb_req hb_req_inst(
     .enqueue_address_i(enqueue_address_i),       // enqueued physical address, 64 bits
     .enqueue_num_of_cl_i(enqueue_num_of_cl_i),      // number of cache lines to enqueue, 9 bits
 
+
+    .csr_aruser(csr_aruser),
     .lut_in_use(lut_in_use),
     .abort_op(abort_op),
     .write_lut(write_lut)

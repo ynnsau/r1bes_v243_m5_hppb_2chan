@@ -80,8 +80,8 @@ import mig_params::*;
    output logic [5:0] csr_push_aruser,
    output logic [6:0] csr_push_awuser,
 
-   output logic [33:0]  csr_addr_ub,
-   output logic [33:0]  csr_addr_lb,
+   output logic [63:0]  csr_addr_ub,
+   output logic [63:0]  csr_addr_lb,
    output logic [63:0] csr_prefetch_fifo_ahead_offset,
    output logic csr_flush_lut,
 
@@ -494,7 +494,7 @@ import mig_params::*;
         h_pfn_wr_idx_rst = 1'b0;
 
         // reg_12, used to set ar/aw-user for push engine
-        csr_push_aruser = data[12][5:0]; // 6 bits
+        csr_push_aruser = (data[12][31:0] == '0) ? 6'b100000 : data[12][5:0];
         csr_push_awuser = (data[12][63:32] == '0) ? 7'b0100010 : data[12][38:32]; // default to NCP to host, if user not set
         
         // reg_13 -- ar/aw-user for hot page push op
@@ -506,10 +506,10 @@ import mig_params::*;
         cxl_addr_offset = data[14];
 
         // reg_15 -- monitor lower bound
-        csr_addr_lb = data[15][33:0];
+        csr_addr_lb = data[15][63:0];
         
         // reg_16 -- monitor upper bound
-        csr_addr_ub = data[16][33:0];
+        csr_addr_ub = data[16][63:0];
 
         csr_prefetch_fifo_ahead_offset = data[17];
         csr_flush_lut = data[18][0];

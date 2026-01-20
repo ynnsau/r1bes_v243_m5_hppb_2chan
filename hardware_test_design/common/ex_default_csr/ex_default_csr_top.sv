@@ -75,8 +75,8 @@ import mig_params::*;
    output logic [5:0] csr_push_aruser,
    output logic [6:0] csr_push_awuser,
 
-   output logic [33:0]  csr_addr_ub,
-   output logic [33:0]  csr_addr_lb,
+   output logic [63:0]  csr_addr_ub,
+   output logic [63:0]  csr_addr_lb,
    output logic [63:0] csr_prefetch_fifo_ahead_offset,
    output logic csr_flush_lut,
 
