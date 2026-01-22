@@ -1733,8 +1733,10 @@ logic [63:0] prefetch_ok_cnt_0, prefetch_ok_cnt_1;  // for prefetching stat, suc
 
 // for dummy
 logic direct_ncp;
-logic [33:0]  csr_addr_ub;
-logic [33:0]  csr_addr_lb;
+// logic [33:0]  csr_addr_ub;
+// logic [33:0]  csr_addr_lb;
+logic [63:0]  csr_addr_ub;
+logic [63:0]  csr_addr_lb;
 logic [5:0] csr_aruser;
 logic [5:0] csr_awuser;
 logic [31:0] csr_prefetch_interval;
