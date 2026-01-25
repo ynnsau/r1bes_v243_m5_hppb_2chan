@@ -151,75 +151,76 @@ wppp_hb_resp hb_resp_inst(
     .hb_resp_out(hb_resp_out)
 );
 
-generate
-    if (NCP_PIPE_ON) begin
-        wppp_ncp_pipe ncp_inst(
-         .axi4_mm_clk(axi4_mm_clk),
-            .axi4_mm_rst_n(axi4_mm_rst_n),
-            .awid(wppp_axi_w_ch.awid),
-            .awaddr(wppp_axi_w_ch.awaddr),
-            .awlen(wppp_axi_w_ch.awlen),
-            .awsize(wppp_axi_w_ch.awsize),
-            .awburst(wppp_axi_w_ch.awburst),
-            .awprot(wppp_axi_w_ch.awprot),
-            .awqos(wppp_axi_w_ch.awqos),
-            .awuser(wppp_axi_w_ch.awuser),
-            .awvalid(wppp_axi_w_ch.awvalid),
-            .awcache(wppp_axi_w_ch.awcache),
-            .awlock(wppp_axi_w_ch.awlock),
-            .awregion(wppp_axi_w_ch.awregion),
-            .awatop(wppp_axi_w_ch.awatop),
-            .awready(wppp_axi_w_ch.awready),
-            .wdata(wppp_axi_w_ch.wdata),
-            .wstrb(wppp_axi_w_ch.wstrb),
-            .wlast(wppp_axi_w_ch.wlast),
-            .wuser(wppp_axi_w_ch.wuser),
-            .wvalid(wppp_axi_w_ch.wvalid),
-            .wready(wppp_axi_w_ch.wready),
-            .bid(wppp_axi_w_ch.bid),
-            .bresp(wppp_axi_w_ch.bresp),
-            .buser(wppp_axi_w_ch.buser),
-            .bvalid(wppp_axi_w_ch.bvalid),
-            .bready(wppp_axi_w_ch.bready),
-            .filter2ncp_pipe(hb2ncp_pipe),
-            .success_count(success_count)
-        );
-    end
-    else begin
-        wppp_ncp ncp_inst(
-            .axi4_mm_clk(axi4_mm_clk),
-            .axi4_mm_rst_n(axi4_mm_rst_n),
-            .awid(wppp_axi_w_ch.awid),
-            .awaddr(wppp_axi_w_ch.awaddr),
-            .awlen(wppp_axi_w_ch.awlen),
-            .awsize(wppp_axi_w_ch.awsize),
-            .awburst(wppp_axi_w_ch.awburst),
-            .awprot(wppp_axi_w_ch.awprot),
-            .awqos(wppp_axi_w_ch.awqos),
-            .awuser(wppp_axi_w_ch.awuser),
-            .awvalid(wppp_axi_w_ch.awvalid),
-            .awcache(wppp_axi_w_ch.awcache),
-            .awlock(wppp_axi_w_ch.awlock),
-            .awregion(wppp_axi_w_ch.awregion),
-            .awatop(wppp_axi_w_ch.awatop),
-            .awready(wppp_axi_w_ch.awready),
-            .wdata(wppp_axi_w_ch.wdata),
-            .wstrb(wppp_axi_w_ch.wstrb),
-            .wlast(wppp_axi_w_ch.wlast),
-            .wuser(wppp_axi_w_ch.wuser),
-            .wvalid(wppp_axi_w_ch.wvalid),
-            .wready(wppp_axi_w_ch.wready),
-            .bid(wppp_axi_w_ch.bid),
-            .bresp(wppp_axi_w_ch.bresp),
-            .buser(wppp_axi_w_ch.buser),
-            .bvalid(wppp_axi_w_ch.bvalid),
-            .bready(wppp_axi_w_ch.bready),
-            .csr_awuser(csr_awuser),
-            .filter2ncp_pipe(hb2ncp_pipe),
-            .success_count(success_count)
-        );
-    end
-endgenerate
+ generate
+     if (NCP_PIPE_ON) begin
+			wppp_ncp_pipe ncp_inst(
+				 .axi4_mm_clk(axi4_mm_clk),
+				 .axi4_mm_rst_n(axi4_mm_rst_n),
+				 .awid(wppp_axi_w_ch.awid),
+				 .awaddr(wppp_axi_w_ch.awaddr),
+				 .awlen(wppp_axi_w_ch.awlen),
+				 .awsize(wppp_axi_w_ch.awsize),
+				 .awburst(wppp_axi_w_ch.awburst),
+				 .awprot(wppp_axi_w_ch.awprot),
+				 .awqos(wppp_axi_w_ch.awqos),
+				 .awuser(wppp_axi_w_ch.awuser),
+				 .awvalid(wppp_axi_w_ch.awvalid),
+				 .awcache(wppp_axi_w_ch.awcache),
+				 .awlock(wppp_axi_w_ch.awlock),
+				 .awregion(wppp_axi_w_ch.awregion),
+				 .awatop(wppp_axi_w_ch.awatop),
+				 .awready(wppp_axi_w_ch.awready),
+				 .wdata(wppp_axi_w_ch.wdata),
+				 .wstrb(wppp_axi_w_ch.wstrb),
+				 .wlast(wppp_axi_w_ch.wlast),
+				 .wuser(wppp_axi_w_ch.wuser),
+				 .wvalid(wppp_axi_w_ch.wvalid),
+				 .wready(wppp_axi_w_ch.wready),
+				 .bid(wppp_axi_w_ch.bid),
+				 .bresp(wppp_axi_w_ch.bresp),
+				 .buser(wppp_axi_w_ch.buser),
+				 .bvalid(wppp_axi_w_ch.bvalid),
+				 .bready(wppp_axi_w_ch.bready),
+				 .csr_awuser(csr_awuser),
+				 .filter2ncp_pipe(hb2ncp_pipe),
+				 .success_count(success_count)
+			);
+	  end
+     else begin
+         wppp_ncp ncp_inst(
+             .axi4_mm_clk(axi4_mm_clk),
+             .axi4_mm_rst_n(axi4_mm_rst_n),
+             .awid(wppp_axi_w_ch.awid),
+             .awaddr(wppp_axi_w_ch.awaddr),
+             .awlen(wppp_axi_w_ch.awlen),
+             .awsize(wppp_axi_w_ch.awsize),
+             .awburst(wppp_axi_w_ch.awburst),
+             .awprot(wppp_axi_w_ch.awprot),
+             .awqos(wppp_axi_w_ch.awqos),
+             .awuser(wppp_axi_w_ch.awuser),
+             .awvalid(wppp_axi_w_ch.awvalid),
+             .awcache(wppp_axi_w_ch.awcache),
+             .awlock(wppp_axi_w_ch.awlock),
+             .awregion(wppp_axi_w_ch.awregion),
+             .awatop(wppp_axi_w_ch.awatop),
+             .awready(wppp_axi_w_ch.awready),
+             .wdata(wppp_axi_w_ch.wdata),
+             .wstrb(wppp_axi_w_ch.wstrb),
+             .wlast(wppp_axi_w_ch.wlast),
+             .wuser(wppp_axi_w_ch.wuser),
+             .wvalid(wppp_axi_w_ch.wvalid),
+             .wready(wppp_axi_w_ch.wready),
+             .bid(wppp_axi_w_ch.bid),
+             .bresp(wppp_axi_w_ch.bresp),
+             .buser(wppp_axi_w_ch.buser),
+             .bvalid(wppp_axi_w_ch.bvalid),
+             .bready(wppp_axi_w_ch.bready),
+             .csr_awuser(csr_awuser),
+             .filter2ncp_pipe(hb2ncp_pipe),
+             .success_count(success_count)
+         );
+     end
+ endgenerate
 endmodule
 
 /*
