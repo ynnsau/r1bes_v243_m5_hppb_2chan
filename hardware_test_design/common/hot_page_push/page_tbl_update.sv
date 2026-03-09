@@ -32,13 +32,14 @@ module page_tbl_update
     logic [63:0] hppb_src_addr_reg[MIG_GRP_SIZE];
     logic [63:0] hppb_dst_addr_reg[MIG_GRP_SIZE];
     logic hppb_tbl_update_reg;
-    bram_pgmap_table bram_pgmap_table (  // 0 == page in CXL, 1 == page in HOST 
-        .data    (page_tbl_in),
-        .address ((hppb_tbl_update_reg | page_tbl_update_vld) ? page_tbl_hppb_addr : hint_enq_address_i[33:18]),
-        .wren    (update_en),
-        .clock   (clk),
-        .q       (page_tbl_out)
-    );
+    // bram_pgmap_table bram_pgmap_table (  // 0 == page in CXL, 1 == page in HOST 
+    //     .data    (page_tbl_in),
+    //     .address ((hppb_tbl_update_reg | page_tbl_update_vld) ? page_tbl_hppb_addr : hint_enq_address_i[33:18]),
+    //     .wren    (update_en),
+    //     .clock   (clk),
+    //     .q       (page_tbl_out)
+    // );
+    assign page_tbl_out = '0;
 
     always_ff @(posedge clk) begin
         if (~rst_n) begin

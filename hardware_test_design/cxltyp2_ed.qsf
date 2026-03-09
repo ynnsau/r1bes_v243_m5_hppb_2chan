@@ -14,7 +14,7 @@
 set_global_assignment -name TOP_LEVEL_ENTITY cxltyp2_ed
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 24.1
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "02:50:54  JUNE 02, 2022"
-set_global_assignment -name LAST_QUARTUS_VERSION "24.3.0 Pro Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "24.3.0 SP0.35 Pro Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name FAMILY "Agilex 7"
 set_global_assignment -name DEVICE AGIB027R29A1E2VR3

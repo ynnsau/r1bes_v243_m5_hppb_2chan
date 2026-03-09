@@ -2187,8 +2187,11 @@ axi_arbiter #(.ARB_BIT_POS(11)) axi_arbiter_merge0
   .axi_r_ch(axi0_ports.ar_req),
   .axi_w_ch(axi0_ports.aw_req),
 
-  .p0_axi_r_ch(wppp_axi0_ports.ar_resp),
-  .p0_axi_w_ch(wppp_axi0_ports.aw_resp),
+  .p0_axi_r_ch(stub0_axi_ports.ar_resp),
+  .p0_axi_w_ch(stub0_axi_ports.aw_resp),  
+
+  // .p0_axi_r_ch(wppp_axi0_ports.ar_resp),
+  // .p0_axi_w_ch(wppp_axi0_ports.aw_resp),
 
   .p1_axi_r_ch(hppb_merge_axi0_ports.ar_resp),
   .p1_axi_w_ch(hppb_merge_axi0_ports.aw_resp)
