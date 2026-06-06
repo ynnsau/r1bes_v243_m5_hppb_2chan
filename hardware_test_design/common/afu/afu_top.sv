@@ -177,7 +177,16 @@ always_ff @( posedge afu_clk ) begin : blockName
         if (hint_mech_data_ptr == '1) begin
             hint_mech_valid <= 1'b0;
         end
-        if (iafu2mc_to_mc_axi4[0].awvalid && hint_mech_addr[51:0] == cxlip2iafu_to_mc_axi4[0].awaddr[51:0]) begin
+
+        // if (iafu2mc_to_mc_axi4[0].awvalid && hint_mech_addr[51:0] == cxlip2iafu_to_mc_axi4[0].awaddr[51:0]) begin
+        //     hint_mech_data_ptr <= '0;
+        //     hint_mech_valid <= 1'b1;
+        //     hint_mech_data <= cxlip2iafu_to_mc_axi4[0].wdata;
+        //     wppp_sel <= ~wppp_sel; // ping-pong between 0 or 1
+        // end
+
+        // checking if the address is within the page range
+        if (iafu2mc_to_mc_axi4[0].awvalid && hint_mech_addr[51:12] == cxlip2iafu_to_mc_axi4[0].awaddr[51:12]) begin
             hint_mech_data_ptr <= '0;
             hint_mech_valid <= 1'b1;
             hint_mech_data <= cxlip2iafu_to_mc_axi4[0].wdata;

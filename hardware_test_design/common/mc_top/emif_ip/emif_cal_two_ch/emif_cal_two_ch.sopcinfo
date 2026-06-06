@@ -4,8 +4,8 @@
  kind="emif_cal_two_ch"
  version="1.0"
  fabric="QSYS">
- <!-- Format version 24.3 212 (Future versions may contain additional information.) -->
- <!-- 2025.03.07.02:55:13 -->
+ <!-- Format version 25.3 109 (Future versions may contain additional information.) -->
+ <!-- 2026.06.05.21:25:34 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
@@ -81,9 +81,9 @@
  <module
    name="emif_cal"
    kind="altera_emif_cal"
-   version="2.7.5"
-   entity="emif_cal_two_ch_altera_emif_cal_275_j4svqoi"
-   library="altera_emif_cal_275"
+   version="2.7.8"
+   entity="emif_cal_two_ch_altera_emif_cal_278_uoqscxa"
+   library="altera_emif_cal_278"
    path="emif_cal"
    hpath="emif_cal"
    className="altera_emif_cal">
@@ -238,7 +238,7 @@ the requested settings for a module instance. -->
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
-  <interface name="emif_calbus_0" kind="conduit_end" version="24.3">
+  <interface name="emif_calbus_0" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -322,7 +322,7 @@ parameters are a RESULT of the module parameters. -->
     <role>calbus_seq_param_tbl</role>
    </port>
   </interface>
-  <interface name="emif_calbus_1" kind="conduit_end" version="24.3">
+  <interface name="emif_calbus_1" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -406,7 +406,7 @@ parameters are a RESULT of the module parameters. -->
     <role>calbus_seq_param_tbl</role>
    </port>
   </interface>
-  <interface name="emif_calbus_clk" kind="clock_source" version="24.3">
+  <interface name="emif_calbus_clk" kind="clock_source" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -480,9 +480,9 @@ parameters are a RESULT of the module parameters. -->
  <module
    name="emif_cal_emif_cal"
    kind="altera_emif_cal_iossm"
-   version="2.7.5"
-   entity="emif_cal_two_ch_altera_emif_cal_iossm_275_fpnid7a"
-   library="altera_emif_cal_iossm_275"
+   version="2.7.8"
+   entity="emif_cal_two_ch_altera_emif_cal_iossm_278_6tsu7ti"
+   library="altera_emif_cal_iossm_278"
    path="emif_cal.emif_cal"
    hpath="emif_cal|emif_cal"
    className="altera_emif_cal_iossm">
@@ -792,7 +792,7 @@ the requested settings for a module instance. -->
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
-  <interface name="emif_calbus_0" kind="conduit_end" version="24.3">
+  <interface name="emif_calbus_0" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -876,7 +876,7 @@ parameters are a RESULT of the module parameters. -->
     <role>calbus_seq_param_tbl</role>
    </port>
   </interface>
-  <interface name="emif_calbus_1" kind="conduit_end" version="24.3">
+  <interface name="emif_calbus_1" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -960,7 +960,7 @@ parameters are a RESULT of the module parameters. -->
     <role>calbus_seq_param_tbl</role>
    </port>
   </interface>
-  <interface name="emif_calbus_clk" kind="clock_source" version="24.3">
+  <interface name="emif_calbus_clk" kind="clock_source" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -1036,8 +1036,8 @@ parameters are a RESULT of the module parameters. -->
   <name>altera_emif_cal</name>
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IModule</subtype>
-  <displayName>External Memory Interfaces Intel Calibration IP</displayName>
-  <version>2.7.5</version>
+  <displayName>External Memory Interfaces Calibration IP</displayName>
+  <version>2.7.8</version>
  </plugin>
  <plugin>
   <instanceCount>4</instanceCount>
@@ -1045,7 +1045,7 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IMutableConnectionPoint</subtype>
   <displayName>Conduit</displayName>
-  <version>24.3</version>
+  <version>25.3</version>
  </plugin>
  <plugin>
   <instanceCount>2</instanceCount>
@@ -1053,16 +1053,16 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IMutableConnectionPoint</subtype>
   <displayName>Clock Output</displayName>
-  <version>24.3</version>
+  <version>25.3</version>
  </plugin>
  <plugin>
   <instanceCount>1</instanceCount>
   <name>altera_emif_cal_iossm</name>
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IModule</subtype>
-  <displayName>External Memory Interfaces Intel Calibration IP</displayName>
-  <version>2.7.5</version>
+  <displayName>External Memory Interfaces Calibration IP</displayName>
+  <version>2.7.8</version>
  </plugin>
- <reportVersion>24.3 212</reportVersion>
+ <reportVersion>25.3 109</reportVersion>
  <uniqueIdentifier></uniqueIdentifier>
 </EnsembleReport>

@@ -67,9 +67,9 @@
         </parameters>
         <interconnectAssignments></interconnectAssignments>
         <className>altera_emif_cal</className>
-        <version>2.7.5</version>
+        <version>2.7.8</version>
         <name>emif_cal</name>
-        <uniqueName>emif_cal_two_ch_altera_emif_cal_275_j4svqoi</uniqueName>
+        <uniqueName>emif_cal_two_ch_altera_emif_cal_278_uoqscxa</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>emif_cal_two_ch.emif_cal</path>
@@ -226,9 +226,9 @@
             </parameters>
             <interconnectAssignments></interconnectAssignments>
             <className>altera_emif_cal_iossm</className>
-            <version>2.7.5</version>
+            <version>2.7.8</version>
             <name>emif_cal</name>
-            <uniqueName>emif_cal_two_ch_altera_emif_cal_iossm_275_fpnid7a</uniqueName>
+            <uniqueName>emif_cal_two_ch_altera_emif_cal_iossm_278_6tsu7ti</uniqueName>
             <nonce>0</nonce>
             <incidentConnections></incidentConnections>
             <path>emif_cal_two_ch.emif_cal.emif_cal</path>

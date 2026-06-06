@@ -17,6 +17,10 @@
       <instanceData xsi:type="data">
         <parameters>
           <parameter>
+            <name>BASE_DEVICE</name>
+            <value>FM8REVA</value>
+          </parameter>
+          <parameter>
             <name>DEVICE_FAMILY</name>
             <value>Agilex 7</value>
           </parameter>
@@ -189,6 +193,10 @@
             <value>altera_syncram</value>
           </parameter>
           <parameter>
+            <name>GUI_MULTIPORT_MODE</name>
+            <value>1W/3R</value>
+          </parameter>
+          <parameter>
             <name>GUI_NBE_A</name>
             <value>true</value>
           </parameter>
@@ -307,9 +315,9 @@
         </parameters>
         <interconnectAssignments></interconnectAssignments>
         <className>ram_2port</className>
-        <version>20.5.0</version>
+        <version>20.6.0</version>
         <name>ram_2port_0</name>
-        <uniqueName>bram_ahppb_ram_2port_2050_naymj7q</uniqueName>
+        <uniqueName>bram_ahppb_ram_2port_2060_cyacn2y</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>bram_ahppb.ram_2port_0</path>

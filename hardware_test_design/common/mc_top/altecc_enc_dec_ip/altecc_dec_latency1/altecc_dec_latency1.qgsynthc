@@ -59,9 +59,9 @@
         </parameters>
         <interconnectAssignments></interconnectAssignments>
         <className>altecc</className>
-        <version>19.1.6</version>
+        <version>19.1.8</version>
         <name>altecc_0</name>
-        <uniqueName>altecc_dec_latency1_altecc_1916_loac3ti</uniqueName>
+        <uniqueName>altecc_dec_latency1_altecc_1918_j5m37wq</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>altecc_dec_latency1.altecc_0</path>

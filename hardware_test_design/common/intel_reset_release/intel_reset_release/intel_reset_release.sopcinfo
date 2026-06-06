@@ -4,8 +4,8 @@
  kind="intel_reset_release"
  version="1.0"
  fabric="QSYS">
- <!-- Format version 24.3 212 (Future versions may contain additional information.) -->
- <!-- 2025.03.07.02:55:10 -->
+ <!-- Format version 25.3 109 (Future versions may contain additional information.) -->
+ <!-- 2026.06.05.21:16:16 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
@@ -81,9 +81,9 @@
  <module
    name="s10_user_rst_clkgate_0"
    kind="altera_s10_user_rst_clkgate"
-   version="19.4.7"
+   version="19.4.9"
    entity="altera_s10_user_rst_clkgate"
-   library="altera_s10_user_rst_clkgate_1947"
+   library="altera_s10_user_rst_clkgate_1949"
    path="s10_user_rst_clkgate_0"
    hpath="s10_user_rst_clkgate_0"
    className="altera_s10_user_rst_clkgate">
@@ -122,7 +122,7 @@ the requested settings for a module instance. -->
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
-  <interface name="ninit_done" kind="conduit_end" version="24.3">
+  <interface name="ninit_done" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -182,8 +182,8 @@ parameters are a RESULT of the module parameters. -->
   <name>altera_s10_user_rst_clkgate</name>
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IModule</subtype>
-  <displayName>Reset Release Intel FPGA IP</displayName>
-  <version>19.4.7</version>
+  <displayName>Reset Release IP</displayName>
+  <version>19.4.9</version>
  </plugin>
  <plugin>
   <instanceCount>1</instanceCount>
@@ -191,8 +191,8 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IMutableConnectionPoint</subtype>
   <displayName>Conduit</displayName>
-  <version>24.3</version>
+  <version>25.3</version>
  </plugin>
- <reportVersion>24.3 212</reportVersion>
+ <reportVersion>25.3 109</reportVersion>
  <uniqueIdentifier></uniqueIdentifier>
 </EnsembleReport>

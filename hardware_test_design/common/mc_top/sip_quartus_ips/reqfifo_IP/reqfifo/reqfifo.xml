@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2025.03.07.02:55:10"
- outputDirectory="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/">
+ date="2026.06.05.21:22:28"
+ outputDirectory="E:/git_repo/mig_merge/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -70,27 +70,27 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/synth/reqfifo.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\sip_quartus_ips\reqfifo_IP\reqfifo\synth\reqfifo.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/synth/reqfifo.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\sip_quartus_ips\reqfifo_IP\reqfifo\synth\reqfifo.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo.ip" />
+       path="E:/git_repo/mig_merge/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo.ip" />
   </sourceFiles>
   <childSourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
+   <file path="C:/altera_pro/25.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="reqfifo">"Generating: reqfifo"</message>
-   <message level="Info" culprit="reqfifo">"Generating: reqfifo_fifo_1930_s2fi3mi"</message>
+   <message level="Info" culprit="reqfifo">"Generating: reqfifo_fifo_1941_3k2k3za"</message>
   </messages>
  </entity>
- <entity kind="fifo" version="19.3.0" name="reqfifo_fifo_1930_s2fi3mi">
+ <entity kind="fifo" version="19.4.1" name="reqfifo_fifo_1941_3k2k3za">
   <parameter name="GUI_Full" value="true" />
   <parameter name="GUI_RdUsedw_width" value="6" />
   <parameter name="GUI_AlmostFullThr" value="1" />
@@ -137,27 +137,27 @@
   <parameter name="GUI_Width" value="640" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/fifo_1930/synth/reqfifo_fifo_1930_s2fi3mi.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\sip_quartus_ips\reqfifo_IP\reqfifo\fifo_1941\synth\reqfifo_fifo_1941_3k2k3za.v"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/fifo_1930/synth/reqfifo_fifo_1930_s2fi3mi.sdc"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\sip_quartus_ips\reqfifo_IP\reqfifo\fifo_1941\synth\reqfifo_fifo_1941_3k2k3za.sdc"
        attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/fifo_1930/synth/reqfifo_fifo_1930_s2fi3mi.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\sip_quartus_ips\reqfifo_IP\reqfifo\fifo_1941\synth\reqfifo_fifo_1941_3k2k3za.v"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/fifo_1930/synth/reqfifo_fifo_1930_s2fi3mi.sdc"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\sip_quartus_ips\reqfifo_IP\reqfifo\fifo_1941\synth\reqfifo_fifo_1941_3k2k3za.sdc"
        attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
   </childGeneratedFiles>
   <sourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
+   <file path="C:/altera_pro/25.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="reqfifo" as="fifo_0" />
   <messages>
-   <message level="Info" culprit="reqfifo">"Generating: reqfifo_fifo_1930_s2fi3mi"</message>
+   <message level="Info" culprit="reqfifo">"Generating: reqfifo_fifo_1941_3k2k3za"</message>
   </messages>
  </entity>
 </deploy>

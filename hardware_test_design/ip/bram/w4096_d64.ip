@@ -13,17 +13,17 @@ Intel and sold by Intel or its authorized distributors.  Please
 refer to the applicable agreement for further details, at
 https://fpgasoftware.intel.com/eula.-->
 <ipxact:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact2014/extensions" xmlns:ipxact="http://www.accellera.org/XMLSchema/IPXACT/1685-2014">
-  <ipxact:vendor>Intel Corporation</ipxact:vendor>
+  <ipxact:vendor>Altera Corporation</ipxact:vendor>
   <ipxact:library>w4096_d64</ipxact:library>
   <ipxact:name>ram_2port_0</ipxact:name>
-  <ipxact:version>20.5.0</ipxact:version>
+  <ipxact:version>20.6.0</ipxact:version>
   <ipxact:busInterfaces>
     <ipxact:busInterface>
       <ipxact:name>data_a</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -67,10 +67,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>q_a</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -114,10 +114,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>data_b</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -161,10 +161,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>q_b</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -208,10 +208,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>address_a</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -255,10 +255,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>address_b</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -302,10 +302,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>wren_a</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -349,10 +349,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>wren_b</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -396,10 +396,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>clock</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="clock" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="clock" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="clock" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -443,10 +443,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>rden_a</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -490,10 +490,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>rden_b</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -726,10 +726,10 @@ https://fpgasoftware.intel.com/eula.-->
   </ipxact:model>
   <ipxact:vendorExtensions>
     <altera:entity_info>
-      <ipxact:vendor>Intel Corporation</ipxact:vendor>
+      <ipxact:vendor>Altera Corporation</ipxact:vendor>
       <ipxact:library>w4096_d64</ipxact:library>
       <ipxact:name>ram_2port</ipxact:name>
-      <ipxact:version>20.5.0</ipxact:version>
+      <ipxact:version>20.6.0</ipxact:version>
     </altera:entity_info>
     <altera:altera_module_parameters>
       <ipxact:parameters>
@@ -737,6 +737,11 @@ https://fpgasoftware.intel.com/eula.-->
           <ipxact:name>DEVICE_FAMILY</ipxact:name>
           <ipxact:displayName>Device Family</ipxact:displayName>
           <ipxact:value>Agilex 7</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="BASE_DEVICE" type="string">
+          <ipxact:name>BASE_DEVICE</ipxact:name>
+          <ipxact:displayName>base device</ipxact:displayName>
+          <ipxact:value>FM8REVA</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_MODE" type="int">
           <ipxact:name>GUI_MODE</ipxact:name>
@@ -817,6 +822,11 @@ https://fpgasoftware.intel.com/eula.-->
           <ipxact:name>GUI_OPTIMIZATION_OPTION</ipxact:name>
           <ipxact:displayName>Which timing/power optimization option do you want to use?</ipxact:displayName>
           <ipxact:value>0</ipxact:value>
+        </ipxact:parameter>
+        <ipxact:parameter parameterId="GUI_MULTIPORT_MODE" type="string">
+          <ipxact:name>GUI_MULTIPORT_MODE</ipxact:name>
+          <ipxact:displayName>Write and Read Ports Configuration</ipxact:displayName>
+          <ipxact:value>1W/3R</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_CLOCK_TYPE" type="int">
           <ipxact:name>GUI_CLOCK_TYPE</ipxact:name>

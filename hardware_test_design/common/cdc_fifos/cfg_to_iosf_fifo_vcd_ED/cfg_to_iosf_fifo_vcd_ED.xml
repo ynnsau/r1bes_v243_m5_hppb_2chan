@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2025.03.07.02:55:10"
- outputDirectory="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/">
+ date="2026.06.05.21:29:55"
+ outputDirectory="E:/git_repo/mig_merge/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -71,30 +71,30 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/synth/cfg_to_iosf_fifo_vcd_ED.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\cdc_fifos\cfg_to_iosf_fifo_vcd_ED\synth\cfg_to_iosf_fifo_vcd_ED.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/synth/cfg_to_iosf_fifo_vcd_ED.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\cdc_fifos\cfg_to_iosf_fifo_vcd_ED\synth\cfg_to_iosf_fifo_vcd_ED.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED.ip" />
+       path="E:/git_repo/mig_merge/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED.ip" />
   </sourceFiles>
   <childSourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
+   <file path="C:/altera_pro/25.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="cfg_to_iosf_fifo_vcd_ED">"Generating: cfg_to_iosf_fifo_vcd_ED"</message>
-   <message level="Info" culprit="cfg_to_iosf_fifo_vcd_ED">"Generating: cfg_to_iosf_fifo_vcd_ED_fifo_1930_5fgycdy"</message>
+   <message level="Info" culprit="cfg_to_iosf_fifo_vcd_ED">"Generating: cfg_to_iosf_fifo_vcd_ED_fifo_1941_ptbe7iy"</message>
   </messages>
  </entity>
  <entity
    kind="fifo"
-   version="19.3.0"
-   name="cfg_to_iosf_fifo_vcd_ED_fifo_1930_5fgycdy">
+   version="19.4.1"
+   name="cfg_to_iosf_fifo_vcd_ED_fifo_1941_ptbe7iy">
   <parameter name="GUI_Full" value="true" />
   <parameter name="GUI_RdUsedw_width" value="3" />
   <parameter name="GUI_AlmostFullThr" value="1" />
@@ -141,27 +141,27 @@
   <parameter name="GUI_Width" value="69" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/fifo_1930/synth/cfg_to_iosf_fifo_vcd_ED_fifo_1930_5fgycdy.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\cdc_fifos\cfg_to_iosf_fifo_vcd_ED\fifo_1941\synth\cfg_to_iosf_fifo_vcd_ED_fifo_1941_ptbe7iy.v"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/fifo_1930/synth/cfg_to_iosf_fifo_vcd_ED_fifo_1930_5fgycdy.sdc"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\cdc_fifos\cfg_to_iosf_fifo_vcd_ED\fifo_1941\synth\cfg_to_iosf_fifo_vcd_ED_fifo_1941_ptbe7iy.sdc"
        attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/fifo_1930/synth/cfg_to_iosf_fifo_vcd_ED_fifo_1930_5fgycdy.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\cdc_fifos\cfg_to_iosf_fifo_vcd_ED\fifo_1941\synth\cfg_to_iosf_fifo_vcd_ED_fifo_1941_ptbe7iy.v"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/cdc_fifos/cfg_to_iosf_fifo_vcd_ED/fifo_1930/synth/cfg_to_iosf_fifo_vcd_ED_fifo_1930_5fgycdy.sdc"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\cdc_fifos\cfg_to_iosf_fifo_vcd_ED\fifo_1941\synth\cfg_to_iosf_fifo_vcd_ED_fifo_1941_ptbe7iy.sdc"
        attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
   </childGeneratedFiles>
   <sourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
+   <file path="C:/altera_pro/25.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="cfg_to_iosf_fifo_vcd_ED" as="fifo_0" />
   <messages>
-   <message level="Info" culprit="cfg_to_iosf_fifo_vcd_ED">"Generating: cfg_to_iosf_fifo_vcd_ED_fifo_1930_5fgycdy"</message>
+   <message level="Info" culprit="cfg_to_iosf_fifo_vcd_ED">"Generating: cfg_to_iosf_fifo_vcd_ED_fifo_1941_ptbe7iy"</message>
   </messages>
  </entity>
 </deploy>

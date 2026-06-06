@@ -59,7 +59,8 @@ logic start_prefetch;
 logic addr_in_range;
 (*preserve_for_debug *) logic [4:0] usedw;
 
-fifo_32w_73d hint_fifo(
+// the fifo has been updated to have a depth of 256, the name is not updated, double-check if needed
+fifo_32w_73d hint_fifo( 
 	.data(fifo_in_up/*fifo_in*/),
 	.wrreq(enq_ok),
 	.rdreq(dequeue_valid),

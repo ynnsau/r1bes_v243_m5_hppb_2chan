@@ -27,7 +27,7 @@
         </parameters>
         <interconnectAssignments></interconnectAssignments>
         <className>altera_s10_user_rst_clkgate</className>
-        <version>19.4.7</version>
+        <version>19.4.9</version>
         <name>s10_user_rst_clkgate_0</name>
         <uniqueName>altera_s10_user_rst_clkgate</uniqueName>
         <fixedName>altera_s10_user_rst_clkgate</fixedName>

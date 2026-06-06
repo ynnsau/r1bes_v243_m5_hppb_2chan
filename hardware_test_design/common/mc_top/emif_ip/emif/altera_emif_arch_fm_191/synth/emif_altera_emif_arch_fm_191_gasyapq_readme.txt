@@ -31,7 +31,7 @@
 ;   1. About this file ;
 ------------------------
 
-   This is the readme file for the Intel External Memory Interface (EMIF) IP v24.3.
+   This is the readme file for the Altera External Memory Interface (EMIF) IP v25.3.
    
    The file provides a high-level overview of the IP. For details, refer to the
    handbook chapter on Agilex DDR4 External Memory Interface.
@@ -56,7 +56,7 @@
                              3rd-party simulator of your choice. If you select VHDL
                              during IP generation, the fileset contains IEEE-encrypted
                              Verilog files that can be used in VHDL-only simulators, such
-                             as ModelSim - Intel FPGA edition. All source files in the simulation
+                             as ModelSim - FPGA edition. All source files in the simulation
                              filesets are functionally equivalent to the synthesis fileset.
    
       Signal Integrity     - This fileset contains SPICE simulation decks and compliance

@@ -13,17 +13,17 @@ Intel and sold by Intel or its authorized distributors.  Please
 refer to the applicable agreement for further details, at
 https://fpgasoftware.intel.com/eula.-->
 <ipxact:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact2014/extensions" xmlns:ipxact="http://www.accellera.org/XMLSchema/IPXACT/1685-2014">
-  <ipxact:vendor>Intel Corporation</ipxact:vendor>
+  <ipxact:vendor>Altera Corporation</ipxact:vendor>
   <ipxact:library>fifo_32w_73d</ipxact:library>
   <ipxact:name>fifo_0</ipxact:name>
-  <ipxact:version>19.3.0</ipxact:version>
+  <ipxact:version>19.4.1</ipxact:version>
   <ipxact:busInterfaces>
     <ipxact:busInterface>
       <ipxact:name>fifo_input</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -91,10 +91,10 @@ https://fpgasoftware.intel.com/eula.-->
     </ipxact:busInterface>
     <ipxact:busInterface>
       <ipxact:name>fifo_output</ipxact:name>
-      <ipxact:busType vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:busType>
+      <ipxact:busType vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:busType>
       <ipxact:abstractionTypes>
         <ipxact:abstractionType>
-          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="24.3"></ipxact:abstractionRef>
+          <ipxact:abstractionRef vendor="intel" library="intel" name="conduit" version="25.3"></ipxact:abstractionRef>
           <ipxact:portMaps>
             <ipxact:portMap>
               <ipxact:logicalPort>
@@ -258,7 +258,7 @@ https://fpgasoftware.intel.com/eula.-->
           <ipxact:vectors>
             <ipxact:vector>
               <ipxact:left>0</ipxact:left>
-              <ipxact:right>4</ipxact:right>
+              <ipxact:right>7</ipxact:right>
             </ipxact:vector>
           </ipxact:vectors>
           <ipxact:wireTypeDefs>
@@ -297,10 +297,10 @@ https://fpgasoftware.intel.com/eula.-->
   </ipxact:model>
   <ipxact:vendorExtensions>
     <altera:entity_info>
-      <ipxact:vendor>Intel Corporation</ipxact:vendor>
+      <ipxact:vendor>Altera Corporation</ipxact:vendor>
       <ipxact:library>fifo_32w_73d</ipxact:library>
       <ipxact:name>fifo</ipxact:name>
-      <ipxact:version>19.3.0</ipxact:version>
+      <ipxact:version>19.4.1</ipxact:version>
     </altera:entity_info>
     <altera:altera_module_parameters>
       <ipxact:parameters>
@@ -357,7 +357,7 @@ https://fpgasoftware.intel.com/eula.-->
         <ipxact:parameter parameterId="GUI_Depth" type="int">
           <ipxact:name>GUI_Depth</ipxact:name>
           <ipxact:displayName>How deep should the FIFO be?</ipxact:displayName>
-          <ipxact:value>32</ipxact:value>
+          <ipxact:value>256</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_output_width" type="int">
           <ipxact:name>GUI_output_width</ipxact:name>
@@ -366,12 +366,12 @@ https://fpgasoftware.intel.com/eula.-->
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_AlmostFullThr" type="int">
           <ipxact:name>GUI_AlmostFullThr</ipxact:name>
-          <ipxact:displayName>becomes true when usedw[] is greater than or equal to</ipxact:displayName>
+          <ipxact:displayName>becomes true when usedw is greater than or equal to</ipxact:displayName>
           <ipxact:value>1</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_AlmostEmptyThr" type="int">
           <ipxact:name>GUI_AlmostEmptyThr</ipxact:name>
-          <ipxact:displayName>becomes true when usedw[] is less than</ipxact:displayName>
+          <ipxact:displayName>becomes true when usedw is less than</ipxact:displayName>
           <ipxact:value>1</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_MAX_DEPTH" type="string">
@@ -406,7 +406,7 @@ https://fpgasoftware.intel.com/eula.-->
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_UsedW" type="bit">
           <ipxact:name>GUI_UsedW</ipxact:name>
-          <ipxact:displayName>usedw[] (number of words in the FIFO)</ipxact:displayName>
+          <ipxact:displayName>usedw (number of words in the FIFO)</ipxact:displayName>
           <ipxact:value>true</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_AlmostFull" type="bit">
@@ -441,7 +441,7 @@ https://fpgasoftware.intel.com/eula.-->
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_rsUsedW" type="bit">
           <ipxact:name>GUI_rsUsedW</ipxact:name>
-          <ipxact:displayName>usedw[]</ipxact:displayName>
+          <ipxact:displayName>usedw</ipxact:displayName>
           <ipxact:value>false</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_wsFull" type="bit">
@@ -456,7 +456,7 @@ https://fpgasoftware.intel.com/eula.-->
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_wsUsedW" type="bit">
           <ipxact:name>GUI_wsUsedW</ipxact:name>
-          <ipxact:displayName>usedw[]</ipxact:displayName>
+          <ipxact:displayName>usedw</ipxact:displayName>
           <ipxact:value>false</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_msb_usedw" type="bit">

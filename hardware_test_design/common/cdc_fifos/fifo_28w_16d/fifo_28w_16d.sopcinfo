@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="fifo_28w_16d" kind="fifo_28w_16d" version="1.0" fabric="QSYS">
- <!-- Format version 24.3 212 (Future versions may contain additional information.) -->
- <!-- 2025.03.07.02:55:11 -->
+ <!-- Format version 25.3 109 (Future versions may contain additional information.) -->
+ <!-- 2026.06.05.21:16:29 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
@@ -77,9 +77,9 @@
  <module
    name="fifo_0"
    kind="fifo"
-   version="19.3.0"
-   entity="fifo_28w_16d_fifo_1930_v5zk7ni"
-   library="fifo_1930"
+   version="19.4.1"
+   entity="fifo_28w_16d_fifo_1941_fxxufdi"
+   library="fifo_1941"
    path="fifo_0"
    hpath="fifo_0"
    className="fifo">
@@ -454,7 +454,7 @@ the requested settings for a module instance. -->
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
-  <interface name="fifo_input" kind="conduit_end" version="24.3">
+  <interface name="fifo_input" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -536,7 +536,7 @@ parameters are a RESULT of the module parameters. -->
     <role>rdclk</role>
    </port>
   </interface>
-  <interface name="fifo_output" kind="conduit_end" version="24.3">
+  <interface name="fifo_output" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -612,8 +612,8 @@ parameters are a RESULT of the module parameters. -->
   <name>fifo</name>
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IModule</subtype>
-  <displayName>FIFO Intel FPGA IP</displayName>
-  <version>19.3.0</version>
+  <displayName>FIFO IP</displayName>
+  <version>19.4.1</version>
  </plugin>
  <plugin>
   <instanceCount>2</instanceCount>
@@ -621,8 +621,8 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IMutableConnectionPoint</subtype>
   <displayName>Conduit</displayName>
-  <version>24.3</version>
+  <version>25.3</version>
  </plugin>
- <reportVersion>24.3 212</reportVersion>
+ <reportVersion>25.3 109</reportVersion>
  <uniqueIdentifier></uniqueIdentifier>
 </EnsembleReport>

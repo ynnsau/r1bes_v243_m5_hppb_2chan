@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2025.03.07.02:55:10"
- outputDirectory="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/fifo/fifo_hppb/">
+ date="2026.06.05.21:16:02"
+ outputDirectory="E:/git_repo/mig_merge/hardware_test_design/common/ip/fifo/fifo_hppb/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -66,27 +66,27 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/fifo/fifo_hppb/synth/fifo_hppb.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\fifo\fifo_hppb\synth\fifo_hppb.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/fifo/fifo_hppb/synth/fifo_hppb.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\fifo\fifo_hppb\synth\fifo_hppb.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/fifo/fifo_hppb.ip" />
+       path="E:/git_repo/mig_merge/hardware_test_design/common/ip/fifo/fifo_hppb.ip" />
   </sourceFiles>
   <childSourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
+   <file path="C:/altera_pro/25.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="fifo_hppb">"Generating: fifo_hppb"</message>
-   <message level="Info" culprit="fifo_hppb">"Generating: fifo_hppb_fifo_1930_iz7naea"</message>
+   <message level="Info" culprit="fifo_hppb">"Generating: fifo_hppb_fifo_1941_tnj5xfy"</message>
   </messages>
  </entity>
- <entity kind="fifo" version="19.3.0" name="fifo_hppb_fifo_1930_iz7naea">
+ <entity kind="fifo" version="19.4.1" name="fifo_hppb_fifo_1941_tnj5xfy">
   <parameter name="GUI_Full" value="true" />
   <parameter name="GUI_RdUsedw_width" value="8" />
   <parameter name="GUI_AlmostFullThr" value="1" />
@@ -133,21 +133,21 @@
   <parameter name="GUI_Width" value="523" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/fifo/fifo_hppb/fifo_1930/synth/fifo_hppb_fifo_1930_iz7naea.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\fifo\fifo_hppb\fifo_1941\synth\fifo_hppb_fifo_1941_tnj5xfy.v"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/fifo/fifo_hppb/fifo_1930/synth/fifo_hppb_fifo_1930_iz7naea.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\fifo\fifo_hppb\fifo_1941\synth\fifo_hppb_fifo_1941_tnj5xfy.v"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
+   <file path="C:/altera_pro/25.3/ip/altera/megafunctions/fifo/fifo_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="fifo_hppb" as="fifo_0" />
   <messages>
-   <message level="Info" culprit="fifo_hppb">"Generating: fifo_hppb_fifo_1930_iz7naea"</message>
+   <message level="Info" culprit="fifo_hppb">"Generating: fifo_hppb_fifo_1941_tnj5xfy"</message>
   </messages>
  </entity>
 </deploy>

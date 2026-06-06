@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2025.03.07.02:55:30"
- outputDirectory="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/">
+ date="2026.06.05.21:24:32"
+ outputDirectory="E:/git_repo/mig_merge/hardware_test_design/common/mc_top/emif_ip/emif/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -55,6 +55,12 @@
      name="AUTO_PLL_REF_CLK_RESET_DOMAIN"
      type="Integer"
      defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CTRL_AMM_0_CPU_INFO_ID"
+     type="String"
+     defaultValue=""
      onHdl="0"
      affectsHdl="1" />
   <parameter
@@ -272,47 +278,48 @@
  </perimeter>
  <entity kind="emif" version="1.0" name="emif">
   <parameter name="AUTO_GENERATION_ID" value="0" />
-  <parameter name="AUTO_DEVICE" value="AGIB027R29A1E2VR3" />
-  <parameter name="AUTO_EMIF_CALBUS_CLK_CLOCK_DOMAIN" value="-1" />
-  <parameter name="AUTO_EMIF_CALBUS_CLK_RESET_DOMAIN" value="-1" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Agilex 7" />
   <parameter name="AUTO_BOARD" value="default" />
   <parameter name="AUTO_PLL_REF_CLK_RESET_DOMAIN" value="-1" />
-  <parameter name="AUTO_EMIF_CALBUS_CLK_CLOCK_RATE" value="-1" />
   <parameter name="AUTO_UNIQUE_ID" value="" />
-  <parameter name="AUTO_PLL_REF_CLK_CLOCK_RATE" value="-1" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <parameter name="AUTO_PLL_REF_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_DEVICE" value="AGIB027R29A1E2VR3" />
+  <parameter name="AUTO_EMIF_CALBUS_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_EMIF_CALBUS_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_EMIF_CALBUS_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_PLL_REF_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_CTRL_AMM_0_CPU_INFO_ID" value="" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/synth/emif.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\synth\emif.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/synth/emif.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\synth\emif.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif.ip" />
+       path="E:/git_repo/mig_merge/hardware_test_design/common/mc_top/emif_ip/emif.ip" />
   </sourceFiles>
   <childSourceFiles>
    <file
-       path="/quartus/v24.3/ip/altera/emif/hwtcl/altera_emif_fm/altera_emif_fm_hw.tcl" />
+       path="C:/altera_pro/25.3/ip/altera/emif/hwtcl/altera_emif_fm/altera_emif_fm_hw.tcl" />
    <file
-       path="/quartus/v24.3/ip/altera/emif/ip_arch_fm/altera_emif_arch_fm_hw.tcl" />
+       path="C:/altera_pro/25.3/ip/altera/emif/ip_arch_fm/altera_emif_arch_fm_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="emif">"Generating: emif"</message>
-   <message level="Info" culprit="emif">"Generating: emif_altera_emif_fm_275_6p2yhdi"</message>
+   <message level="Info" culprit="emif">"Generating: emif_altera_emif_fm_278_xsb3hoa"</message>
    <message level="Info" culprit="emif">"Generating: emif_altera_emif_arch_fm_191_gasyapq"</message>
   </messages>
  </entity>
  <entity
    kind="altera_emif_fm"
-   version="2.7.5"
-   name="emif_altera_emif_fm_275_6p2yhdi">
+   version="2.7.8"
+   name="emif_altera_emif_fm_278_xsb3hoa">
   <parameter name="PHY_DDRT_IO_VOLTAGE" value="1.2" />
   <parameter name="BOARD_QDR4_USE_DEFAULT_SLEW_RATES" value="true" />
   <parameter name="CTRL_QDR4_WAR_TURNAROUND_DELAY_CYC" value="11" />
@@ -2865,25 +2872,25 @@
   <parameter name="MEM_DDRT_W_ODT0_4X4" value="on,on,off,off" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_fm_275/synth/emif_altera_emif_fm_275_6p2yhdi.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_fm_278\synth\emif_altera_emif_fm_278_xsb3hoa.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_fm_275/synth/emif_altera_emif_fm_275_6p2yhdi.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_fm_278\synth\emif_altera_emif_fm_278_xsb3hoa.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/quartus/v24.3/ip/altera/emif/hwtcl/altera_emif_fm/altera_emif_fm_hw.tcl" />
+       path="C:/altera_pro/25.3/ip/altera/emif/hwtcl/altera_emif_fm/altera_emif_fm_hw.tcl" />
   </sourceFiles>
   <childSourceFiles>
    <file
-       path="/quartus/v24.3/ip/altera/emif/ip_arch_fm/altera_emif_arch_fm_hw.tcl" />
+       path="C:/altera_pro/25.3/ip/altera/emif/ip_arch_fm/altera_emif_arch_fm_hw.tcl" />
   </childSourceFiles>
   <instantiator instantiator="emif" as="emif" />
   <messages>
-   <message level="Info" culprit="emif">"Generating: emif_altera_emif_fm_275_6p2yhdi"</message>
+   <message level="Info" culprit="emif">"Generating: emif_altera_emif_fm_278_xsb3hoa"</message>
    <message level="Info" culprit="emif">"Generating: emif_altera_emif_arch_fm_191_gasyapq"</message>
   </messages>
  </entity>
@@ -7191,302 +7198,302 @@
   <parameter name="SEC_HMC_MEM_IF_RD_PREAMBLE" value="0" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_top.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_top.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_bufs.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_bufs.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_ufis.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_ufis.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_ufi_wrapper.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_ufi_wrapper.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_se_i.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_se_i.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_se_o.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_se_o.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_df_i.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_df_i.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_df_o.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_df_o.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_cp_i.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_cp_i.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_bdir_df.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_bdir_df.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_bdir_se.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_bdir_se.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_unused.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_unused.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_cal_counter.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_cal_counter.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_pll.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_pll.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_pll_fast_sim.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_pll_fast_sim.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_pll_extra_clks.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_pll_extra_clks.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_oct.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_oct.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_core_clks_rsts.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_core_clks_rsts.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hps_clks_rsts.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hps_clks_rsts.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_local_reset.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_local_reset.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_io_tiles_wrap.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_io_tiles_wrap.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_io_tiles.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_io_tiles.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_io_lane_remap.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_io_lane_remap.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_avl_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_avl_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_sideband_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_sideband_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_mmr_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_mmr_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_amm_data_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_amm_data_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_phylite_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_phylite_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_ast_data_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_ast_data_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_afi_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_afi_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_seq_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_seq_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_regs.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_regs.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_std_synchronizer_nocut.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_std_synchronizer_nocut.v"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.dat"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.dat"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_spice_files.zip"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_spice_files.zip"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_utils.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_utils.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_parameters.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_parameters.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_pin_map.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_pin_map.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_report_io_timing.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_report_io_timing.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_report_timing.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_report_timing.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_report_timing_core.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_report_timing_core.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq.sdc"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq.sdc"
        attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.hex"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.hex"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.txt"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.txt"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_seq_params_sim.txt"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_seq_params_sim.txt"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_readme.txt"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_readme.txt"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_top.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_top.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_bufs.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_bufs.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_ufis.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_ufis.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_ufi_wrapper.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_ufi_wrapper.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_se_i.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_se_i.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_se_o.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_se_o.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_df_i.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_df_i.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_df_o.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_df_o.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_udir_cp_i.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_udir_cp_i.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_bdir_df.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_bdir_df.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_bdir_se.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_bdir_se.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_buf_unused.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_buf_unused.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_cal_counter.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_cal_counter.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_pll.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_pll.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_pll_fast_sim.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_pll_fast_sim.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_pll_extra_clks.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_pll_extra_clks.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_oct.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_oct.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_core_clks_rsts.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_core_clks_rsts.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hps_clks_rsts.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hps_clks_rsts.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_local_reset.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_local_reset.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_io_tiles_wrap.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_io_tiles_wrap.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_io_tiles.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_io_tiles.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_io_lane_remap.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_io_lane_remap.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_avl_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_avl_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_sideband_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_sideband_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_mmr_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_mmr_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_amm_data_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_amm_data_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_phylite_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_phylite_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_hmc_ast_data_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_hmc_ast_data_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_afi_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_afi_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_seq_if.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_seq_if.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_emif_arch_fm_regs.sv"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_emif_arch_fm_regs.sv"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/altera_std_synchronizer_nocut.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\altera_std_synchronizer_nocut.v"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.dat"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.dat"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_spice_files.zip"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_spice_files.zip"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_ip_parameters.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_utils.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_utils.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_parameters.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_parameters.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_pin_map.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_pin_map.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_report_io_timing.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_report_io_timing.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_report_timing.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_report_timing.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_report_timing_core.tcl"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_report_timing_core.tcl"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq.sdc"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq.sdc"
        attributes="NO_AUTO_INSTANCE_DISCOVERY NO_SDC_PROMOTION" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.hex"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.hex"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.txt"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_seq_params_synth.txt"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_seq_params_sim.txt"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_seq_params_sim.txt"
        attributes="" />
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/emif_ip/emif/altera_emif_arch_fm_191/synth/emif_altera_emif_arch_fm_191_gasyapq_readme.txt"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\emif_ip\emif\altera_emif_arch_fm_191\synth\emif_altera_emif_arch_fm_191_gasyapq_readme.txt"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/quartus/v24.3/ip/altera/emif/ip_arch_fm/altera_emif_arch_fm_hw.tcl" />
+       path="C:/altera_pro/25.3/ip/altera/emif/ip_arch_fm/altera_emif_arch_fm_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
-  <instantiator instantiator="emif_altera_emif_fm_275_6p2yhdi" as="arch" />
+  <instantiator instantiator="emif_altera_emif_fm_278_xsb3hoa" as="arch" />
   <messages>
    <message level="Info" culprit="emif">"Generating: emif_altera_emif_arch_fm_191_gasyapq"</message>
   </messages>

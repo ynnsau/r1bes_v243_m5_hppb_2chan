@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2025.03.07.02:55:12"
- outputDirectory="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/bram_ahppb/bram_ahppb/">
+ date="2026.06.05.21:16:02"
+ outputDirectory="E:/git_repo/mig_merge/hardware_test_design/common/ip/bram_ahppb/bram_ahppb/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -106,31 +106,31 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/bram_ahppb/bram_ahppb/synth/bram_ahppb.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\bram_ahppb\bram_ahppb\synth\bram_ahppb.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/bram_ahppb/bram_ahppb/synth/bram_ahppb.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\bram_ahppb\bram_ahppb\synth\bram_ahppb.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/bram_ahppb/bram_ahppb.ip" />
+       path="E:/git_repo/mig_merge/hardware_test_design/common/ip/bram_ahppb/bram_ahppb.ip" />
   </sourceFiles>
   <childSourceFiles>
    <file
-       path="/quartus/v24.3/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
+       path="C:/altera_pro/25.3/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="bram_ahppb">"Generating: bram_ahppb"</message>
-   <message level="Info" culprit="bram_ahppb">"Generating: bram_ahppb_ram_2port_2050_naymj7q"</message>
+   <message level="Info" culprit="bram_ahppb">"Generating: bram_ahppb_ram_2port_2060_cyacn2y"</message>
   </messages>
  </entity>
  <entity
    kind="ram_2port"
-   version="20.5.0"
-   name="bram_ahppb_ram_2port_2050_naymj7q">
+   version="20.6.0"
+   name="bram_ahppb_ram_2port_2060_cyacn2y">
   <parameter name="GUI_CLKEN_ADDRESS_STALL_A" value="false" />
   <parameter name="GUI_RDEN_DOUBLE" value="false" />
   <parameter name="GUI_NBE_A" value="true" />
@@ -197,6 +197,8 @@
   <parameter name="GUI_WRADDRESS_WIDTH" value="6" />
   <parameter name="GUI_CLKEN_RDADDRESSSTALL" value="false" />
   <parameter name="GUI_MAX_DEPTH" value="64" />
+  <parameter name="GUI_MULTIPORT_MODE" value="1W/3R" />
+  <parameter name="BASE_DEVICE" value="FM8REVA" />
   <parameter name="GUI_ACLR_READ_OUTPUT_QA" value="false" />
   <parameter name="GUI_ACLR_READ_OUTPUT_QB" value="false" />
   <parameter name="GUI_COHERENT_READ" value="false" />
@@ -205,22 +207,22 @@
   <parameter name="GUI_WIDTH_ECCENCPARITY" value="8" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/bram_ahppb/bram_ahppb/ram_2port_2050/synth/bram_ahppb_ram_2port_2050_naymj7q.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\bram_ahppb\bram_ahppb\ram_2port_2060\synth\bram_ahppb_ram_2port_2060_cyacn2y.v"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/ip/bram_ahppb/bram_ahppb/ram_2port_2050/synth/bram_ahppb_ram_2port_2050_naymj7q.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\ip\bram_ahppb\bram_ahppb\ram_2port_2060\synth\bram_ahppb_ram_2port_2060_cyacn2y.v"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/quartus/v24.3/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
+       path="C:/altera_pro/25.3/ip/altera/megafunctions/ram_2port/ram_2_port_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="bram_ahppb" as="ram_2port_0" />
   <messages>
-   <message level="Info" culprit="bram_ahppb">"Generating: bram_ahppb_ram_2port_2050_naymj7q"</message>
+   <message level="Info" culprit="bram_ahppb">"Generating: bram_ahppb_ram_2port_2060_cyacn2y"</message>
   </messages>
  </entity>
 </deploy>

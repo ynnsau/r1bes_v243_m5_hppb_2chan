@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2025.03.07.02:55:10"
- outputDirectory="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0/">
+ date="2026.06.05.21:28:10"
+ outputDirectory="E:/git_repo/mig_merge/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -61,33 +61,34 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0/synth/altecc_enc_latency0.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\altecc_enc_dec_ip\altecc_enc_latency0\synth\altecc_enc_latency0.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0/synth/altecc_enc_latency0.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\altecc_enc_dec_ip\altecc_enc_latency0\synth\altecc_enc_latency0.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0.ip" />
+       path="E:/git_repo/mig_merge/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0.ip" />
   </sourceFiles>
   <childSourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/altecc/altecc_hw.tcl" />
+   <file
+       path="C:/altera_pro/25.3/ip/altera/megafunctions/altecc/altecc_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="altecc_enc_latency0">"Generating: altecc_enc_latency0"</message>
-   <message level="Info" culprit="altecc_enc_latency0">"Generating: altecc_enc_latency0_altecc_1916_gsp3emq"</message>
-   <message level="Info" culprit="altecc_0">Generating top-level entity altecc_enc_latency0_altecc_1916_gsp3emq.</message>
-   <message level="Info" culprit="altecc_0">command = exec /quartus/v24.3/quartus/linux64/clearbox ALTECC_ENCODER -f /tmp/alt0154_10932117462266123351.dir/0001_altecc_0_gen/parameter_list CBX_FILE=\"altecc_enc_latency0_altecc_1916_gsp3emq.v\" CBX_OUTPUT_DIRECTORY=\"/tmp/alt0154_10932117462266123351.dir/0001_altecc_0_gen\"</message>
-   <message level="Info" culprit="altecc_0">error = Output file name /tmp/alt0154_10932117462266123351.dir/0001_altecc_0_gen/altecc_enc_latency0_altecc_1916_gsp3emq.v</message>
+   <message level="Info" culprit="altecc_enc_latency0">"Generating: altecc_enc_latency0_altecc_1918_qm2rhyy"</message>
+   <message level="Info" culprit="altecc_0">Generating top-level entity altecc_enc_latency0_altecc_1918_qm2rhyy.</message>
+   <message level="Info" culprit="altecc_0">command = exec {C:/altera_pro/25.3/quartus\bin64/clearbox} ALTECC_ENCODER -f C:/Users/Dongming/AppData/Local/Temp/alt0610_4703801619236319236.dir/0003_altecc_0_gen/parameter_list CBX_FILE=\"altecc_enc_latency0_altecc_1918_qm2rhyy.v\" CBX_OUTPUT_DIRECTORY=\"C:/Users/Dongming/AppData/Local/Temp/alt0610_4703801619236319236.dir/0003_altecc_0_gen\"</message>
+   <message level="Info" culprit="altecc_0">error = Output file name C:/Users/Dongming/AppData/Local/Temp/alt0610_4703801619236319236.dir/0003_altecc_0_gen/altecc_enc_latency0_altecc_1918_qm2rhyy.v</message>
   </messages>
  </entity>
  <entity
    kind="altecc"
-   version="19.1.6"
-   name="altecc_enc_latency0_altecc_1916_gsp3emq">
+   version="19.1.8"
+   name="altecc_enc_latency0_altecc_1918_qm2rhyy">
   <parameter name="ERR_BYPASS" value="false" />
   <parameter name="WIDTH_DATAWORD" value="64" />
   <parameter name="LPM_PIPELINE" value="0" />
@@ -100,24 +101,25 @@
   <parameter name="GUI_USE_ACLR" value="false" />
   <generatedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0/altecc_1916/synth/altecc_enc_latency0_altecc_1916_gsp3emq.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\altecc_enc_dec_ip\altecc_enc_latency0\altecc_1918\synth\altecc_enc_latency0_altecc_1918_qm2rhyy.v"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="/home/janux/vinitg2/r1bes_v243_m5_hppb_2chan/hardware_test_design/common/mc_top/altecc_enc_dec_ip/altecc_enc_latency0/altecc_1916/synth/altecc_enc_latency0_altecc_1916_gsp3emq.v"
+       path="E:\git_repo\mig_merge\hardware_test_design\common\mc_top\altecc_enc_dec_ip\altecc_enc_latency0\altecc_1918\synth\altecc_enc_latency0_altecc_1918_qm2rhyy.v"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
-   <file path="/quartus/v24.3/ip/altera/megafunctions/altecc/altecc_hw.tcl" />
+   <file
+       path="C:/altera_pro/25.3/ip/altera/megafunctions/altecc/altecc_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="altecc_enc_latency0" as="altecc_0" />
   <messages>
-   <message level="Info" culprit="altecc_enc_latency0">"Generating: altecc_enc_latency0_altecc_1916_gsp3emq"</message>
-   <message level="Info" culprit="altecc_0">Generating top-level entity altecc_enc_latency0_altecc_1916_gsp3emq.</message>
-   <message level="Info" culprit="altecc_0">command = exec /quartus/v24.3/quartus/linux64/clearbox ALTECC_ENCODER -f /tmp/alt0154_10932117462266123351.dir/0001_altecc_0_gen/parameter_list CBX_FILE=\"altecc_enc_latency0_altecc_1916_gsp3emq.v\" CBX_OUTPUT_DIRECTORY=\"/tmp/alt0154_10932117462266123351.dir/0001_altecc_0_gen\"</message>
-   <message level="Info" culprit="altecc_0">error = Output file name /tmp/alt0154_10932117462266123351.dir/0001_altecc_0_gen/altecc_enc_latency0_altecc_1916_gsp3emq.v</message>
+   <message level="Info" culprit="altecc_enc_latency0">"Generating: altecc_enc_latency0_altecc_1918_qm2rhyy"</message>
+   <message level="Info" culprit="altecc_0">Generating top-level entity altecc_enc_latency0_altecc_1918_qm2rhyy.</message>
+   <message level="Info" culprit="altecc_0">command = exec {C:/altera_pro/25.3/quartus\bin64/clearbox} ALTECC_ENCODER -f C:/Users/Dongming/AppData/Local/Temp/alt0610_4703801619236319236.dir/0003_altecc_0_gen/parameter_list CBX_FILE=\"altecc_enc_latency0_altecc_1918_qm2rhyy.v\" CBX_OUTPUT_DIRECTORY=\"C:/Users/Dongming/AppData/Local/Temp/alt0610_4703801619236319236.dir/0003_altecc_0_gen\"</message>
+   <message level="Info" culprit="altecc_0">error = Output file name C:/Users/Dongming/AppData/Local/Temp/alt0610_4703801619236319236.dir/0003_altecc_0_gen/altecc_enc_latency0_altecc_1918_qm2rhyy.v</message>
   </messages>
  </entity>
 </deploy>

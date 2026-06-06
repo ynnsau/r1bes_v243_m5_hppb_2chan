@@ -1,13 +1,13 @@
-// (C) 2001-2024 Intel Corporation. All rights reserved.
-// Your use of Intel Corporation's design tools, logic functions and other 
+// (C) 2001-2025 Altera Corporation. All rights reserved.
+// Your use of Altera Corporation's design tools, logic functions and other 
 // software and tools, and its AMPP partner logic functions, and any output 
 // files from any of the foregoing (including device programming or simulation 
 // files), and any associated documentation or information are expressly subject 
-// to the terms and conditions of the Intel Program License Subscription 
-// Agreement, Intel FPGA IP License Agreement, or other applicable 
+// to the terms and conditions of the Altera Program License Subscription 
+// Agreement, Altera IP License Agreement, or other applicable 
 // license agreement, including, without limitation, that your use is for the 
-// sole purpose of programming logic devices manufactured by Intel and sold by 
-// Intel or its authorized distributors.  Please refer to the applicable 
+// sole purpose of programming logic devices manufactured by Altera and sold by 
+// Altera or its authorized distributors.  Please refer to the applicable 
 // agreement for further details.
 
 
@@ -244,5 +244,5 @@ module altera_emif_arch_fm_hmc_amm_data_if #(
 endmodule
 
 `ifdef QUESTA_INTEL_OEM
-`pragma questa_oem_00 "AkDMPQOIIBdUXJUhCY52t3tbYDqXLRT52E5ixmZO0uPIiLYJYXmvta4pFJ02IBPPGIT2TNlVDsKSvVYXIouIW3+7aiOKefqrRsAdehbNE32jACVZGhhWbzy3szTqf0uEFX9R013QJTOv5J6g1voik7ro4grooLGTSGkMVb4gcDO55U1rrsm6St9TUaqtK0kUq5O3EnV7TSjC5mQCTLijd71E/Cuksp1vhZhmO5ulHVCXKJknYco5Owoyei8zHolPTb0HmK33QHYYg+aiDosmedaZ8C/C/VJ+FuhpCFBVJW8VPYeglQ5MA06iG67aPxXCqypjSmEUWriOZwV81ExvZC4OxH8F237wN8VAeKt82Ni2g4YuE1zKhlPXUIBzKFLKD0aK/UkfM2TucjMrJHvQAC8ERwQIun3yBDCb4EV8fgVABdwQEHixll5djju24BCT3slCexXPGwT4sNkOAQk4BHGcaUVtQOIxdPTREwC/HuoNIF9FA6egH9MfBuZfozi7pkXSS9czGn7ipQ33vZVjA8Oq3Z7AKOLSnZc/UxEGmRkGCGkPB03jMHXwGR0bdNWq05cTmMe5ONsdBp9sXYRZPViCWAfioEGPnPJ9PbD/SVfxtgXavIeZPHhGhP6Fmd9ihn1Z1wpG9/1fo1FnN88tU53GD70TM73rmhqBDE20ZKLbVE58i+UpjlCNGWh6MfzcgCqEezloOgBd8sKexlziqV+fPKbJDJRgDarqehGm9bD+2fItGnSnIVFylQW7Rx05W/xUPYdwc92kWjPDPLBJc7fZxtwIHCYxlMZL3qpKuhTswzmHhwnw6opjzoGdFmt555gpHkLIgl5C7yqPFsYtzqbHsEvk3lIJHbbJnb1R6xRXFlW1udyFkOTQMnFnpqvUfqVcZVFa3NB9V5ohnUqyuKKEMj0qSoQAx3tSMtvieNEbaOcOYcQlE+l4Sa0paPD7EI+punzcsFvYyoJGW86GgM+nW0tQY2KyYlS+Yg1jxApJa6Kg/wjGbVB6/TTRFaqA"
+`pragma questa_oem_00 "S21ufhxyHOixFKMiQucGFQxuc85AXjjh9ebHGNTiQxJHIE75pahmYrhDUnfcenC3iv6PgryhDAZYmSRMI3X3Ii6wCyY9ZXrpS7S4iZ9zHRtzvWWnLt0LVFloedB6S+BFjhK7cRMWcPqvzdRgK0yTUmjHuSlrpTq7XHwXsxX+jRHI31LP6jtPwGC266ZHPF7M3kZl6oL+ze9pdKayTsMR3/gtivRus1q2ZU32c1nDB+5OfSAMJCxA7R1jk5NeKS9G19nnlD3zLKhHhzEpzupZwUfc2FxaGKFwC0T84N7VZMYrIZrzUR2RqwOhjocFjL0yZbKvwTPmeJkN1WQwRbWuCrC4rCPeOkJZ9aWK/CJ54E08AQ/7Nf+WhlsfpwVWpZN3G4t+n9sfDmuT35cevNxS3lpfGgliBxf4OeAmg6hqs/Fwzz1YU1uPzs1cLJkBjmkQpel0bk637hWSTwC4t+6BWvoECj0YLvkNMTnZS7Kx0K6ioFlj47pXb9P9e6b3aceH+ATUK/AB82uJ4rtGDEnBWm7+r/dqsYX24s2q5innwDyGG5ioKn5Cdf5mj09dAzQDb3saXs/RvGkIJUEXgo1z8RT5VX/b6zuklsgN4NBIYd6yv8Sg+RjLsepx90mWPg5mFhg+wzGNC9xZ3IO6RmAf47i/9N5txCzloZkHQyDIEuK6HJhIIGm0QUqrmXNF3vNUak4UIB6HaJH5ihzfH11SHs43JXeyptbiQXy153OokxMomxQv1GXFm5Xq2ryAqxA7YNw2F//lvCY+yHwr5WCk6vtzApm9gQHVU8pYGoEosw5T1sMf27Fz4uUaS09QQf/4b/zg2hwmzU0OLzhmbj4quxhL62xHOysQPkc6zT44EuOtgS5yP1t5I0Xp8pSSuo+HRlAO3gjnLLzWxubwUN/IZJa41A0COLDQc9kzDBazOwzlh2PCQlPHm2ldldDF7JMiOgs23V3o4naw+6cqTObsehTRpbepmXu1LQeO7Sv9V/mw8+dcKXUcmbUlGhcqeJcr"
 `endif

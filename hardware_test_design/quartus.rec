@@ -1,12 +1,16 @@
 # **************************************************
 # Quartus Prime Version 24.3.0
-# Process ID 2847515
+# Process ID 8276
 # Start logging TCL commands
-# Sun Feb 16 19:12:42 2025
+# Sat Jan 24 17:10:46 2026
 # **************************************************
-project_open "/mnt/raid0/yans3/FPGA_projects/r1bex_type2_2chan_24_3/intel_rtile_cxl_top_0_ed/hardware_test_design/cxltyp2_ed.qpf" -revision cxltyp2_ed
+project_open "E:/git_repo/mig_merge/hardware_test_design/cxltyp2_ed.qpf" -revision cxltyp2_ed
+project_open "E:/git_repo/mig_merge_new/hardware_test_design/cxltyp2_ed.qpf"
+flng::run_flow_command -flow "compile" -end "dni_tileip_generation" -resume
+flng::run_flow_command -flow "compile" -end "dni_analysis_and_synthesis" -resume
+flng::run_flow_command -flow "compile" -end "dni_analysis_and_synthesis" -resume
 project_close
 # **************************************************
-# Sun Feb 16 19:13:35 2025
+# Sat Jan 24 17:42:04 2026
 # End of logging TCL commands
 # **************************************************

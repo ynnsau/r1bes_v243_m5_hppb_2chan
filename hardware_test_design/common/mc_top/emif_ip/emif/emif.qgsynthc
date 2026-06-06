@@ -9383,9 +9383,9 @@
         </parameters>
         <interconnectAssignments></interconnectAssignments>
         <className>altera_emif_fm</className>
-        <version>2.7.5</version>
+        <version>2.7.8</version>
         <name>emif</name>
-        <uniqueName>emif_altera_emif_fm_275_6p2yhdi</uniqueName>
+        <uniqueName>emif_altera_emif_fm_278_xsb3hoa</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>emif.emif</path>

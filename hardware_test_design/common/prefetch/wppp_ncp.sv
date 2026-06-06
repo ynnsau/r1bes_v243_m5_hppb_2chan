@@ -196,6 +196,7 @@ wppprefetch_rw_state_t ncp_state, next_ncp_state;
 
 assign success_count = success_cnt_r;
 
+// depth updated to 256, double-check before compiling
 fifo_128w_588d resp2ncp_fifo(
 	.data(ncp_fifo_in),  //  fifo_input.datain,  Data input of the memory.The data port is required for all FIFO operation.
 	.wrreq(fifo_enq), //            .wrreq,   wrreq input signal to request for write operation.The wrreq signal is required for all FIFO operation.
