@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="fifo_cdc" kind="fifo_cdc" version="1.0" fabric="QSYS">
  <!-- Format version 25.3 109 (Future versions may contain additional information.) -->
- <!-- 2026.06.05.21:16:02 -->
+ <!-- 2026.06.05.22:50:10 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>

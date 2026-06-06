@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="port_1_ram" kind="port_1_ram" version="1.0" fabric="QSYS">
- <!-- Format version 24.3 212 (Future versions may contain additional information.) -->
- <!-- 2025.03.07.02:55:10 -->
+ <!-- Format version 25.3 109 (Future versions may contain additional information.) -->
+ <!-- 2026.06.05.22:50:11 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
@@ -452,7 +452,7 @@ the requested settings for a module instance. -->
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
-  <interface name="data" kind="conduit_end" version="24.3">
+  <interface name="data" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -510,7 +510,7 @@ parameters are a RESULT of the module parameters. -->
     <role>datain</role>
    </port>
   </interface>
-  <interface name="q" kind="conduit_end" version="24.3">
+  <interface name="q" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -568,7 +568,7 @@ parameters are a RESULT of the module parameters. -->
     <role>dataout</role>
    </port>
   </interface>
-  <interface name="address" kind="conduit_end" version="24.3">
+  <interface name="address" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -626,7 +626,7 @@ parameters are a RESULT of the module parameters. -->
     <role>address</role>
    </port>
   </interface>
-  <interface name="wren" kind="conduit_end" version="24.3">
+  <interface name="wren" kind="conduit_end" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -684,7 +684,7 @@ parameters are a RESULT of the module parameters. -->
     <role>wren</role>
    </port>
   </interface>
-  <interface name="clock" kind="clock_sink" version="24.3">
+  <interface name="clock" kind="clock_sink" version="25.3">
    <!-- The connection points exposed by a module instance for the
 particular module parameters. Connection points and their
 parameters are a RESULT of the module parameters. -->
@@ -740,7 +740,7 @@ parameters are a RESULT of the module parameters. -->
   <name>ram_1port</name>
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IModule</subtype>
-  <displayName>RAM: 1-PORT Intel FPGA IP</displayName>
+  <displayName>RAM: 1-PORT FPGA IP</displayName>
   <version>20.1.1</version>
  </plugin>
  <plugin>
@@ -749,7 +749,7 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IMutableConnectionPoint</subtype>
   <displayName>Conduit</displayName>
-  <version>24.3</version>
+  <version>25.3</version>
  </plugin>
  <plugin>
   <instanceCount>1</instanceCount>
@@ -757,8 +757,8 @@ parameters are a RESULT of the module parameters. -->
   <type>com.altera.entityinterfaces.IElementClass</type>
   <subtype>com.altera.entityinterfaces.IMutableConnectionPoint</subtype>
   <displayName>Clock Input</displayName>
-  <version>24.3</version>
+  <version>25.3</version>
  </plugin>
- <reportVersion>24.3 212</reportVersion>
+ <reportVersion>25.3 109</reportVersion>
  <uniqueIdentifier></uniqueIdentifier>
 </EnsembleReport>

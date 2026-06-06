@@ -70,7 +70,7 @@ set_global_assignment -name SEARCH_PATH ./common/avst4to1_rx/
 set_global_assignment -name SEARCH_PATH ./common/axi_to_avst/
 set_global_assignment -name SEARCH_PATH ./common/cafu_csr0/
 set_global_assignment -name SEARCH_PATH ./../intel_rtile_cxl_top_cxltyp2_ed
-set_global_assignment -name SEARCH_PATH ./../intel_rtile_cxl_top_cxltyp2_ed/intel_rtile_cxl_top_1140/synth
+set_global_assignment -name SEARCH_PATH ./../intel_rtile_cxl_top_cxltyp2_ed/intel_rtile_cxl_top_1180/synth
 
 
 
@@ -79,7 +79,7 @@ set_instance_assignment -name VIRTUAL_PIN ON -to phy_sys_ial_* -entity cxltyp2_e
 set_instance_assignment -name VIRTUAL_PIN ON -to o_phy_* -entity cxltyp2_ed
 set_instance_assignment -name VIRTUAL_PIN ON -to i_phy_* -entity cxltyp2_ed
 
-
+set_global_assignment -name QIP_FILE ../intel_rtile_cxl_top_cxltyp2_ed/intel_rtile_cxl_top_cxltyp2_ed.qip
 set_global_assignment -name POWER_APPLY_THERMAL_MARGIN ADDITIONAL
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE m5_impl.stp
@@ -269,7 +269,6 @@ set_global_assignment -name QIP_FILE common/mc_top/emif_ip/emif/emif.qip
 set_global_assignment -name QIP_FILE common/mc_top/sip_quartus_ips/rspfifo_IP/rspfifo/rspfifo.qip
 set_global_assignment -name QIP_FILE common/mc_top/sip_quartus_ips/reqfifo_IP/reqfifo/reqfifo.qip
 set_global_assignment -name QSYS_FILE common/intel_reset_release/intel_reset_release.ip
-set_global_assignment -name QIP_FILE ../intel_rtile_cxl_top_cxltyp2_ed/intel_rtile_cxl_top_cxltyp2_ed.qip
 set_global_assignment -name SYSTEMVERILOG_FILE ed_top_wrapper_typ2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE cxltyp2_ed.sv
 set_global_assignment -name SDC_FILE ./constraints/cxltyp2_ed.sdc
