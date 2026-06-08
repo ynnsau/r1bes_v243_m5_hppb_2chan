@@ -101,7 +101,7 @@ always_comb begin
     arvalid     = ~queue_empty & start_prefetch & ~abort_op & ~lut_in_use;
     arid        = {2'b0, curr_arid}; // zero extend to 12 bit
     araddr      = push_cl_addr + (cl_counter << 6); // each cache line is 64 bytes
-    aruser      = 6'b100000;
+    aruser      = 6'b110000; // used to be Host Bias, now it is Device Bias
 end
 
 always_ff @(posedge axi4_mm_clk) begin

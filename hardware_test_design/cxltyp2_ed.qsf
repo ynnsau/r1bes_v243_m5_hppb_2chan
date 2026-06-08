@@ -81,7 +81,7 @@ set_instance_assignment -name VIRTUAL_PIN ON -to i_phy_* -entity cxltyp2_ed
 
 set_global_assignment -name QIP_FILE ../intel_rtile_cxl_top_cxltyp2_ed/intel_rtile_cxl_top_cxltyp2_ed.qip
 set_global_assignment -name POWER_APPLY_THERMAL_MARGIN ADDITIONAL
-set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name ENABLE_SIGNALTAP OFF
 set_global_assignment -name USE_SIGNALTAP_FILE m5_impl.stp
 set_global_assignment -name OPTIMIZATION_MODE "SUPERIOR PERFORMANCE WITH MAXIMUM PLACEMENT EFFORT"
 set_global_assignment -name PRESERVE_FOR_DEBUG_ENABLE ON
