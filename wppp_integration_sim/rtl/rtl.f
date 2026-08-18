@@ -1,0 +1,16 @@
+../hardware_test_design/common/include/types.sv
+../wppp_sim/rtl/behavioral_ip.sv
+rtl/behavioral_integration_ip.sv
+../hardware_test_design/common/prefetch/wppp_hint_snoop.sv
+../hardware_test_design/common/hot_page_push/page_tbl_update.sv
+../hardware_test_design/common/prefetch/wppp_lut.sv
+../hardware_test_design/common/prefetch/wppp_hb_req.sv
+../hardware_test_design/common/prefetch/wppp_hb_resp.sv
+../hardware_test_design/common/prefetch/wppp_filter_check.sv
+../hardware_test_design/common/prefetch/wppp_ncp.sv
+../hardware_test_design/common/prefetch/wpprefetch_rw_pipe_v2.sv
+../hardware_test_design/common/axi_arbiter/axi_arbiter.sv
+rtl/axi_passthrough.sv
+rtl/fake_mc.sv
+rtl/fake_cxlip.sv
+rtl/wppp_integration_top.sv

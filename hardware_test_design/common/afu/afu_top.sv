@@ -158,52 +158,17 @@ always_comb begin
 end
 
 // HINT MECH SNOOP
-logic [$clog2(512/64)-1:0]      hint_mech_data_ptr;
-logic                           hint_mech_valid;
-logic [511:0]                   hint_mech_data;
-logic wppp_sel;
-assign hint_enq_sel = wppp_sel;
-always_ff @( posedge afu_clk ) begin : blockName
-    if (~afu_rstn) begin
-        hint_mech_data_ptr <= '0;
-        hint_mech_valid <= 1'b0;
-        hint_mech_data <= '0;
-        wppp_sel <= '1;
-    end else begin
-        if (hint_mech_valid) begin
-            hint_mech_data_ptr <= hint_mech_data_ptr + 1'b1;
-            wppp_sel <= ~wppp_sel; // ping-pong between 0 or 1
-        end
-        if (hint_mech_data_ptr == '1) begin
-            hint_mech_valid <= 1'b0;
-        end
-
-        // if (iafu2mc_to_mc_axi4[0].awvalid && hint_mech_addr[51:0] == cxlip2iafu_to_mc_axi4[0].awaddr[51:0]) begin
-        //     hint_mech_data_ptr <= '0;
-        //     hint_mech_valid <= 1'b1;
-        //     hint_mech_data <= cxlip2iafu_to_mc_axi4[0].wdata;
-        //     wppp_sel <= ~wppp_sel; // ping-pong between 0 or 1
-        // end
-
-        // checking if the address is within the page range
-        if (iafu2mc_to_mc_axi4[0].awvalid && hint_mech_addr[51:12] == cxlip2iafu_to_mc_axi4[0].awaddr[51:12]) begin
-            hint_mech_data_ptr <= '0;
-            hint_mech_valid <= 1'b1;
-            hint_mech_data <= cxlip2iafu_to_mc_axi4[0].wdata;
-            wppp_sel <= ~wppp_sel; // ping-pong between 0 or 1
-        end
-    end
-end
-
-
-always_comb begin
-    hint_enq_address = '0;
-    hint_enq_num_of_cl = '0;
-    if (hint_mech_valid) begin
-        hint_enq_address =    hint_mech_data[(hint_mech_data_ptr*64) +: 50];      // 50 bits
-        hint_enq_num_of_cl =  hint_mech_data[((hint_mech_data_ptr*64)+50) +: 14]; // 14 bits
-    end
-end
+wppp_hint_snoop wppp_hint_snoop_inst (
+    .clk(afu_clk),
+    .rst_n(afu_rstn),
+    .host_awvalid(iafu2mc_to_mc_axi4[0].awvalid),
+    .host_awaddr(cxlip2iafu_to_mc_axi4[0].awaddr[51:0]),
+    .host_wdata(cxlip2iafu_to_mc_axi4[0].wdata),
+    .hint_mech_addr(hint_mech_addr),
+    .hint_enq_sel(hint_enq_sel),
+    .hint_enq_address(hint_enq_address),
+    .hint_enq_num_of_cl(hint_enq_num_of_cl)
+);
 
 // HPPB ADDR_PAIR_VLD_CNT SNOOP
 always_ff @( posedge afu_clk ) begin

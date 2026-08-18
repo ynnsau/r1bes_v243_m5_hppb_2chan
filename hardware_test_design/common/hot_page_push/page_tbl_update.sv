@@ -47,6 +47,7 @@ module page_tbl_update
             page_tbl_rmw <= 1'b0;
             update_en <= 1'b0;
             page_tbl_in <= '0;
+            hppb_tbl_update_reg <= 1'b0;
             hppb_src_addr_reg <= '{default:'0};
             hppb_dst_addr_reg <= '{default:'0};
         end else begin

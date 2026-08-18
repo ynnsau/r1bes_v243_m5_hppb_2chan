@@ -12,3 +12,26 @@ hardware_test_design/ip/bram/w32_d1024/
 hardware_test_design/ip/bram/w4096_d64/
 hardware_test_design/ip/bram/w64_d8192/
 hardware_test_design/ip/bram_pgmap_table/
+
+# Python tooling caches
+__pycache__/
+*.py[cod]
+
+# Standalone WPPP Questa outputs
+wppp_sim/build/
+wppp_sim/logs/
+wppp_sim/modelsim.ini
+wppp_sim/transcript
+wppp_sim/*_transcript
+wppp_sim/*.wlf
+
+# AXI-level WPPP integration Questa outputs
+wppp_integration_sim/build/
+wppp_integration_sim/logs/
+wppp_integration_sim/modelsim.ini
+wppp_integration_sim/transcript
+wppp_integration_sim/*_transcript
+wppp_integration_sim/*.wlf
+
+# Workflow run artifacts
+logs/

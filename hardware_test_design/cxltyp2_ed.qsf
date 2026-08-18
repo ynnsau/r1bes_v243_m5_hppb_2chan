@@ -90,6 +90,7 @@ set_global_assignment -name BOARD default
 set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/page_tbl_update.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/axi_arbiter/axi_arbiter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/prefetch_hint_fifo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_hint_snoop.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wpprefetch_rw_pipe_v2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wpprefetch_rw_pipe.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_filter_check.sv
