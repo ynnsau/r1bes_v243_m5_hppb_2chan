@@ -29,19 +29,20 @@ module wppp_integration_top (
     output logic [63:0] hint_enq_address_debug,
     output logic [15:0] hint_enq_count_debug
 );
-    localparam int MIG_GRP_SIZE = 32;
-
     logic hint_enq_sel_i;
     logic [63:0] hint_enq_address_i;
     logic [15:0] hint_enq_num_of_cl_i;
     logic hint_enq_sel_o;
     logic [63:0] hint_enq_address_o;
     logic [15:0] hint_enq_num_of_cl_o;
+    logic hint_enq_valid_o;
+    logic hint_invalid_i;
 
     logic enqueue_valid_0;
     logic enqueue_valid_1;
-    logic [63:0] hppb_src_addr [MIG_GRP_SIZE];
-    logic [63:0] hppb_dst_addr [MIG_GRP_SIZE];
+    logic engine0_ready;
+    logic engine1_ready;
+    logic [63:0] legacy_stage_stats [0:16];
 
     axi_ports wppp_axi0_ports();
     axi_ports wppp_axi1_ports();
@@ -55,7 +56,9 @@ module wppp_integration_top (
         .downstream_w(host_mc_w_ch)
     );
 
-    wppp_hint_snoop hint_snoop (
+    wppp_hint_snoop #(
+        .LEGACY_HINT_FORMAT(1'b1)
+    ) hint_snoop (
         .clk(clk),
         .rst_n(rst_n),
         .host_awvalid(host_cxl_w_ch.awvalid),
@@ -64,34 +67,46 @@ module wppp_integration_top (
         .hint_mech_addr(hint_mech_addr),
         .hint_enq_sel(hint_enq_sel_i),
         .hint_enq_address(hint_enq_address_i),
-        .hint_enq_num_of_cl(hint_enq_num_of_cl_i)
+        .hint_enq_num_of_cl(hint_enq_num_of_cl_i),
+        .hint_enq_invalid(hint_invalid_i),
+        .hint_line_drop_count(),
+        .hint_line_full_cycle_count(),
+        .hint_line_full_episode_count()
     );
 
-    for (genvar i = 0; i < MIG_GRP_SIZE; i++) begin : HPPB_INPUT_TIEOFF
-        assign hppb_src_addr[i] = '0;
-        assign hppb_dst_addr[i] = '0;
-    end
-
-    page_tbl_update #(
-        .MIG_GRP_SIZE(MIG_GRP_SIZE)
-    ) page_tbl_update_inst (
+    // Existing integration vectors carry the historical {14-bit count,
+    // 50-bit direct PA} format.  Route them through the explicit compatibility
+    // branch; these tests do not claim translation-cache coverage.
+    wppp_translation_stage #(
+        .LEGACY_DIRECT_MODE(1'b1),
+        .STATS_COUNT(17)
+    ) legacy_translation_stage (
         .clk(clk),
         .rst_n(rst_n),
-        .hppb_tbl_update(1'b0),
-        .hppb_src_addr(hppb_src_addr),
-        .hppb_dst_addr(hppb_dst_addr),
-        .hint_enq_sel_i(hint_enq_sel_i),
-        .hint_enq_address_i(hint_enq_address_i),
-        .hint_enq_num_of_cl_i(hint_enq_num_of_cl_i),
-        .hint_enq_sel_o(hint_enq_sel_o),
-        .hint_enq_address_o(hint_enq_address_o),
-        .hint_enq_num_of_cl_o(hint_enq_num_of_cl_o)
+        .hint_valid_i(hint_enq_address_i != 0),
+        .hint_invalid_i(hint_invalid_i),
+        .hint_sel_i(hint_enq_sel_i),
+        .hint_address_i(hint_enq_address_i),
+        .hint_count_i(hint_enq_num_of_cl_i),
+        .translation_offset_i('0),
+        .pa_range_start_i('0),
+        .pa_range_span_i('1),
+        .flush_req_i(1'b0),
+        .engine0_ready_i(engine0_ready),
+        .engine1_ready_i(engine1_ready),
+        .hint_valid_o(hint_enq_valid_o),
+        .hint_sel_o(hint_enq_sel_o),
+        .hint_address_o(hint_enq_address_o),
+        .hint_count_o(hint_enq_num_of_cl_o),
+        .flush_busy_o(),
+        .status_o(),
+        .stats_o(legacy_stage_stats)
     );
 
     assign enqueue_valid_0 =
-        (hint_enq_address_o != '0) && (hint_enq_sel_o == 1'b0);
+        hint_enq_valid_o && (hint_enq_sel_o == 1'b0);
     assign enqueue_valid_1 =
-        (hint_enq_address_o != '0) && (hint_enq_sel_o == 1'b1);
+        hint_enq_valid_o && (hint_enq_sel_o == 1'b1);
 
     assign hint_enq_sel_debug = hint_enq_sel_o;
     assign hint_enq_address_debug = hint_enq_address_o;
@@ -120,6 +135,10 @@ module wppp_integration_top (
         .abort_op(1'b0),
         .prefetch_abt_cnt(),
         .prefetch_ok_cnt(prefetch_ok_cnt_0),
+        .hint_fifo_drop_count(),
+        .hint_fifo_full_cycle_count(),
+        .hint_fifo_full_episode_count(),
+        .hint_fifo_ready(engine0_ready),
         .addr_issued(),
         .get_next_addr(),
         .faraddr(),
@@ -151,6 +170,10 @@ module wppp_integration_top (
         .abort_op(1'b0),
         .prefetch_abt_cnt(),
         .prefetch_ok_cnt(prefetch_ok_cnt_1),
+        .hint_fifo_drop_count(),
+        .hint_fifo_full_cycle_count(),
+        .hint_fifo_full_episode_count(),
+        .hint_fifo_ready(engine1_ready),
         .addr_issued(),
         .get_next_addr(),
         .faraddr(),

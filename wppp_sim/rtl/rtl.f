@@ -1,5 +1,9 @@
 ../hardware_test_design/common/include/types.sv
 rtl/behavioral_ip.sv
+../hardware_test_design/common/prefetch/wppp_translation_cache_bank.sv
+../hardware_test_design/common/prefetch/wppp_translation_cache.sv
+../hardware_test_design/common/prefetch/wppp_translation_stage.sv
+../hardware_test_design/common/prefetch/wppp_stats_cdc.sv
 ../hardware_test_design/common/prefetch/wppp_lut.sv
 ../hardware_test_design/common/prefetch/wppp_hb_req.sv
 ../hardware_test_design/common/prefetch/wppp_hb_resp.sv

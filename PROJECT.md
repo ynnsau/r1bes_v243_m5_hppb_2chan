@@ -1,6 +1,6 @@
 # WPPP Engineering Handoff
 
-Last updated: 2026-08-18 local time.
+Last updated: 2026-08-19 local time.
 
 This is the dense implementation reference for the current WPPP hardware. It
 is not the issue ledger or proof that a particular run passed. See
@@ -11,10 +11,13 @@ is not the issue ledger or proof that a particular run passed. See
 The production top instantiates two `wppprefetch_rw_pipeline_v2` engines, one
 per HDM channel. Software supplies up to eight packed hints by writing a
 configured hint-mechanism page. The AFU unpacks one 64-bit hint per cycle and
-alternates engines. Each hint requests a contiguous sequence of 64-byte
-cachelines. An engine reads each line using a device-biased AXI request, maps
-its rotating 10-bit request ID back to the original address, and issues an NCP
-write of the returned data to that same address.
+advances the engine selector for every physical slot. Each nonzero-count slot
+contains a 48-bit userspace VA and requests a contiguous sequence of 64-byte
+cachelines. A translation stage splits it by 4 KiB page, looks up a banked
+cache, and passes only translated PA fragments inside the configured PA range.
+An engine reads each accepted line using a device-biased AXI request, maps its
+rotating 10-bit request ID back to the original address, and issues an NCP
+write of the returned data to that same PA.
 
 The operation is a read/writeback used to pull the addressed line toward the
 host. It is not a general stream prefetcher and does not place response data in
@@ -24,9 +27,10 @@ a software-visible buffer.
 
 | Stage | Active source | Contract |
 | --- | --- | --- |
-| Hint snoop | `common/prefetch/wppp_hint_snoop.sv`, instantiated by `common/afu/afu_top.sv` | On a channel-0 write-address match within the configured 4 KiB hint page, captures 512-bit write data and emits eight packed hints over eight cycles. |
-| Migration filter | `common/hot_page_push/page_tbl_update.sv` | Delays the hint two cycles; suppresses it during an HPPB table update or when its page is marked host-resident. |
-| Top integration | `ed_top_wrapper_typ2.sv` | Sends nonzero hints alternately to two WPPP engines; enables them with `csr_prefetch_interval[31]`; arbitrates their AXI traffic with HPPB. |
+| Hint snoop | `common/prefetch/wppp_hint_snoop.sv`, instantiated by `common/afu/afu_top.sv` | On a channel-0 write-address match within the configured 4 KiB hint page, captures one 512-bit line, emits eight decoded slots, and counts an overlapping line write as a drop. |
+| Translation front end | `common/prefetch/wppp_translation_stage.sv` | Queues nonzero-count hints, splits at 4 KiB, coalesces misses for 128-cycle service, checks translated PA fragments, and holds a hit until the selected engine FIFO is ready. |
+| Translation cache | `common/prefetch/wppp_translation_cache*.sv` | Four banks x 16K sets x eight ways, per-set RR, inferred RAM, and a 16K-cycle POR/CSR row sweep. HPPB is disconnected. |
+| Top integration | `ed_top_wrapper_typ2.sv` | Selects production 16/42 translation mode; enables WPPP with `csr_prefetch_interval[31]`; arbitrates the two engines with HPPB only at the final AXI layer. |
 | Read issue | `common/prefetch/wppp_hb_req.sv` | Queues packed hints, transfers each FIFO head into an active context, expands it into 64-byte reads, and allocates a rotating 10-bit request ID when AR handshakes. |
 | Address ownership | `common/prefetch/wppp_lut.sv` | Tracks 1024 valid IDs and stores ID-to-address mappings in `w4096_d64`; a response clears its valid bit. |
 | Read response | `common/prefetch/wppp_hb_resp.sv` | Keeps R ready, looks up `rid[9:0]`, and pipelines valid response payload plus recovered address. |
@@ -42,13 +46,15 @@ not instantiated by the active top.
 A packed hint is:
 
 ```text
-bits [63:50]  cacheline count (14 bits)
-bits [49:0]   byte address
+bits [63:58]  reserved; software writes zero
+bits [57:42]  cacheline count (16 bits; first-version maximum 128)
+bits [41:0]   VA[47:6]
 ```
 
-Although the wrapper port is 16 bits wide, `wppp_hb_req` stores only count
-bits `[13:0]`. Address bits `[63:50]` are discarded. A zero output address is
-used as "no hint" by the top integration and therefore cannot be enqueued.
+The snoop reconstructs the aligned VA as `{hint[41:0], 6'b0}`. Count zero is
+the only unused-slot marker in production; VA zero is not used to qualify
+validity. Reserved bits or a count above 128 make a nonzero slot invalid. The
+selector advances through all eight positions even when a position is unused.
 
 At the host-facing boundary, this project explicitly assumes paired AXI write
 channels: AW and W are presented and accepted in the same clock cycle. The
@@ -58,20 +64,22 @@ W, so a producer that separates those handshakes is outside the current
 integration contract. WPPP's outgoing NCP writer is different: it intentionally
 handshakes AW before offering W.
 
-The current range rule is:
+Translation is `PA = VA - csr_wppp_translation_offset`; the software-supplied
+offset is page aligned, changes only at very low frequency, and requires a
+cache flush after a change. Every page fragment preserves VA `[11:0]`. The PA
+range rule is:
 
 ```text
-start_address_i <= hint_address < start_address_i + address_upper_i
+cxl_start_pa <= translated fragment
+translated fragment end <= cxl_start_pa + csr_addr_ub
 ```
 
-`address_lower_i` is connected but unused. `address_upper_i` is treated as a
-span from `start_address_i`, not an absolute upper address. The range bounds
-are registered. Enable, abort, range, and LUT ownership gate presentation of a
-new AR, but cannot withdraw an AR that has already been sampled while stalled.
+The entire fragment is checked in a 65-bit domain after translation. It is
+dropped rather than clipped when outside the range. Cache admission does not
+depend on this guard. `csr_addr_lb` remains connected but unused, while
+`csr_addr_ub` is a span, not an absolute endpoint.
 
-For cacheline index `n`, the read address is `hint_address + n * 64`. A zero
-cacheline count has no useful defined behavior and should not be emitted by
-software.
+For cacheline index `n`, the read address is `translated_address + n * 64`.
 
 ## AXI and Ownership Contract
 
@@ -99,6 +107,13 @@ software.
 
 ## Capacity and Generated IP
 
+The translation cache holds 524,288 4 KiB mappings (2 GiB coverage): four
+banks, 16,384 sets per bank, and eight 64-bit ways. VA `[13:12]` selects bank,
+VA `[27:14]` selects set, and VA `[47:28]` is the tag. A 32x8 hashed MSHR
+coalesces equal VPNs. A one-entry-per-cycle timing wheel produces the fixed
+128-cycle fill service. Cache rows are inferred M20K memories and are cleared
+by a timing-friendly sweep rather than reset flops.
+
 The hint FIFO is 73 bits wide and the response-to-NCP FIFO is 588 bits wide.
 Both checked-in `.ip` descriptors now request depth 256, despite historical
 module names that refer to older shapes. Their descriptors expose 8-bit
@@ -112,8 +127,11 @@ does not need to erase RAM contents.
 
 ## Active Gaps
 
-- An out-of-range hint remains at the FIFO head forever and blocks later valid
-  hints. Reproducer: `RUN_RANGE_HEAD_BLOCK_REPRO`.
+- The production translation stage rejects an out-of-range PA fragment before
+  engine admission. The standalone direct-engine range-head reproducer remains
+  relevant to legacy/direct users of the engine interface.
+- The new translation path currently has compile/elaboration evidence but no
+  directed functional cache-mode regression; see `WPPP-TCACHE-008`.
 - The paired AW/W hint-write behavior is an explicit project integration
   assumption, not general AXI-channel support. The AXI integration simulation
   drives and checks that contract, but the RTL has no recovery if a future
@@ -127,17 +145,18 @@ See [`BUG.md`](BUG.md) for issue states and
 
 ## AXI-Level Integration Harness
 
-`wppp_integration_sim` wraps the extracted production hint snoop,
-`page_tbl_update`, both v2 engines, and both final WPPP/HPPB arbiters. An
+`wppp_integration_sim` wraps the extracted production hint snoop, the explicit
+legacy/direct branch of `wppp_translation_stage`, both v2 engines, and both
+final WPPP/HPPB arbiters. An
 AXI-level fake CXL IP forwards device-biased WPPP reads to two queued ports on
 a shared fake device MC and terminates NCP writes in separate host/CPU sinks.
 Ordinary host traffic traverses the same fake CXL IP, DUT pass-through, and MC.
 
-HPPB remains deliberately inactive: its table-update input and address arrays
-are zero, its AXI requester ports use the production inactive stubs, and the
-testbench fails on any HPPB request activity. This boundary verifies hint
-injection through read/push completion without simulating CXL link/protocol
-behavior or an active migration engine. See
+HPPB remains deliberately inactive: its AXI requester ports use the production
+inactive stubs, and the testbench fails on any HPPB request activity. This
+boundary verifies the historical 14/50 direct-PA hint path through read/push
+completion without simulating CXL link/protocol behavior or an active migration
+engine. It does not verify the production 16/42 cache mode. See
 [`wppp_integration_sim/README.md`](wppp_integration_sim/README.md) for the
 topology, maintained tests, and extension points.
 

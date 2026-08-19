@@ -107,7 +107,13 @@ import mig_params::*;
 
     // hint mechanism
     output logic [63:0] csr_hint_mech_addr,
-    output logic [63:0] csr_hppb_snoop_addr
+    output logic [63:0] csr_hppb_snoop_addr,
+
+    // WPPP translation-cache control and coherent 400 MHz snapshots
+    output logic [63:0] csr_wppp_translation_offset,
+    output logic        csr_wppp_flush_toggle,
+    input  logic [63:0] wppp_translation_status,
+    input  logic [63:0] wppp_translation_stats [0:25]
 );
 
     logic [63:0] data [REGFILE_SIZE];    // CSR regfile
@@ -196,6 +202,12 @@ import mig_params::*;
     always @(posedge clk) begin : config_write_logic
         if (!reset_n) begin
             csr_config <= '0;
+            data[66] <= '0;
+            data[67] <= '0;
+            data[68] <= '0;
+            for (int stat = 0; stat < 26; stat++) begin
+                data[69 + stat] <= '0;
+            end
             for (int i = UPDATE_SIZE; i < REGFILE_SIZE; i++) begin
                 if (write && address_shift3 == i) begin
                     data[i] <= '0;
@@ -244,8 +256,28 @@ import mig_params::*;
             // prefetch stats registers
             data[62] <= prefetch_abt_cnt_aclk;
             data[63] <= prefetch_ok_cnt_aclk;
+
+            // WPPP translation-cache registers.  Counters 69..94 are
+            // destination-domain snapshots and are read-only to software.
+            data[67] <= '0;
+            data[68] <= wppp_translation_status;
+            for (int stat = 0; stat < 26; stat++) begin
+                data[69 + stat] <= wppp_translation_stats[stat];
+            end
         end    
     end 
+
+    // CSR 67 is a write-trigger rather than a sticky reset bit.  Toggling the
+    // event guarantees that a short 125 MHz write survives synchronization to
+    // the 400 MHz WPPP clock domain.
+    always_ff @(posedge clk) begin
+        if (!reset_n) begin
+            csr_wppp_flush_toggle <= 1'b0;
+        end else if (write && (address_shift3 == 20'd67) &&
+                     writedata[0] && byteenable[0]) begin
+            csr_wppp_flush_toggle <= ~csr_wppp_flush_toggle;
+        end
+    end
 
     //Read logic
     always @(posedge clk) begin
@@ -548,6 +580,7 @@ import mig_params::*;
 
         csr_hint_mech_addr = data[64];
         csr_hppb_snoop_addr = data[65];
+        csr_wppp_translation_offset = data[66];
     end
 
 

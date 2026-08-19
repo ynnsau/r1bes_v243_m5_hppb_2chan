@@ -4,6 +4,52 @@ Reverse-chronological outcomes for WPPP source, verification, and workflow
 changes. Open issue state belongs in `BUG.md`; detailed test contracts belong
 in the relevant simulation README.
 
+## 2026-08-19
+
+Issue: first WPPP translation-cache implementation
+
+1. Replaced the production WPPP connection to the HPPB residency bitmap with a
+   dedicated translation stage. HPPB remains an independent AXI client and no
+   longer supplies WPPP admission state.
+2. Added the 64-bit `{reserved[5:0], count[15:0], VA[47:6]}` decoder. Count zero
+   is the unused-slot marker, software is limited to 128 cachelines, and the
+   selector continues to advance through all eight physical slots.
+3. Added an inferred-RAM translation cache with four banks, 16K sets per bank,
+   eight ways, 40-bit PPNs, per-set round-robin replacement, and a row-swept
+   POR/CSR flush that preserves block-RAM inference.
+4. Added 4 KiB page splitting, fixed `PA = VA - offset` translation, full-width
+   post-translation PA range checking, and engine-ready holding. Cache fills
+   remain independent of PA push eligibility.
+5. Added a 32-set/eight-way coalescing MSHR and a 128-cycle timing wheel. Every
+   miss is counted and dropped, matching misses share one service/insertion,
+   and MSHR-set and timer-capacity failures have separate counters.
+6. Added CSR 66–95 controls/status/statistics. Twenty-six 64-bit statistics are
+   transferred coherently from 400 MHz to 125 MHz every 64 fast cycles; cache
+   flush never clears counters.
+7. Extended the existing WPPP engine hint FIFO from `{14,50}` to `{16,52}` and
+   exposed FIFO admission, drop, full-cycle, and full-episode information.
+8. Kept the existing integration tests honest by selecting explicit legacy
+   decoder/direct-stage parameters in their wrapper. They continue to cover
+   the prior fake-CXL/fake-MC direct-PA path and do not claim cache coverage.
+9. Questa 2025.3 compiled the final 13-source standalone and 19-source
+   integration file lists with zero errors, and the default new-mode
+   translation stage elaborated with zero errors.
+10. Re-ran all maintained legacy/direct-path cases after integration: seven
+    standalone cases, five fake-CXL/fake-MC functional cases, and four
+    integration stress cases passed. The range-head known-defect reproducer
+    retained its expected `XFAIL` classification. Evidence is under
+    `wppp_sim/logs/full_20260819T180931Z`,
+    `wppp_integration_sim/logs/full_20260819T180941Z`,
+    `wppp_integration_sim/logs/stress_20260819T180951Z`, and
+    `wppp_sim/logs/repro_20260819T181004Z`.
+    Functional cache-mode directed tests and Quartus compilation remain for
+    the next verification handoff.
+11. Review closed a same-set fill/lookup hazard by holding a lookup while an
+    insertion is entering or occupying the cache-bank write pipeline, avoiding
+    a stale miss and redundant translation allocation. CSR 67 now also reads
+    as zero after its write-trigger event instead of retaining the written bit.
+    Both simulation trees recompiled and their smoke tiers passed afterward.
+
 ## 2026-08-18
 
 Issue: AXI-level fake CXL IP / fake MC WPPP integration simulation

@@ -1,9 +1,11 @@
 # Standalone WPPP Simulation
 
 This suite isolates `wppprefetch_rw_pipeline_v2` and preserves the original
-expected-pass cases and known-defect reproducers. End-to-end hint snooping,
-page-table filtering, fake CXL/MC routing, and CPU-side sink checks live in the
-separate [AXI integration suite](../wppp_integration_sim/README.md).
+expected-pass cases and known-defect reproducers. Hint snooping, fake CXL/MC
+routing, and CPU-side sink checks live in the separate
+[AXI integration suite](../wppp_integration_sim/README.md). That suite runs an
+explicit legacy direct-PA compatibility mode; neither suite currently proves
+the production VA translation-cache path.
 
 This harness verifies the production `wppprefetch_rw_pipeline_v2` hierarchy in
 isolation. It is optimized for fast protocol/ownership feedback; full-project
@@ -76,9 +78,9 @@ debug `usedw` signals. It does not prove that regenerated vendor IP has the
 same port metadata, primitive mapping, reset behavior, or implementation
 timing. Quartus elaboration is the integration gate for those properties.
 
-The standalone top also does not instantiate AFU hint snooping,
-`page_tbl_update`, the two-engine round-robin, the HPPB AXI arbiters, CDC, CSR,
-or the CXL IP. It drives the v2 pipeline contract directly.
+The standalone top also does not instantiate AFU hint snooping, the WPPP
+translation cache/MSHR stage, the two-engine round-robin, the HPPB AXI
+arbiters, CDC, CSR, or the CXL IP. It drives the v2 pipeline contract directly.
 
 ## Result Classification and Artifacts
 

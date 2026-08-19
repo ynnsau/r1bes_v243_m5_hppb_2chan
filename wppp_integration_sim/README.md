@@ -9,8 +9,9 @@ standalone pipeline cases and known-defect reproducers remain unchanged.
 The DUT wrapper keeps the production logic that determines WPPP behavior:
 
 - `wppp_hint_snoop`: observes a host write to the configured hint page and
-  emits its eight packed hints;
-- `page_tbl_update`: applies the HPPB page-residency filter;
+  emits its eight packed hints in explicit legacy format;
+- `wppp_translation_stage`: instantiated with `LEGACY_DIRECT_MODE=1`, making
+  the old direct-PA regression path explicit without claiming cache coverage;
 - both `wppprefetch_rw_pipeline_v2` engines, including their hint FIFOs,
   request-ID LUTs, response paths, and NCP writers;
 - both final production `axi_arbiter` instances.
@@ -25,8 +26,8 @@ host AXI agent
       v
 fake_cxlip host ingress -> WPPP integration wrapper -> fake_mc host port
                                   |
-                 hint snoop -> page table -> two WPPP engines
-                                             |              |
+                 hint snoop -> legacy stage -> two WPPP engines
+                                              |              |
                          device-biased AR ---+              +--- NCP AW/W
                                              v                  v
                                       fake_cxlip           fake_cxlip
@@ -56,57 +57,24 @@ with fixed latency. It checks address range, one-beat 64-byte request shape,
 and `aruser=6'b110000`. The CPU sinks are intentionally separate: a WPPP read
 comes from device memory, while the final NCP write goes to host memory.
 
-The behavioral FIFO and LUT models are reused from `wppp_sim`; only the
-page-table RAM model is integration-specific.
+The behavioral FIFO and LUT models are reused from `wppp_sim`.
 
-## Page-Residency Filter
+## Legacy Compatibility Boundary
 
-`page_tbl_update` treats its RAM as a 4 KiB-page residency bitmap. For a hint
-base address:
+The maintained vectors were written before the translation-cache format and
+encode each slot as `{count[13:0], direct_PA[49:0]}`. The wrapper therefore
+sets both compatibility parameters explicitly:
 
-- `address[33:18]` selects one 64-bit table row;
-- `address[17:12]` selects one page bit in that row;
-- bit `0` means the page is in CXL/device memory and WPPP may read it;
-- bit `1` means the page is in host memory and the hint is suppressed.
+```systemverilog
+wppp_hint_snoop #(.LEGACY_HINT_FORMAT(1'b1)) ...
+wppp_translation_stage #(.LEGACY_DIRECT_MODE(1'b1)) ...
+```
 
-The RAM is synchronous. The filter registers the hint address, selector, and
-count while reading the selected row, then emits the aligned result through a
-second register stage. A suppressed hint is represented by an all-zero output
-address; the integration wrapper converts only nonzero output addresses into
-WPPP FIFO enqueue-valid pulses. Selector and count still pass through the
-pipeline, but have no effect when the address is zero.
-
-The same single-port RAM is updated from HPPB migration results. One
-`hppb_tbl_update` pulse snapshots all `MIG_GRP_SIZE` source/destination pairs.
-The RTL then performs a read/modify/write for one pair every two clocks. Using
-the RTL's fixed `64'h0000008080000000` boundary and source/destination case
-mapping, CXL-to-host migration sets the source-page bit, while host-to-CXL
-migration clears the destination-page bit. During the entire update sequence,
-all incoming hints are suppressed because the RAM port is unavailable; the
-filter has no retry queue.
-
-The implementation therefore assumes:
-
-- the residency RAM is initialized consistently. Reset clears control state,
-  but does not clear the RAM itself; the behavioral model makes unwritten rows
-  zero, so every page initially appears device-resident;
-- managed addresses are distinguished by bits `[33:12]`. Higher address bits
-  are ignored by the table and therefore alias;
-- the hint base address is nonzero, because zero is also the invalid/suppressed
-  sentinel used by the wrapper;
-- a multi-cacheline hint does not cross into a page with different residency.
-  The filter checks only the hint's base page, not every generated cacheline;
-- a new HPPB update pulse does not arrive while the previous 32-entry update is
-  running, since there is no ready/busy handshake at this interface;
-- hint producers tolerate hints being discarded, rather than stalled, while
-  an HPPB table update owns the single RAM port.
-
-One implementation risk remains uncharacterized: the cancellation expression
-uses unsized `1 << address[17:12]`, while the update path explicitly uses a
-64-bit one. Page-bit positions 32 through 63 need directed simulation before
-the upper half of each row can be trusted. In the current integration wrapper,
-HPPB is tied inactive and no test preloads the page RAM, so the maintained cases
-exercise the filter's pipeline delay but not cancellation or update behavior.
+This mode bypasses cache lookup, translation latency, page splitting, PA-side
+range guarding, MSHR behavior, and cache flush. It exists solely so changes to
+the production front end do not silently reinterpret old cases. Production
+selects the new 16/42 decoder and translated path; that mode needs a separate
+directed test set.
 
 ## Explicit Contracts
 
@@ -120,9 +88,9 @@ exercise the filter's pipeline delay but not cancellation or update behavior.
 - WPPP database reads originate on the device side and reach the fake MC.
 - WPPP NCP writes terminate in the host/CPU-side sinks and do not modify the
   fake-MC device-memory image.
-- HPPB is inactive. Its input arrays and update pulse are tied to zero, its AXI
-  request ports are stubbed inactive, and the testbench treats any HPPB request
-  activity as an error while WPPP traffic is running.
+- HPPB is inactive. Its AXI request ports are stubbed inactive, and the
+  testbench treats any HPPB request activity as an error while WPPP runs. No
+  HPPB page-table filter exists in the WPPP wrapper.
 
 ## Maintained Tests
 
@@ -130,7 +98,7 @@ exercise the filter's pipeline delay but not cancellation or update behavior.
 | --- | --- | --- |
 | `RUN_INT_HOST_RW` | Smoke | An ordinary paired host write/read passes through fake CXL IP, the wrapper, and fake MC without creating WPPP or HPPB traffic. |
 | `RUN_INT_SINGLE_HINT` | Smoke | One four-cacheline hint causes four device DB reads and four matching CPU NCP writes on engine 0. |
-| `RUN_INT_HINT_BATCH` | Focused | All eight packed hints survive snoop/page-table delay, alternate across both engines, and copy 16 cachelines to the correct CPU sinks. |
+| `RUN_INT_HINT_BATCH` | Focused | All eight packed legacy hints survive serialization, alternate across both engines, and copy 16 cachelines to the correct CPU sinks. |
 | `RUN_INT_HOST_AND_HINT` | Focused | Ordinary host memory traffic completes while WPPP DB reads and NCP writes are active. |
 | `RUN_INT_HPPB_INACTIVE` | Full | The dual-engine batch completes with zero HPPB request activity or interference. |
 | `RUN_INT_DB_BACKPRESSURE` | Stress | Holds the first and final AR, disables new prefetch work during the final stall, and verifies stable delivery plus exact end-to-end copies. |
@@ -175,9 +143,9 @@ set `WORKFLOW_NOTIFY=0` for a silent local run.
 
 The next useful extensions at this same wrapping level are:
 
-1. page-table backdoor setup proving host-resident hints are suppressed while
-   neighboring device-resident hints proceed, including page bits 0, 31, 32,
-   and 63;
+1. a new-mode wrapper configuration with small cache geometry covering cold
+   miss, 128-cycle fill, later hit, coalescing, page splitting, PA rejection,
+   replacement, capacity drops, and flush;
 2. reset, enable, LUT-flush, maximum-count, ID-wrap, and address-boundary cases;
 3. error-response injection once the expected WPPP policy for RRESP/BRESP is
    specified;

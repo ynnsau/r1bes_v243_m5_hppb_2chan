@@ -15,12 +15,12 @@ the [documentation map](docs/README.md) before adding debug notes.
 host write to configured hint page
         |
         v
-afu_top / wppp_hint_snoop: unpack eight {14-bit count, 50-bit address} hints
+afu_top / wppp_hint_snoop: unpack eight {reserved, 16-bit count, VA[47:6]} slots
         |
         v
-page_tbl_update: suppress hints while HPPB updates or for host-resident pages
+wppp_translation_stage: 4 KiB split -> banked cache -> delayed fill -> PA guard
         |
-        +---------------- round-robin ----------------+
+        +-------------- retained slot selector -------------+
         v                                             v
 WPPP engine 0                                  WPPP engine 1
         |                                             |
@@ -34,10 +34,13 @@ ID-to-address LUT -> response pipeline -> NCP writeback to the same address
                        CXL/HDM channels 0 and 1
 ```
 
-The active implementation is `wppprefetch_rw_pipeline_v2`, instantiated twice
-in `ed_top_wrapper_typ2.sv`. It accepts range hints, issues cacheline reads with
-10-bit rotating request IDs, restores the original address from a LUT when
-responses return out of order, and writes each payload back as an NCP request.
+The active implementation adds a 2 GiB-coverage, four-bank/eight-way
+translation cache in front of two `wppprefetch_rw_pipeline_v2` instances. A
+cold page miss is dropped, serviced for 128 cycles, and inserted; a later hint
+can hit and reach WPPP. Each engine issues cacheline reads with 10-bit rotating
+request IDs, restores the original address when responses return out of order,
+and writes each payload back as an NCP request. HPPB no longer participates in
+WPPP lookup or admission.
 See the [WPPP module contract](hardware_test_design/common/prefetch/README.md)
 and [engineering handoff](PROJECT.md) for exact behavior and known limitations.
 
@@ -63,10 +66,12 @@ make sim-integration-full
 ```
 
 The `wppp_sim` targets isolate the production pipeline and retain the known-bug
-reproducers. The separate integration targets add the real hint snoop,
-page-table filter, both WPPP engines, final HPPB arbiters, an AXI-level fake CXL
-IP, a device-side fake MC, and host-side CPU sinks. They do not model the CXL
-wire protocol. See the [integration simulation guide](wppp_integration_sim/README.md).
+reproducers. The separate integration targets add the real hint snoop, both
+WPPP engines, final HPPB arbiters, an AXI-level fake CXL IP, a device-side fake
+MC, and host-side CPU sinks. Their wrapper explicitly selects the historical
+direct-PA compatibility mode, so these cases preserve established AXI coverage
+but do not verify the new cache. They do not model the CXL wire protocol. See
+the [integration simulation guide](wppp_integration_sim/README.md).
 
 Quartus project validation remains on the project-matched 25.3 release:
 

@@ -100,7 +100,12 @@ import mig_params::*;
 //    output logic [31:0] hb_stall_cnt
 
     output logic [63:0] csr_hint_mech_addr,
-    output logic [63:0] csr_hppb_snoop_addr
+    output logic [63:0] csr_hppb_snoop_addr,
+
+    output logic [63:0] csr_wppp_translation_offset,
+    output logic        csr_wppp_flush_toggle,
+    input  logic [63:0] wppp_translation_status,
+    input  logic [63:0] wppp_translation_stats [0:25]
 );
 
 //CSR block
@@ -171,7 +176,11 @@ import mig_params::*;
        .csr_prefetch_interval(csr_prefetch_interval),
     //    .hb_stall_cnt(hb_stall_cnt) // for prefetch read write module, the reset amount
         .csr_hint_mech_addr(csr_hint_mech_addr),
-        .csr_hppb_snoop_addr(csr_hppb_snoop_addr)
+        .csr_hppb_snoop_addr(csr_hppb_snoop_addr),
+        .csr_wppp_translation_offset(csr_wppp_translation_offset),
+        .csr_wppp_flush_toggle(csr_wppp_flush_toggle),
+        .wppp_translation_status(wppp_translation_status),
+        .wppp_translation_stats(wppp_translation_stats)
    );
 
 //USER LOGIC Implementation 

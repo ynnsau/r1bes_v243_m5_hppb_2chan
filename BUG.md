@@ -1,6 +1,6 @@
 # Known WPPP Bugs and Contract Risks
 
-Last updated: 2026-08-18 local time.
+Last updated: 2026-08-19 local time.
 
 This is the issue/status index. Stable behavior belongs in the prefetch module
 contract, test definitions belong in the relevant simulation README, and
@@ -17,6 +17,7 @@ completed outcomes belong in `CHANGE.md`.
 | [`WPPP-FIFO-METADATA-005`](#wppp-fifo-metadata-005-active-rtl-retains-old-usedw-widths) | Open tooling cleanup | Low | `.ip` descriptor/RTL inspection |
 | [`WPPP-V2-SURFACE-006`](#wppp-v2-surface-006-legacy-control-and-filter-surface-is-inactive) | Documented limitation | Low | RTL integration inspection |
 | [`WPPP-BUILD-COLLATERAL-007`](#wppp-build-collateral-007-quartus-project-is-missing-generated-ip-and-source-context) | Open build prerequisite | Blocks project compile | Quartus 25.3 quick-elab result |
+| [`WPPP-TCACHE-008`](#wppp-tcache-008-first-translation-cache-rtl-lacks-directed-functional-regression) | Open verification gap | High until characterized | New-mode compile/elaboration only |
 
 ## WPPP-AR-DEQUEUE-001: Final Hint Can Dequeue Before AR Handshake
 
@@ -154,3 +155,26 @@ reuse the reference repository's stale WPPP FIFO output: its generated depths
 do not match this branch's depth-256 descriptors. After regeneration, rerun
 quick elaboration to expose and fix any remaining QSF file-list issue before a
 full compile.
+
+## WPPP-TCACHE-008: First Translation-Cache RTL Lacks Directed Functional Regression
+
+Status: open verification gap; source compiles and elaborates, but the active
+new-mode cache datapath has not yet run a functional simulation
+
+Severity: high until the new path is characterized
+
+The maintained integration suite intentionally remains in explicit legacy
+direct-PA mode so its existing fake-CXL/fake-MC expectations are not silently
+reinterpreted as translation-cache coverage. The first implementation adds a
+large inferred-RAM cache, page splitter, coalescing MSHR, timing wheel, row
+sweep, translated-PA guard, and CSR CDC. Questa has compiled these sources and
+elaborated the default production geometry, but that proves structure rather
+than behavior.
+
+Before treating the cache mode as verified, add directed small-geometry tests
+for cold miss/128-cycle fill/later hit, coalescing and exactly one insertion,
+MSHR and timer capacity drops, page-boundary splitting, PA rejection, RR
+replacement, POR sweep readiness, flush cancellation, engine-full holding,
+and coherent counter snapshots. Offset changes are assumed extremely rare;
+software must flush after changing the offset or previously cached mappings
+remain associated with the old offset.

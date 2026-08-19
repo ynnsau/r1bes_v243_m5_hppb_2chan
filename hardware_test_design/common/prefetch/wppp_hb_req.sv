@@ -35,7 +35,12 @@ import wppprefetch_pkg::*;
     // output logic get_next_addr,
     input logic lut_in_use,
     input logic abort_op,
-    output logic write_lut // writing the LUT entry
+    output logic write_lut, // writing the LUT entry
+
+    output logic [63:0] hint_fifo_drop_count,
+    output logic [63:0] hint_fifo_full_cycle_count,
+    output logic [63:0] hint_fifo_full_episode_count,
+    output logic        hint_fifo_ready
 );
 /* const */
 assign  arlen        = '0   ;
@@ -62,6 +67,7 @@ logic ar_pending;
 logic ar_fire;
 logic [11:0] held_arid;
 logic [63:0] held_araddr;
+logic queue_full_d;
 (*preserve_for_debug *) logic [4:0] usedw;
 
 // the fifo has been updated to have a depth of 256, the name is not updated, double-check if needed
@@ -96,6 +102,7 @@ assign araddr = ar_pending ? held_araddr :
 assign aruser = 6'b110000; // used to be Host Bias, now it is Device Bias
 assign ar_fire = arvalid & arready;
 assign write_lut = ar_fire;
+assign hint_fifo_ready = enable_prefetch_i && !queue_full;
 
 always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
@@ -111,7 +118,7 @@ end
 /* fifo signals */
 always_comb begin
     enq_ok = enqueue_valid_i & enable_prefetch_i & ~queue_full;
-    fifo_in_up = {9'b0, enqueue_num_of_cl_i[13:0], enqueue_address_i[49:0]};
+    fifo_in_up = {5'b0, enqueue_num_of_cl_i, enqueue_address_i[51:0]};
 end
 
 always_ff @(posedge axi4_mm_clk) begin
@@ -124,12 +131,29 @@ always_ff @(posedge axi4_mm_clk) begin
         ar_pending <= 1'b0;
         held_arid <= '0;
         held_araddr <= '0;
+        queue_full_d <= 1'b0;
+        hint_fifo_drop_count <= '0;
+        hint_fifo_full_cycle_count <= '0;
+        hint_fifo_full_episode_count <= '0;
     end
     else begin
+        queue_full_d <= queue_full;
+        if (queue_full) begin
+            hint_fifo_full_cycle_count <=
+                hint_fifo_full_cycle_count + 1'b1;
+        end
+        if (queue_full && !queue_full_d) begin
+            hint_fifo_full_episode_count <=
+                hint_fifo_full_episode_count + 1'b1;
+        end
+        if (enqueue_valid_i && queue_full) begin
+            hint_fifo_drop_count <= hint_fifo_drop_count + 1'b1;
+        end
+
         if (dequeue_valid) begin
             active_valid <= 1'b1;
-            active_num_cl <= {50'b0, fifo_out_up[63:50]};
-            active_base_addr <= {14'b0, fifo_out_up[49:0]};
+            active_num_cl <= {48'b0, fifo_out_up[67:52]};
+            active_base_addr <= {12'b0, fifo_out_up[51:0]};
             cl_counter <= '0;
         end
 

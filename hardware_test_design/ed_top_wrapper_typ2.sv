@@ -1763,13 +1763,40 @@ logic [15:0] enqueue_num_of_cl_i_1;
 logic hint_enq_sel_i, hint_enq_sel_o;  // used to select the wppp hint queue, if 0, write goes to hint_q_0, if 1, write goes to hint_q_1
 logic [63:0]  hint_enq_address_i, hint_enq_address_o;
 logic [15:0]   hint_enq_num_of_cl_i, hint_enq_num_of_cl_o;
+logic hint_enq_invalid_i, hint_enq_valid_o;
 logic [63:0]  csr_hint_mech_addr_aclk, csr_hint_mech_addr_eclk;
+logic [63:0] hint_line_drop_count;
+logic [63:0] hint_line_full_cycle_count;
+logic [63:0] hint_line_full_episode_count;
 
-assign enqueue_valid_i_0 = (hint_enq_address_o != '0) & (hint_enq_sel_o == 0);
+localparam int WPPP_STAGE_STATS = 17;
+localparam int WPPP_CSR_STATS = 26;
+logic [63:0] wppp_stage_stats [0:WPPP_STAGE_STATS-1];
+logic [63:0] wppp_stats_fast [0:WPPP_CSR_STATS-1];
+logic [63:0] wppp_stats_csr [0:WPPP_CSR_STATS-1];
+logic [63:0] wppp_translation_status;
+logic [63:0] wppp_translation_status_csr;
+logic wppp_translation_flush_busy;
+logic [63:0] csr_wppp_translation_offset_aclk;
+logic [63:0] csr_wppp_translation_offset_eclk;
+logic csr_wppp_flush_toggle_aclk;
+logic csr_wppp_flush_toggle_eclk;
+logic csr_wppp_flush_toggle_eclk_d;
+logic wppp_translation_flush_req;
+logic [63:0] wppp_hint_fifo_drop_count_0;
+logic [63:0] wppp_hint_fifo_drop_count_1;
+logic [63:0] wppp_hint_fifo_full_cycle_count_0;
+logic [63:0] wppp_hint_fifo_full_cycle_count_1;
+logic [63:0] wppp_hint_fifo_full_episode_count_0;
+logic [63:0] wppp_hint_fifo_full_episode_count_1;
+logic wppp_hint_fifo_ready_0;
+logic wppp_hint_fifo_ready_1;
+
+assign enqueue_valid_i_0 = hint_enq_valid_o & (hint_enq_sel_o == 0);
 assign enqueue_address_i_0 = hint_enq_address_o;
 assign enqueue_num_of_cl_i_0 = hint_enq_num_of_cl_o;
 
-assign enqueue_valid_i_1 = (hint_enq_address_o != '0) & (hint_enq_sel_o == 1);
+assign enqueue_valid_i_1 = hint_enq_valid_o & (hint_enq_sel_o == 1);
 assign enqueue_address_i_1 = hint_enq_address_o;
 assign enqueue_num_of_cl_i_1 = hint_enq_num_of_cl_o;
 
@@ -1825,6 +1852,10 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_0(
   .abort_op('0),        // signal provided by AFU to abort current prefetching operation
   .prefetch_abt_cnt(prefetch_abt_cnt_0), // for prefetching stat, abort count
   .prefetch_ok_cnt(prefetch_ok_cnt_0),  // for prefetching stat, success count
+  .hint_fifo_drop_count(wppp_hint_fifo_drop_count_0),
+  .hint_fifo_full_cycle_count(wppp_hint_fifo_full_cycle_count_0),
+  .hint_fifo_full_episode_count(wppp_hint_fifo_full_episode_count_0),
+  .hint_fifo_ready(wppp_hint_fifo_ready_0),
 
   .get_next_addr(), // not used
   .addr_issued(), // not used
@@ -1892,6 +1923,10 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
   .abort_op('0),        // signal provided by AFU to abort current prefetching operation
   .prefetch_abt_cnt(prefetch_abt_cnt_1), // for prefetching stat, abort count
   .prefetch_ok_cnt(prefetch_ok_cnt_1),  // for prefetching stat, success count
+  .hint_fifo_drop_count(wppp_hint_fifo_drop_count_1),
+  .hint_fifo_full_cycle_count(wppp_hint_fifo_full_cycle_count_1),
+  .hint_fifo_full_episode_count(wppp_hint_fifo_full_episode_count_1),
+  .hint_fifo_ready(wppp_hint_fifo_ready_1),
   .get_next_addr(), // not used
   .addr_issued(), // not used
 
@@ -1923,10 +1958,8 @@ wppprefetch_rw_pipeline_v2 wppprefetch_rw_inst_1(
 
 
 // Other signals
-  logic [63:0]  hppb_all_src_addr [ACTUAL_MIG_GRP_SIZE];
   logic [63:0]  hppb_src_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb1_src_addr [ACTUAL_MIG_GRP_SIZE/2];
-  logic [63:0]  hppb_all_dst_addr [ACTUAL_MIG_GRP_SIZE];
   logic [63:0]  hppb_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic [63:0]  hppb1_dst_addr [ACTUAL_MIG_GRP_SIZE/2];
   logic         hppb_new_addr_available;
@@ -2147,34 +2180,56 @@ axi_arbiter #(.ARB_BIT_POS(10)) axi_arbiter_hppb1
 //   .hppb_mig_done_axi_w_ch(hppb_mig_done_axi_ports.aw_resp)
 // );
 
-always_comb begin
-    for (int i = 0; i < ACTUAL_MIG_GRP_SIZE; i++) begin
-      if (i < (ACTUAL_MIG_GRP_SIZE/2)) begin
-        hppb_all_src_addr[i] = hppb_src_addr[i];
-        hppb_all_dst_addr[i] = hppb_dst_addr[i];
-      end else begin
-        hppb_all_src_addr[i] = hppb1_src_addr[i - (ACTUAL_MIG_GRP_SIZE/2)];
-        hppb_all_dst_addr[i] = hppb1_dst_addr[i - (ACTUAL_MIG_GRP_SIZE/2)];
-      end
-    end
-end
-
-page_tbl_update #(.MIG_GRP_SIZE(ACTUAL_MIG_GRP_SIZE)) page_tbl_update_inst
-(
+// WPPP translation is intentionally independent of HPPB.  HPPB remains a
+// separate AXI client below, but its migration updates no longer alter hint
+// admission or cache contents.
+wppp_translation_stage #(
+    .LEGACY_DIRECT_MODE(1'b0),
+    .CACHE_BANKS(4),
+    .CACHE_SETS(16384),
+    .CACHE_WAYS(8),
+    .TRANSLATION_LATENCY(128),
+    .MSHR_SETS(32),
+    .MSHR_WAYS(8),
+    .STATS_COUNT(WPPP_STAGE_STATS)
+) wppp_translation_stage_inst (
     .clk(ip2hdm_clk),
     .rst_n(ip2hdm_reset_n),
-    .hppb_tbl_update(hppb_new_addr_available),
-    .hppb_src_addr(hppb_all_src_addr),
-    .hppb_dst_addr(hppb_all_dst_addr),
-
-    .hint_enq_sel_i(hint_enq_sel_i),
-    .hint_enq_address_i(hint_enq_address_i),
-    .hint_enq_num_of_cl_i(hint_enq_num_of_cl_i),
-
-    .hint_enq_sel_o(hint_enq_sel_o),
-    .hint_enq_address_o(hint_enq_address_o),
-    .hint_enq_num_of_cl_o(hint_enq_num_of_cl_o)
+    .hint_valid_i(csr_prefetch_interval[31] &&
+                  (hint_enq_num_of_cl_i != 0) && !hint_enq_invalid_i),
+    .hint_invalid_i(hint_enq_invalid_i),
+    .hint_sel_i(hint_enq_sel_i),
+    .hint_address_i(hint_enq_address_i),
+    .hint_count_i(hint_enq_num_of_cl_i),
+    .translation_offset_i(csr_wppp_translation_offset_eclk),
+    .pa_range_start_i(cxl_start_pa),
+    .pa_range_span_i({30'b0, csr_addr_ub}),
+    .flush_req_i(wppp_translation_flush_req),
+    .engine0_ready_i(wppp_hint_fifo_ready_0),
+    .engine1_ready_i(wppp_hint_fifo_ready_1),
+    .hint_valid_o(hint_enq_valid_o),
+    .hint_sel_o(hint_enq_sel_o),
+    .hint_address_o(hint_enq_address_o),
+    .hint_count_o(hint_enq_num_of_cl_o),
+    .flush_busy_o(wppp_translation_flush_busy),
+    .status_o(wppp_translation_status),
+    .stats_o(wppp_stage_stats)
 );
+
+always_comb begin
+    for (int stat = 0; stat < WPPP_STAGE_STATS; stat++) begin
+        wppp_stats_fast[stat] = wppp_stage_stats[stat];
+    end
+    wppp_stats_fast[17] = hint_line_drop_count;
+    wppp_stats_fast[18] = wppp_hint_fifo_drop_count_0;
+    wppp_stats_fast[19] = wppp_hint_fifo_drop_count_1;
+    wppp_stats_fast[20] = hint_line_full_cycle_count;
+    wppp_stats_fast[21] = wppp_hint_fifo_full_cycle_count_0;
+    wppp_stats_fast[22] = wppp_hint_fifo_full_cycle_count_1;
+    wppp_stats_fast[23] = hint_line_full_episode_count;
+    wppp_stats_fast[24] = wppp_hint_fifo_full_episode_count_0;
+    wppp_stats_fast[25] = wppp_hint_fifo_full_episode_count_1;
+end
 
 
 `ifdef BYPASS_ATE 
@@ -2867,7 +2922,11 @@ intel_cxl_tx_tlp_fifos  inst_tlp_fifos  (
     // old comment TODO hppb related
 
     .csr_hint_mech_addr(csr_hint_mech_addr_aclk),
-    .csr_hppb_snoop_addr(csr_hppb_snoop_addr_aclk)
+    .csr_hppb_snoop_addr(csr_hppb_snoop_addr_aclk),
+    .csr_wppp_translation_offset(csr_wppp_translation_offset_aclk),
+    .csr_wppp_flush_toggle(csr_wppp_flush_toggle_aclk),
+    .wppp_translation_status(wppp_translation_status_csr),
+    .wppp_translation_stats(wppp_stats_csr)
  );
 
 /*================================================
@@ -2880,6 +2939,53 @@ bus_synchronizer #(
     .clk      (ip2hdm_clk),
     .data_in  (csr_hint_mech_addr_aclk),
     .data_out (csr_hint_mech_addr_eclk)
+);
+
+bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+) bus_synchronizer_wppp_translation_offset_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_wppp_translation_offset_aclk),
+    .data_out (csr_wppp_translation_offset_eclk)
+);
+
+bus_synchronizer #(
+    .SIGNAL_WIDTH(1)
+) bus_synchronizer_wppp_flush_toggle_inst (
+    .clk      (ip2hdm_clk),
+    .data_in  (csr_wppp_flush_toggle_aclk),
+    .data_out (csr_wppp_flush_toggle_eclk)
+);
+
+always_ff @(posedge ip2hdm_clk) begin
+    if (!ip2hdm_reset_n) begin
+        csr_wppp_flush_toggle_eclk_d <= csr_wppp_flush_toggle_eclk;
+        wppp_translation_flush_req <= 1'b0;
+    end else begin
+        wppp_translation_flush_req <=
+            csr_wppp_flush_toggle_eclk ^ csr_wppp_flush_toggle_eclk_d;
+        csr_wppp_flush_toggle_eclk_d <= csr_wppp_flush_toggle_eclk;
+    end
+end
+
+wppp_stats_cdc #(
+    .STATS_COUNT(WPPP_CSR_STATS),
+    .SNAPSHOT_LOG2_CYCLES(6)
+) wppp_stats_cdc_inst (
+    .src_clk(ip2hdm_clk),
+    .src_rst_n(ip2hdm_reset_n),
+    .src_stats(wppp_stats_fast),
+    .dst_clk(ip2csr_avmm_clk),
+    .dst_rst_n(ip2csr_avmm_rstn),
+    .dst_stats(wppp_stats_csr)
+);
+
+bus_synchronizer #(
+    .SIGNAL_WIDTH(64)
+) bus_synchronizer_wppp_status_inst (
+    .clk      (ip2csr_avmm_clk),
+    .data_in  (wppp_translation_status),
+    .data_out (wppp_translation_status_csr)
 );
 
 bus_synchronizer #(
@@ -2961,6 +3067,10 @@ afu_top afu_top_inst
     .hint_enq_sel(hint_enq_sel_i),
     .hint_enq_address(hint_enq_address_i),
     .hint_enq_num_of_cl(hint_enq_num_of_cl_i),
+    .hint_enq_invalid(hint_enq_invalid_i),
+    .hint_line_drop_count(hint_line_drop_count),
+    .hint_line_full_cycle_count(hint_line_full_cycle_count),
+    .hint_line_full_episode_count(hint_line_full_episode_count),
 
     .hppb_snoop_addr(csr_hppb_snoop_addr_eclk),
     .hppb_snoop_addr_pair_vld_cnt(hppb_snoop_addr_pair_vld_cnt)
@@ -3103,4 +3213,3 @@ endmodule
 //------------------------------------------------------------------------------------
 //set foldmethod=marker
 //set foldmarker=<<<,>>>
-

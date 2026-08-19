@@ -36,6 +36,10 @@ import wppprefetch_pkg::*;
     // statistics output
     output logic [63:0] prefetch_abt_cnt, // for prefetching stat, abort count
     output logic [63:0] prefetch_ok_cnt,  // for prefetching stat, success count
+    output logic [63:0] hint_fifo_drop_count,
+    output logic [63:0] hint_fifo_full_cycle_count,
+    output logic [63:0] hint_fifo_full_episode_count,
+    output logic        hint_fifo_ready,
 
     // get next addr
     output logic addr_issued,
@@ -127,7 +131,11 @@ wppp_hb_req hb_req_inst(
 
     .lut_in_use(lut_in_use),
     .abort_op(abort_op),
-    .write_lut(write_lut)
+    .write_lut(write_lut),
+    .hint_fifo_drop_count(hint_fifo_drop_count),
+    .hint_fifo_full_cycle_count(hint_fifo_full_cycle_count),
+    .hint_fifo_full_episode_count(hint_fifo_full_episode_count),
+    .hint_fifo_ready(hint_fifo_ready)
 
     // .start_prefetch(start_prefetch),
     // .prefetch_page_addr(prefetch_page_addr),

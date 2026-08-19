@@ -87,10 +87,13 @@ set_global_assignment -name OPTIMIZATION_MODE "SUPERIOR PERFORMANCE WITH MAXIMUM
 set_global_assignment -name PRESERVE_FOR_DEBUG_ENABLE ON
 set_global_assignment -name POWER_THERMAL_SOLVER_MODE FIND_TA
 set_global_assignment -name BOARD default
-set_global_assignment -name SYSTEMVERILOG_FILE common/hot_page_push/page_tbl_update.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/axi_arbiter/axi_arbiter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/prefetch_hint_fifo.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_hint_snoop.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_translation_cache_bank.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_translation_cache.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_translation_stage.sv
+set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_stats_cdc.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wpprefetch_rw_pipe_v2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wpprefetch_rw_pipe.sv
 set_global_assignment -name SYSTEMVERILOG_FILE common/prefetch/wppp_filter_check.sv
@@ -277,5 +280,4 @@ set_global_assignment -name IP_FILE common/ip/fifo/fifo_36w_64d.ip
 set_global_assignment -name SIGNALTAP_FILE m5_impl.stp
 set_global_assignment -name IP_FILE ip/bram/w4096_d64.ip
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_32w_73d.ip
-set_global_assignment -name IP_FILE ip/bram_pgmap_table.ip
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_128w_588d.ip
