@@ -6,6 +6,7 @@ module wppp_integration_tb;
     localparam logic [63:0] HINT_PAGE = MEM_BASE + 64'h0010_0000;
     localparam logic [33:0] WPPP_SPAN = 34'h0100_0000;
     localparam int TIMEOUT_CYCLES = 50000;
+    localparam int MAX_DB_REQUESTS = 64;
 
     logic clk;
     logic rst_n;
@@ -32,6 +33,15 @@ module wppp_integration_tb;
     string active_test;
     bit trace_enabled;
 
+    logic [11:0] db0_req_id_log [0:MAX_DB_REQUESTS-1];
+    logic [63:0] db0_req_addr_log [0:MAX_DB_REQUESTS-1];
+    logic [11:0] db1_req_id_log [0:MAX_DB_REQUESTS-1];
+    logic [63:0] db1_req_addr_log [0:MAX_DB_REQUESTS-1];
+    integer db0_req_log_count;
+    integer db1_req_log_count;
+    logic [11:0] injected_db_id;
+    logic [511:0] injected_db_data;
+
     axi_ports host_agent_ports();
     axi_ports cxl_to_dut_ports();
     axi_ports dut_to_mc_ports();
@@ -44,6 +54,35 @@ module wppp_integration_tb;
     always #5 clk = ~clk;
 
     initial trace_enabled = $test$plusargs("WPPP_INT_TRACE");
+
+    // Retain accepted DB requests for ordering checks and directed response
+    // injection. This is verification-only state; the DUT and endpoint RTL are
+    // left unchanged.
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            db0_req_log_count <= 0;
+            db1_req_log_count <= 0;
+        end else begin
+            if (db0_mc_ports.arvalid && db0_mc_ports.arready) begin
+                if (db0_req_log_count < MAX_DB_REQUESTS) begin
+                    db0_req_id_log[db0_req_log_count] <= db0_mc_ports.arid;
+                    db0_req_addr_log[db0_req_log_count] <= db0_mc_ports.araddr;
+                    db0_req_log_count <= db0_req_log_count + 1;
+                end else begin
+                    $error("WPPP_INT_CHECK_ERROR: DB0 request log overflow");
+                end
+            end
+            if (db1_mc_ports.arvalid && db1_mc_ports.arready) begin
+                if (db1_req_log_count < MAX_DB_REQUESTS) begin
+                    db1_req_id_log[db1_req_log_count] <= db1_mc_ports.arid;
+                    db1_req_addr_log[db1_req_log_count] <= db1_mc_ports.araddr;
+                    db1_req_log_count <= db1_req_log_count + 1;
+                end else begin
+                    $error("WPPP_INT_CHECK_ERROR: DB1 request log overflow");
+                end
+            end
+        end
+    end
 
     always @(posedge clk) begin
         if (trace_enabled) begin
@@ -334,6 +373,77 @@ module wppp_integration_tb;
         repeat (8) @(posedge clk);
     endtask
 
+    task automatic wait_for_db_reads(
+        input int expected_db0,
+        input int expected_db1,
+        input int max_cycles
+    );
+        int cycles;
+        cycles = 0;
+        while ((db_read_count_0 < expected_db0) ||
+               (db_read_count_1 < expected_db1)) begin
+            @(posedge clk);
+            #1;
+            cycles++;
+            if (cycles >= max_cycles) begin
+                record_error($sformatf(
+                    "DB read timeout expected=%0d+%0d observed=%0d+%0d",
+                    expected_db0, expected_db1,
+                    db_read_count_0, db_read_count_1));
+                return;
+            end
+        end
+    endtask
+
+    task automatic inject_db_response(
+        input int channel,
+        input logic [11:0] id,
+        input logic [511:0] data
+    );
+        @(negedge clk);
+        injected_db_id = id;
+        injected_db_data = data;
+        if (channel == 0) begin
+            force db0_mc_ports.rid = injected_db_id;
+            force db0_mc_ports.rdata = injected_db_data;
+            force db0_mc_ports.rresp = 2'b00;
+            force db0_mc_ports.rlast = 1'b1;
+            force db0_mc_ports.ruser = 1'b0;
+            force db0_mc_ports.rvalid = 1'b1;
+            @(posedge clk);
+            #1;
+            if (db0_mc_ports.rready !== 1'b1) begin
+                record_error("DB0 response was not accepted");
+            end
+            @(negedge clk);
+            force db0_mc_ports.rvalid = 1'b0;
+            release db0_mc_ports.rid;
+            release db0_mc_ports.rdata;
+            release db0_mc_ports.rresp;
+            release db0_mc_ports.rlast;
+            release db0_mc_ports.ruser;
+        end else begin
+            force db1_mc_ports.rid = injected_db_id;
+            force db1_mc_ports.rdata = injected_db_data;
+            force db1_mc_ports.rresp = 2'b00;
+            force db1_mc_ports.rlast = 1'b1;
+            force db1_mc_ports.ruser = 1'b0;
+            force db1_mc_ports.rvalid = 1'b1;
+            @(posedge clk);
+            #1;
+            if (db1_mc_ports.rready !== 1'b1) begin
+                record_error("DB1 response was not accepted");
+            end
+            @(negedge clk);
+            force db1_mc_ports.rvalid = 1'b0;
+            release db1_mc_ports.rid;
+            release db1_mc_ports.rdata;
+            release db1_mc_ports.rresp;
+            release db1_mc_ports.rlast;
+            release db1_mc_ports.ruser;
+        end
+    endtask
+
     task automatic check_cpu_line(
         input int channel,
         input logic [63:0] addr,
@@ -443,9 +553,9 @@ module wppp_integration_tb;
                 host_write(addr[i] + (line * 64), expected[i][line],
                            12'h100 + (i * 2) + line);
             end
-            // Two cachelines per packed entry keeps this expected-pass test
-            // independent of open bug WPPP-AR-DEQUEUE-001. Its one-line and
-            // final-AR-stall behavior remains covered by wppp_sim/sim-repro.
+            // Keep two cachelines per packed entry so this batch covers
+            // multi-line expansion; one-line/final-AR behavior has dedicated
+            // expected-pass backpressure regressions.
             hint_line[(i * 64) +: 64] = packed_hint(addr[i], 2);
         end
         host_write(HINT_PAGE + 64'h40, hint_line, 12'h180);
@@ -494,6 +604,333 @@ module wppp_integration_tb;
         check_global_contract(4, 0, 4, 0);
     endtask
 
+    task automatic run_db_backpressure();
+        logic [63:0] base_addr;
+        logic [511:0] expected [4];
+        logic [511:0] hint_line;
+        logic [11:0] held_id;
+        logic [63:0] held_addr;
+        int cycles;
+        bit final_ar_dropped;
+
+        base_addr = MEM_BASE + 64'h0008_0000;
+        for (int i = 0; i < 4; i++) begin
+            expected[i] = line_pattern(base_addr + (i * 64), 16'h5000 + i);
+            host_write(base_addr + (i * 64), expected[i], 12'h300 + i);
+        end
+
+        // Stall the first AR to prove that a non-final request is retained.
+        force db0_mc_ports.arready = 1'b0;
+        hint_line = '0;
+        hint_line[0 +: 64] = packed_hint(base_addr, 4);
+        host_write(HINT_PAGE + 64'h100, hint_line, 12'h340);
+
+        cycles = 0;
+        while (db0_mc_ports.arvalid !== 1'b1) begin
+            @(posedge clk);
+            #1;
+            cycles++;
+            if (cycles >= 1000) begin
+                record_error("DB0 ARVALID timeout before initial backpressure check");
+                release db0_mc_ports.arready;
+                return;
+            end
+        end
+        held_id = db0_mc_ports.arid;
+        held_addr = db0_mc_ports.araddr;
+        repeat (4) begin
+            @(posedge clk);
+            #1;
+            if ((db0_mc_ports.arvalid !== 1'b1) ||
+                (db0_mc_ports.arid !== held_id) ||
+                (db0_mc_ports.araddr !== held_addr)) begin
+                record_error("non-final DB0 AR changed while ARREADY was low");
+            end
+        end
+
+        @(negedge clk);
+        release db0_mc_ports.arready;
+        wait_for_db_reads(3, 0, 1000);
+
+        // Stall the fourth/final AR. AXI requires the request to remain valid
+        // and stable until a handshake, regardless of its position in a hint.
+        @(negedge clk);
+        force db0_mc_ports.arready = 1'b0;
+        #1;
+        if (db0_mc_ports.arvalid !== 1'b1) begin
+            record_error("final DB0 AR was not presented before directed stall");
+            release db0_mc_ports.arready;
+            return;
+        end
+        held_id = db0_mc_ports.arid;
+        held_addr = db0_mc_ports.araddr;
+
+        @(posedge clk);
+        #1;
+        final_ar_dropped = db0_mc_ports.arvalid !== 1'b1;
+        if (final_ar_dropped) begin
+            record_error($sformatf(
+                "final DB0 AR dropped without handshake id=%0d addr=%h",
+                held_id, held_addr));
+            $display("WPPP_REPRODUCED: integration final-cacheline hint dequeued without AR handshake");
+        end else if ((db0_mc_ports.arid !== held_id) ||
+                     (db0_mc_ports.araddr !== held_addr)) begin
+            record_error("final DB0 AR payload changed while ARREADY was low");
+        end
+
+        if (!final_ar_dropped) begin
+            // Once VALID has been sampled under backpressure, disabling new
+            // prefetch work must not withdraw the in-flight AXI transaction.
+            @(negedge clk);
+            enable_wppp = 1'b0;
+            repeat (3) begin
+                @(posedge clk);
+                #1;
+                if ((db0_mc_ports.arvalid !== 1'b1) ||
+                    (db0_mc_ports.arid !== held_id) ||
+                    (db0_mc_ports.araddr !== held_addr)) begin
+                    record_error("final DB0 AR was not stable throughout backpressure");
+                end
+            end
+        end
+
+        @(negedge clk);
+        release db0_mc_ports.arready;
+        if (final_ar_dropped) begin
+            repeat (64) @(posedge clk);
+            if (db_read_count_0 != 3) begin
+                record_error($sformatf(
+                    "unexpected DB0 count after dropped final AR: %0d",
+                    db_read_count_0));
+            end
+            return;
+        end
+
+        wait_for_cpu_writes(4, 10000);
+        @(negedge clk);
+        enable_wppp = 1'b1;
+        for (int i = 0; i < 4; i++) begin
+            check_cpu_line(0, base_addr + (i * 64), expected[i]);
+        end
+        check_global_contract(4, 0, 4, 0);
+    endtask
+
+    task automatic run_ncp_backpressure();
+        logic [63:0] base_addr;
+        logic [511:0] expected [4];
+        logic [511:0] hint_line;
+        logic [11:0] held_awid;
+        logic [63:0] held_awaddr;
+        logic [511:0] held_wdata;
+        int cycles;
+
+        base_addr = MEM_BASE + 64'h0009_0000;
+        for (int i = 0; i < 4; i++) begin
+            expected[i] = line_pattern(base_addr + (i * 64), 16'h6000 + i);
+            host_write(base_addr + (i * 64), expected[i], 12'h380 + i);
+        end
+
+        // Independently block AW and W. Suppressing BVALID during the transfer
+        // models an arbitrarily delayed write response; production WPPP keeps
+        // BREADY asserted and does not use B to retire its internal entry.
+        force wppp0_cxl_ports.awready = 1'b0;
+        force wppp0_cxl_ports.wready = 1'b0;
+        force wppp0_cxl_ports.bvalid = 1'b0;
+        hint_line = '0;
+        hint_line[0 +: 64] = packed_hint(base_addr, 4);
+        host_write(HINT_PAGE + 64'h140, hint_line, 12'h3c0);
+
+        cycles = 0;
+        while (wppp0_cxl_ports.awvalid !== 1'b1) begin
+            @(posedge clk);
+            #1;
+            cycles++;
+            if (cycles >= 2000) begin
+                record_error("NCP AWVALID timeout before backpressure check");
+                release wppp0_cxl_ports.awready;
+                release wppp0_cxl_ports.wready;
+                release wppp0_cxl_ports.bvalid;
+                return;
+            end
+        end
+        held_awid = wppp0_cxl_ports.awid;
+        held_awaddr = wppp0_cxl_ports.awaddr;
+        repeat (4) begin
+            @(posedge clk);
+            #1;
+            if ((wppp0_cxl_ports.awvalid !== 1'b1) ||
+                (wppp0_cxl_ports.awid !== held_awid) ||
+                (wppp0_cxl_ports.awaddr !== held_awaddr)) begin
+                record_error("NCP AW changed while AWREADY was low");
+            end
+            if (wppp0_cxl_ports.bready !== 1'b1) begin
+                record_error("NCP BREADY deasserted while B response was delayed");
+            end
+        end
+
+        @(negedge clk);
+        release wppp0_cxl_ports.awready;
+        cycles = 0;
+        while (wppp0_cxl_ports.wvalid !== 1'b1) begin
+            @(posedge clk);
+            #1;
+            cycles++;
+            if (cycles >= 1000) begin
+                record_error("NCP WVALID timeout after AW handshake");
+                release wppp0_cxl_ports.wready;
+                release wppp0_cxl_ports.bvalid;
+                return;
+            end
+        end
+        held_wdata = wppp0_cxl_ports.wdata;
+        repeat (4) begin
+            @(posedge clk);
+            #1;
+            if ((wppp0_cxl_ports.wvalid !== 1'b1) ||
+                (wppp0_cxl_ports.wdata !== held_wdata) ||
+                (wppp0_cxl_ports.wstrb !== 64'hffff_ffff_ffff_ffff) ||
+                (wppp0_cxl_ports.wlast !== 1'b1)) begin
+                record_error("NCP W changed while WREADY was low");
+            end
+        end
+
+        @(negedge clk);
+        release wppp0_cxl_ports.wready;
+        wait_for_cpu_writes(4, 10000);
+        repeat (4) begin
+            @(posedge clk);
+            #1;
+            if (wppp0_cxl_ports.bready !== 1'b1) begin
+                record_error("NCP BREADY did not remain asserted");
+            end
+        end
+        release wppp0_cxl_ports.bvalid;
+
+        for (int i = 0; i < 4; i++) begin
+            check_cpu_line(0, base_addr + (i * 64), expected[i]);
+        end
+        check_global_contract(4, 0, 4, 0);
+    endtask
+
+    task automatic run_out_of_order();
+        logic [63:0] base_addr [2];
+        logic [511:0] expected [2][4];
+        logic [511:0] hint_line;
+
+        base_addr[0] = MEM_BASE + 64'h000a_0000;
+        base_addr[1] = MEM_BASE + 64'h000b_0000;
+        for (int channel = 0; channel < 2; channel++) begin
+            for (int i = 0; i < 4; i++) begin
+                expected[channel][i] = line_pattern(
+                    base_addr[channel] + (i * 64),
+                    16'h7000 + (channel * 16) + i);
+                host_write(base_addr[channel] + (i * 64),
+                           expected[channel][i],
+                           12'h400 + (channel * 16) + i);
+            end
+        end
+
+        // Hide the fake MC's normal ordered responses. Requests are still
+        // accepted and logged, then the testbench returns each channel in
+        // reverse ID order using otherwise legal AXI R transactions.
+        force db0_mc_ports.rvalid = 1'b0;
+        force db1_mc_ports.rvalid = 1'b0;
+        hint_line = '0;
+        hint_line[0 +: 64] = packed_hint(base_addr[0], 4);
+        hint_line[64 +: 64] = packed_hint(base_addr[1], 4);
+        host_write(HINT_PAGE + 64'h180, hint_line, 12'h440);
+        wait_for_db_reads(4, 4, 5000);
+
+        for (int i = 0; i < 4; i++) begin
+            if (db0_req_addr_log[i] !== base_addr[0] + (i * 64)) begin
+                record_error($sformatf(
+                    "unexpected DB0 request order index=%0d addr=%h", i,
+                    db0_req_addr_log[i]));
+            end
+            if (db1_req_addr_log[i] !== base_addr[1] + (i * 64)) begin
+                record_error($sformatf(
+                    "unexpected DB1 request order index=%0d addr=%h", i,
+                    db1_req_addr_log[i]));
+            end
+        end
+
+        for (int i = 3; i >= 0; i--) begin
+            inject_db_response(0, db0_req_id_log[i], expected[0][i]);
+            inject_db_response(1, db1_req_id_log[i], expected[1][i]);
+        end
+
+        wait_for_cpu_writes(8, 10000);
+        for (int channel = 0; channel < 2; channel++) begin
+            for (int i = 0; i < 4; i++) begin
+                check_cpu_line(channel, base_addr[channel] + (i * 64),
+                               expected[channel][i]);
+            end
+        end
+        check_global_contract(4, 4, 4, 4);
+    endtask
+
+    task automatic run_hint_sequence();
+        logic [63:0] addr [6];
+        logic [511:0] expected [6][2];
+        logic [511:0] wrong_page_data;
+        logic [511:0] first_hint_line;
+        logic [511:0] second_hint_line;
+
+        for (int i = 0; i < 6; i++) begin
+            addr[i] = MEM_BASE + 64'h000c_0000 + (i * 64'h0000_0400);
+            for (int line = 0; line < 2; line++) begin
+                expected[i][line] = line_pattern(
+                    addr[i] + (line * 64), 16'h8000 + (i * 2) + line);
+                host_write(addr[i] + (line * 64), expected[i][line],
+                           12'h480 + (i * 2) + line);
+            end
+        end
+
+        // A hint-shaped write outside the configured 4 KiB page must remain
+        // ordinary host traffic and generate no WPPP request.
+        wrong_page_data = '0;
+        wrong_page_data[0 +: 64] = packed_hint(addr[0], 2);
+        host_write(HINT_PAGE + 64'h1000, wrong_page_data, 12'h4c0);
+        repeat (12) @(posedge clk);
+        if ((db_read_count_0 != 0) || (db_read_count_1 != 0)) begin
+            record_error("off-page hint-shaped write generated WPPP traffic");
+        end
+
+        // Sparse slots still advance the engine selector. The first line uses
+        // slots 0/2 on engine 0 and slots 5/7 on engine 1.
+        first_hint_line = '0;
+        first_hint_line[(0 * 64) +: 64] = packed_hint(addr[0], 2);
+        first_hint_line[(2 * 64) +: 64] = packed_hint(addr[1], 2);
+        first_hint_line[(5 * 64) +: 64] = packed_hint(addr[2], 2);
+        first_hint_line[(7 * 64) +: 64] = packed_hint(addr[3], 2);
+        host_write(HINT_PAGE + 64'h1c0, first_hint_line, 12'h4c1);
+
+        // Wait until the eight-slot serializer is idle before presenting the
+        // next line; overlapping captures are intentionally not assumed safe.
+        repeat (12) @(posedge clk);
+        if (dut.hint_snoop.hint_mech_valid !== 1'b0) begin
+            record_error("hint serializer did not return idle after eight slots");
+        end
+
+        // The capture toggle preserves selector continuity across lines: on
+        // this second line slot 1 selects engine 0 and slot 4 selects engine 1.
+        second_hint_line = '0;
+        second_hint_line[(1 * 64) +: 64] = packed_hint(addr[4], 2);
+        second_hint_line[(4 * 64) +: 64] = packed_hint(addr[5], 2);
+        host_write(HINT_PAGE + 64'h200, second_hint_line, 12'h4c2);
+
+        wait_for_cpu_writes(12, 15000);
+        for (int i = 0; i < 2; i++) begin
+            check_cpu_line(0, addr[0] + (i * 64), expected[0][i]);
+            check_cpu_line(0, addr[1] + (i * 64), expected[1][i]);
+            check_cpu_line(1, addr[2] + (i * 64), expected[2][i]);
+            check_cpu_line(1, addr[3] + (i * 64), expected[3][i]);
+            check_cpu_line(0, addr[4] + (i * 64), expected[4][i]);
+            check_cpu_line(1, addr[5] + (i * 64), expected[5][i]);
+        end
+        check_global_contract(6, 6, 6, 6);
+    endtask
+
     always_ff @(posedge clk) begin
         if (rst_n && hppb_activity) begin
             record_error("inactive HPPB interfered with the WPPP path");
@@ -534,6 +971,18 @@ module wppp_integration_tb;
         end else if ($test$plusargs("RUN_INT_HPPB_INACTIVE")) begin
             active_test = "RUN_INT_HPPB_INACTIVE";
             run_hint_batch();
+        end else if ($test$plusargs("RUN_INT_DB_BACKPRESSURE")) begin
+            active_test = "RUN_INT_DB_BACKPRESSURE";
+            run_db_backpressure();
+        end else if ($test$plusargs("RUN_INT_NCP_BACKPRESSURE")) begin
+            active_test = "RUN_INT_NCP_BACKPRESSURE";
+            run_ncp_backpressure();
+        end else if ($test$plusargs("RUN_INT_OUT_OF_ORDER")) begin
+            active_test = "RUN_INT_OUT_OF_ORDER";
+            run_out_of_order();
+        end else if ($test$plusargs("RUN_INT_HINT_SEQUENCE")) begin
+            active_test = "RUN_INT_HINT_SEQUENCE";
+            run_hint_sequence();
         end else begin
             active_test = "RUN_INT_HOST_RW";
             run_host_rw();

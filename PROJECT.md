@@ -27,7 +27,7 @@ a software-visible buffer.
 | Hint snoop | `common/prefetch/wppp_hint_snoop.sv`, instantiated by `common/afu/afu_top.sv` | On a channel-0 write-address match within the configured 4 KiB hint page, captures 512-bit write data and emits eight packed hints over eight cycles. |
 | Migration filter | `common/hot_page_push/page_tbl_update.sv` | Delays the hint two cycles; suppresses it during an HPPB table update or when its page is marked host-resident. |
 | Top integration | `ed_top_wrapper_typ2.sv` | Sends nonzero hints alternately to two WPPP engines; enables them with `csr_prefetch_interval[31]`; arbitrates their AXI traffic with HPPB. |
-| Read issue | `common/prefetch/wppp_hb_req.sv` | Queues packed hints, expands each into 64-byte reads, and allocates a rotating 10-bit request ID when AR handshakes. |
+| Read issue | `common/prefetch/wppp_hb_req.sv` | Queues packed hints, transfers each FIFO head into an active context, expands it into 64-byte reads, and allocates a rotating 10-bit request ID when AR handshakes. |
 | Address ownership | `common/prefetch/wppp_lut.sv` | Tracks 1024 valid IDs and stores ID-to-address mappings in `w4096_d64`; a response clears its valid bit. |
 | Read response | `common/prefetch/wppp_hb_resp.sv` | Keeps R ready, looks up `rid[9:0]`, and pipelines valid response payload plus recovered address. |
 | Writeback | `common/prefetch/wppp_ncp.sv` (`wppp_ncp_pipe`) | Queues payloads, handshakes AW and then W, and counts successful W handshakes. |
@@ -65,9 +65,9 @@ start_address_i <= hint_address < start_address_i + address_upper_i
 ```
 
 `address_lower_i` is connected but unused. `address_upper_i` is treated as a
-span from `start_address_i`, not an absolute upper address. Range state and the
-enable decision are registered, so a new control value does not affect the
-same cycle combinationally.
+span from `start_address_i`, not an absolute upper address. The range bounds
+are registered. Enable, abort, range, and LUT ownership gate presentation of a
+new AR, but cannot withdraw an AR that has already been sampled while stalled.
 
 For cacheline index `n`, the read address is `hint_address + n * 64`. A zero
 cacheline count has no useful defined behavior and should not be emitted by
@@ -79,6 +79,9 @@ software.
   `arburst=0`.
 - The current branch drives `aruser=6'b110000` (device-biased); this intentionally
   differs from the older host-biased implementation.
+- Each FIFO head is copied into an active-hint register and popped once. If AR
+  is backpressured, a pending register holds VALID, ID, and address stable;
+  active count/index state retires only on handshake.
 - Only `arid[9:0]` carries WPPP ownership. The LUT blocks reuse while the next
   ID remains valid and naturally supports out-of-order responses.
 - `wppp_hb_resp` accepts every `rvalid` because `rready` is tied high. It does
@@ -109,9 +112,6 @@ does not need to erase RAM contents.
 
 ## Active Gaps
 
-- The final hint entry is dequeued from the hint FIFO based on the intended
-  cacheline count, not on a successful final AR handshake. Backpressure can
-  therefore discard a one-line hint. Reproducer: `RUN_AR_LAST_STALL_REPRO`.
 - An out-of-range hint remains at the FIFO head forever and blocks later valid
   hints. Reproducer: `RUN_RANGE_HEAD_BLOCK_REPRO`.
 - The paired AW/W hint-write behavior is an explicit project integration

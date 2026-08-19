@@ -30,6 +30,7 @@ SMOKE_TESTS := \
 FOCUSED_TESTS := \
 	$(SMOKE_TESTS) \
 	RUN_BACKPRESSURE \
+	RUN_AR_LAST_STALL \
 	RUN_HINT_QUEUE \
 	RUN_LUT_FLUSH
 
@@ -38,7 +39,6 @@ FULL_TESTS := \
 	RUN_ID_WRAP
 
 REPRO_SPECS := \
-	'RUN_AR_LAST_STALL_REPRO::WPPP_REPRODUCED: last-cacheline hint dequeued without AR handshake' \
 	'RUN_RANGE_HEAD_BLOCK_REPRO::WPPP_REPRODUCED: out-of-range head hint blocks following valid hint'
 
 SIM_COMPILE_DO = $(if $(filter 1,$(SIM_COMPILE)),source $(SIM_DIR)/compile.tcl;,)
@@ -108,7 +108,7 @@ list-sim-tiers:
 	@echo "sim-smoke   : basic read/copy and out-of-order response mapping"
 	@echo "sim-focused : smoke plus AXI backpressure, hint ordering, and LUT flush"
 	@echo "sim-full    : focused plus the 10-bit request-ID wrap stress"
-	@echo "sim-repro   : separately classify known expected-fail protocol bugs"
+	@echo "sim-repro   : separately classify the known range-head expected failure"
 
 test-tools:
 	python3 -m unittest discover -s tools/tests -p 'test_*.py'

@@ -16,6 +16,7 @@ RUN_STAMP := $(RUN_STAMP)
 SMOKE_LOG_DIR ?= logs/smoke_$(RUN_STAMP)
 FOCUSED_LOG_DIR ?= logs/focused_$(RUN_STAMP)
 FULL_LOG_DIR ?= logs/full_$(RUN_STAMP)
+STRESS_LOG_DIR ?= logs/stress_$(RUN_STAMP)
 SIM_DURATION_HISTORY ?= logs/.duration_history.json
 SIM_COMPRESS_PASS_LOGS ?= 1
 SIM_RERUN_FAILURES ?= 1
@@ -34,9 +35,15 @@ FULL_TESTS := \
 	$(FOCUSED_TESTS) \
 	RUN_INT_HPPB_INACTIVE
 
+STRESS_TESTS := \
+	RUN_INT_DB_BACKPRESSURE \
+	RUN_INT_NCP_BACKPRESSURE \
+	RUN_INT_OUT_OF_ORDER \
+	RUN_INT_HINT_SEQUENCE
+
 SIM_COMPILE_DO = $(if $(filter 1,$(SIM_COMPILE)),source $(SIM_DIR)/compile.tcl;,)
 
-.PHONY: all compile sim sim-fast sim-smoke sim-focused sim-full list-sim-tiers clean help
+.PHONY: all compile sim sim-fast sim-smoke sim-focused sim-full sim-stress list-sim-tiers clean help
 
 all: sim-smoke
 
@@ -92,10 +99,25 @@ sim-full: compile
 		--notify-tool $(WORKFLOW_NOTIFY_CMD) \
 		$(FULL_TESTS)
 
+sim-stress: compile
+	@$(REGRESSION_RUNNER) \
+		--suite-name wppp-integration \
+		--profile full \
+		--jobs $(JOBS) \
+		--log-dir $(STRESS_LOG_DIR) \
+		--history-file $(SIM_DURATION_HISTORY) \
+		--compress-pass-logs $(SIM_COMPRESS_PASS_LOGS) \
+		--rerun-failures $(SIM_RERUN_FAILURES) \
+		--failure-wlf $(SIM_FAILURE_WLF) \
+		--notify $(WORKFLOW_NOTIFY) \
+		--notify-tool $(WORKFLOW_NOTIFY_CMD) \
+		$(STRESS_TESTS)
+
 list-sim-tiers:
 	@echo "sim-smoke   : host pass-through and one end-to-end hint"
 	@echo "sim-focused : smoke plus eight-hint dual-engine and concurrent host traffic"
 	@echo "sim-full    : focused plus explicit inactive-HPPB isolation check"
+	@echo "sim-stress  : DB/NCP backpressure, out-of-order responses, and hint sequencing"
 
 clean:
 	rm -rf $(BUILD_DIR) modelsim.ini transcript

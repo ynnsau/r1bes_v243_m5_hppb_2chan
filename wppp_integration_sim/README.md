@@ -59,6 +59,55 @@ comes from device memory, while the final NCP write goes to host memory.
 The behavioral FIFO and LUT models are reused from `wppp_sim`; only the
 page-table RAM model is integration-specific.
 
+## Page-Residency Filter
+
+`page_tbl_update` treats its RAM as a 4 KiB-page residency bitmap. For a hint
+base address:
+
+- `address[33:18]` selects one 64-bit table row;
+- `address[17:12]` selects one page bit in that row;
+- bit `0` means the page is in CXL/device memory and WPPP may read it;
+- bit `1` means the page is in host memory and the hint is suppressed.
+
+The RAM is synchronous. The filter registers the hint address, selector, and
+count while reading the selected row, then emits the aligned result through a
+second register stage. A suppressed hint is represented by an all-zero output
+address; the integration wrapper converts only nonzero output addresses into
+WPPP FIFO enqueue-valid pulses. Selector and count still pass through the
+pipeline, but have no effect when the address is zero.
+
+The same single-port RAM is updated from HPPB migration results. One
+`hppb_tbl_update` pulse snapshots all `MIG_GRP_SIZE` source/destination pairs.
+The RTL then performs a read/modify/write for one pair every two clocks. Using
+the RTL's fixed `64'h0000008080000000` boundary and source/destination case
+mapping, CXL-to-host migration sets the source-page bit, while host-to-CXL
+migration clears the destination-page bit. During the entire update sequence,
+all incoming hints are suppressed because the RAM port is unavailable; the
+filter has no retry queue.
+
+The implementation therefore assumes:
+
+- the residency RAM is initialized consistently. Reset clears control state,
+  but does not clear the RAM itself; the behavioral model makes unwritten rows
+  zero, so every page initially appears device-resident;
+- managed addresses are distinguished by bits `[33:12]`. Higher address bits
+  are ignored by the table and therefore alias;
+- the hint base address is nonzero, because zero is also the invalid/suppressed
+  sentinel used by the wrapper;
+- a multi-cacheline hint does not cross into a page with different residency.
+  The filter checks only the hint's base page, not every generated cacheline;
+- a new HPPB update pulse does not arrive while the previous 32-entry update is
+  running, since there is no ready/busy handshake at this interface;
+- hint producers tolerate hints being discarded, rather than stalled, while
+  an HPPB table update owns the single RAM port.
+
+One implementation risk remains uncharacterized: the cancellation expression
+uses unsized `1 << address[17:12]`, while the update path explicitly uses a
+64-bit one. Page-bit positions 32 through 63 need directed simulation before
+the upper half of each row can be trusted. In the current integration wrapper,
+HPPB is tied inactive and no test preloads the page RAM, so the maintained cases
+exercise the filter's pipeline delay but not cancellation or update behavior.
+
 ## Explicit Contracts
 
 - Host-originated writes present AW and W together and both handshakes complete
@@ -84,11 +133,15 @@ page-table RAM model is integration-specific.
 | `RUN_INT_HINT_BATCH` | Focused | All eight packed hints survive snoop/page-table delay, alternate across both engines, and copy 16 cachelines to the correct CPU sinks. |
 | `RUN_INT_HOST_AND_HINT` | Focused | Ordinary host memory traffic completes while WPPP DB reads and NCP writes are active. |
 | `RUN_INT_HPPB_INACTIVE` | Full | The dual-engine batch completes with zero HPPB request activity or interference. |
+| `RUN_INT_DB_BACKPRESSURE` | Stress | Holds the first and final AR, disables new prefetch work during the final stall, and verifies stable delivery plus exact end-to-end copies. |
+| `RUN_INT_NCP_BACKPRESSURE` | Stress | Independently holds NCP AW and W, checks stable payloads, holds BVALID low through the transfer while checking BREADY, and verifies exact CPU writes. |
+| `RUN_INT_OUT_OF_ORDER` | Stress | Captures four requests from each engine, returns each channel in reverse ID order, and checks LUT-based address/data restoration. |
+| `RUN_INT_HINT_SEQUENCE` | Stress | Checks an off-page write, sparse/zero slots, two safely separated hint lines, selector continuity, both engines, and exact copied data. |
 
-The batch uses two cachelines per packed entry. A one-cacheline head can be
-dequeued before its first AR is eligible or accepted due to open issue
-`WPPP-AR-DEQUEUE-001`; the original standalone expected-fail case remains the
-authoritative reproducer for that production defect.
+The request stage now transfers each FIFO head into an active-hint register.
+One-cacheline hints and final cachelines therefore remain owned by the request
+stage until their AR handshakes, including while enable is deasserted after a
+stalled request has already been presented.
 
 ## Commands and Evidence
 
@@ -99,6 +152,7 @@ module load quartus/26.1
 make sim-integration-smoke
 make sim-integration-focused
 make sim-integration-full
+make sim-integration-stress
 ```
 
 The equivalent local targets are:
@@ -121,14 +175,14 @@ set `WORKFLOW_NOTIFY=0` for a silent local run.
 
 The next useful extensions at this same wrapping level are:
 
-1. programmable AR/R latency and backpressure on each fake-MC DB port;
-2. AW, W, and B backpressure at each CPU sink;
-3. out-of-order DB responses across multiple outstanding IDs;
-4. page-table backdoor setup proving host-resident hints are suppressed while
-   neighboring device-resident hints proceed;
-5. reset, enable, LUT-flush, maximum-count, ID-wrap, and address-boundary cases;
-6. error-response injection once the expected WPPP policy for RRESP/BRESP is
-   specified.
+1. page-table backdoor setup proving host-resident hints are suppressed while
+   neighboring device-resident hints proceed, including page bits 0, 31, 32,
+   and 63;
+2. reset, enable, LUT-flush, maximum-count, ID-wrap, and address-boundary cases;
+3. error-response injection once the expected WPPP policy for RRESP/BRESP is
+   specified;
+4. a defined producer contract or queue for a second hint-line write arriving
+   before the current eight-slot serialization completes.
 
 Activating HPPB, modeling migration updates concurrently, or checking the CXL
 protocol itself requires a broader wrapper and is intentionally outside this

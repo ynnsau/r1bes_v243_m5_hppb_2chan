@@ -33,9 +33,11 @@ which share the two outgoing AXI channels with HPPB through `axi_arbiter`.
   A write in the configured 4 KiB hint page captures one 512-bit line and
   emits its eight packed 64-bit hints on consecutive cycles, alternating the
   engine selection.
-- `wppp_hb_req.sv`: accepts `{count,address}` hints and issues one device-biased
-  64-byte read per cacheline. It advances its ID and count only on AR
-  handshake, except for the known final-entry dequeue defect.
+- `wppp_hb_req.sv`: accepts `{count,address}` hints, transfers each FIFO head
+  into a stable active-hint context, and issues one device-biased 64-byte read
+  per cacheline. A backpressured AR is held independently of live enable,
+  abort, range, and LUT gating; IDs and cacheline state advance only on the AR
+  handshake.
 - `wppp_lut.sv`: records the exact accepted AR address under `arid[9:0]` and
   prevents reuse until the corresponding read response consumes it.
 - `wppp_hb_resp.sv`: accepts out-of-order responses, obtains the original
@@ -49,6 +51,10 @@ which share the two outgoing AXI channels with HPPB through `axi_arbiter`.
 
 - A hint describes contiguous 64-byte cachelines.
 - An AR handshake and LUT insertion are atomic (`write_lut = arvalid && arready`).
+- FIFO-head ownership transfers once into the active-hint register. The active
+  hint retires only after its final AR handshake.
+- Once ARVALID has been sampled with ARREADY low, ARVALID, ARID, ARADDR, and
+  attributes remain stable until acceptance.
 - A response ID is not reusable while its valid bit is set.
 - Response ordering need not match request ordering.
 - Each accepted response produces at most one NCP FIFO entry.

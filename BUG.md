@@ -10,7 +10,7 @@ completed outcomes belong in `CHANGE.md`.
 
 | Issue | State | Severity | Evidence |
 | --- | --- | --- | --- |
-| [`WPPP-AR-DEQUEUE-001`](#wppp-ar-dequeue-001-final-hint-can-dequeue-before-ar-handshake) | Open; deterministic XFAIL | High data/protocol | `RUN_AR_LAST_STALL_REPRO`; integration characterization |
+| [`WPPP-AR-DEQUEUE-001`](#wppp-ar-dequeue-001-final-hint-can-dequeue-before-ar-handshake) | Fixed; expected-pass regression | High data/protocol | `RUN_AR_LAST_STALL`; `RUN_INT_DB_BACKPRESSURE` |
 | [`WPPP-RANGE-HOL-002`](#wppp-range-hol-002-out-of-range-head-blocks-the-hint-queue) | Open; deterministic XFAIL | High liveness | `RUN_RANGE_HEAD_BLOCK_REPRO` |
 | [`WPPP-AWUSER-WIDTH-003`](#wppp-awuser-width-003-ncp-awuser-is-truncated-at-the-interface) | Open integration cleanup | Low | Questa elaboration warning |
 | [`WPPP-HINT-HANDSHAKE-004`](#wppp-hint-handshake-004-hint-snoop-assumes-paired-aw-and-w) | Accepted project contract | Medium if violated | Integration host driver and README contract |
@@ -20,35 +20,36 @@ completed outcomes belong in `CHANGE.md`.
 
 ## WPPP-AR-DEQUEUE-001: Final Hint Can Dequeue Before AR Handshake
 
-Status: open; reproduced by the standalone expected-fail suite
+Status: fixed on 2026-08-18; promoted to standalone and AXI-level integration
+expected-pass regressions
 
 Severity: high; a cacheline request can be silently lost under AR backpressure
 
-In `wppp_hb_req.sv`, `dequeue_valid` is true whenever
-`cl_counter + 1 == num_cl`, independent of `arvalid && arready`. A one-line hint
-therefore requests FIFO dequeue as soon as it reaches the head. It can
-disappear before the registered range/start decision makes ARVALID eligible,
-even when the downstream keeps ARREADY high; it is also lost whenever the
-final request is backpressured. The initial eight-entry integration batch
-exposed the cold-head form when all entries requested one line, so the
-maintained expected-pass batch uses two-line entries and leaves this issue
-visible rather than redefining it.
+The former implementation asserted `dequeue_valid` whenever
+`cl_counter + 1 == num_cl`, independent of `arvalid && arready`. A one-line
+hint could therefore disappear before becoming eligible, and a multi-line
+hint lost its final request whenever that AR was backpressured.
 
-The count and request ID correctly advance only on AR handshake; the FIFO
-dequeue condition must be made equally handshake-qualified. Any fix must also
-preserve multi-line progression and zero/invalid-count behavior.
+The fix transfers a FIFO head exactly once into an active-hint register. The
+FIFO may then advance, but the active base/count/index remain stable until the
+final AR handshake. A fall-through pending-AR register captures the payload
+when READY is low and holds VALID, ID, and address independently of subsequent
+enable, abort, range, or LUT-gating changes. Count, ID, LUT insertion, and final
+active-hint retirement are all qualified by the same AR handshake.
 
-Reproduce with:
+Verify with:
 
 ```bash
 module load quartus/26.1
-make -C wppp_sim sim-repro WORKFLOW_NOTIFY=0
+make -C wppp_sim sim-focused WORKFLOW_NOTIFY=0
+make -C wppp_integration_sim sim-stress WORKFLOW_NOTIFY=0
 ```
 
-Expected marker:
+Required pass markers include:
 
 ```text
-WPPP_REPRODUCED: last-cacheline hint dequeued without AR handshake
+WPPP_TEST_PASS: RUN_AR_LAST_STALL
+WPPP_TEST_PASS: RUN_INT_DB_BACKPRESSURE
 ```
 
 ## WPPP-RANGE-HOL-002: Out-of-Range Head Blocks the Hint Queue
@@ -63,8 +64,8 @@ multi-line out-of-range hint the cacheline counter remains zero and the entry
 never dequeues, so valid hints behind it cannot reach the head.
 
 The correct policy is a software/RTL contract choice: reject/drop with
-observability, retain until bounds change, or add a recovery command. Do not
-pick one implicitly while fixing `WPPP-AR-DEQUEUE-001`.
+observability, retain until bounds change, or add a recovery command. The
+`WPPP-AR-DEQUEUE-001` fix intentionally preserves this behavior.
 
 Expected marker:
 

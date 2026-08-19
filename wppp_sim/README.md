@@ -47,6 +47,7 @@ are enabled by default; append `WORKFLOW_NOTIFY=0` for silent iteration.
 | `RUN_SINGLE_HINT` | Smoke | Four-line hint, matching reads and NCP writes, payload/address scoreboard. |
 | `RUN_OUT_OF_ORDER` | Smoke | Back-to-back reads returned in reverse order; verifies ID-to-address ownership. |
 | `RUN_BACKPRESSURE` | Focused | Independent AR, AW, and W stalls; checks stable valid/payload and eventual progress. |
+| `RUN_AR_LAST_STALL` | Focused | Holds a one-line/final AR while READY is low, disables new prefetch work, and requires the accepted request to remain stable. |
 | `RUN_HINT_QUEUE` | Focused | Multiple queued hints expand in FIFO order without address/data loss. |
 | `RUN_LUT_FLUSH` | Focused | Flush invalidates outstanding ownership and prevents stale response writeback. |
 | `RUN_ID_WRAP` | Full | 1030 one-line requests cross the 10-bit ID wrap and verify safe reuse. |
@@ -55,7 +56,6 @@ are enabled by default; append `WORKFLOW_NOTIFY=0` for silent iteration.
 
 | Test | Issue | Required classification |
 | --- | --- | --- |
-| `RUN_AR_LAST_STALL_REPRO` | `WPPP-AR-DEQUEUE-001` | `XFAIL` with the exact final-dequeue marker. |
 | `RUN_RANGE_HEAD_BLOCK_REPRO` | `WPPP-RANGE-HOL-002` | `XFAIL` with the exact range-head marker. |
 
 Expected-fail tests are never included in smoke/focused/full pass counts. An

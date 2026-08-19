@@ -12,7 +12,7 @@ RUN_STAMP := $(RUN_STAMP)
 QUICK_LOG_DIR ?= logs/quartus_quick_$(RUN_STAMP)
 FULL_COMPILE_LOG_DIR ?= logs/quartus_full_$(RUN_STAMP)
 
-.PHONY: all sim-smoke sim-focused sim-full sim-repro sim-integration-smoke sim-integration-focused sim-integration-full quartus-ip-check quartus-ip-plan quartus-preflight quartus-quick quartus-full test-tools clean-sim help
+.PHONY: all sim-smoke sim-focused sim-full sim-repro sim-integration-smoke sim-integration-focused sim-integration-full sim-integration-stress quartus-ip-check quartus-ip-plan quartus-preflight quartus-quick quartus-full test-tools clean-sim help
 
 all: sim-smoke
 
@@ -27,6 +27,9 @@ sim-integration-focused:
 
 sim-integration-full:
 	$(MAKE) -C wppp_integration_sim sim-full WORKFLOW_NOTIFY=$(WORKFLOW_NOTIFY) JOBS=$(JOBS)
+
+sim-integration-stress:
+	$(MAKE) -C wppp_integration_sim sim-stress WORKFLOW_NOTIFY=$(WORKFLOW_NOTIFY) JOBS=$(JOBS)
 
 quartus-ip-check:
 	python3 tools/check_quartus_ip.py \
@@ -95,10 +98,11 @@ help:
 	@echo "  sim-smoke       two-test sanity regression"
 	@echo "  sim-focused     protocol/backpressure regression"
 	@echo "  sim-full        focused tests plus request-ID wrap"
-	@echo "  sim-repro       classify known bugs as XFAIL"
+	@echo "  sim-repro       classify the range-head bug as XFAIL"
 	@echo "  sim-integration-smoke    AXI host pass-through plus one full hint"
 	@echo "  sim-integration-focused  smoke plus dual-engine/concurrent traffic"
 	@echo "  sim-integration-full     focused plus inactive-HPPB isolation"
+	@echo "  sim-integration-stress   DB/NCP stalls, out-of-order responses, hint sequencing"
 	@echo "  quartus-ip-check   verify generated IP/QIP synthesis collateral"
 	@echo "  quartus-ip-plan    print the scoped qsys-generate recovery plan"
 	@echo "  quartus-preflight  validate Quartus plans, tools, and IP collateral"

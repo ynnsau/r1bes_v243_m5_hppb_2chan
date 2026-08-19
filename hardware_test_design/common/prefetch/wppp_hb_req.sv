@@ -48,15 +48,20 @@ assign  arlock       = '0   ;
 assign  arregion     = '0   ;
 
 /* internal */
-logic [9:0] curr_arid, next_arid; // 10 bit arid counter, max 1024 requests
-logic [72:0] fifo_in_up, fifo_out_up; 
+logic [9:0] curr_arid; // 10 bit arid counter, max 1024 requests
+logic [72:0] fifo_in_up, fifo_out_up;
 logic enq_ok;
 logic queue_full, queue_empty, dequeue_valid;
-logic [63:0] num_cl, cl_counter;
-logic [63:0] push_cl_addr;
+logic active_valid;
+logic [63:0] active_num_cl, cl_counter;
+logic [63:0] active_base_addr;
 logic [63:0] addr_low_limit, addr_up_limit;
-logic start_prefetch;
-logic addr_in_range;
+logic active_addr_in_range;
+logic launch_valid;
+logic ar_pending;
+logic ar_fire;
+logic [11:0] held_arid;
+logic [63:0] held_araddr;
 (*preserve_for_debug *) logic [4:0] usedw;
 
 // the fifo has been updated to have a depth of 256, the name is not updated, double-check if needed
@@ -71,119 +76,82 @@ fifo_32w_73d hint_fifo(
 	.empty(queue_empty)
 );
 
-assign write_lut = arvalid & arready; // write LUT when read address is accepted
-assign dequeue_valid = (cl_counter + 1'd1 == num_cl) & ~queue_empty; // dequeue when all cachelines are issued
-assign addr_in_range = (push_cl_addr >= addr_low_limit) && (push_cl_addr < addr_up_limit);
+// Transfer FIFO-head ownership into a stable active context. The FIFO entry is
+// no longer the live source of an AXI request and can be popped immediately.
+assign dequeue_valid = axi4_mm_rst_n & ~active_valid & ~queue_empty;
+
+assign active_addr_in_range =
+    (active_base_addr >= addr_low_limit) &&
+    (active_base_addr < addr_up_limit);
+assign launch_valid = active_valid & enable_prefetch_i & active_addr_in_range &
+                      ~abort_op & ~lut_in_use;
+
+// The fall-through path retains one-request-per-cycle throughput. If READY is
+// low at a sampling edge, ar_pending captures the complete payload and keeps
+// VALID asserted even if enable/abort/range/LUT controls subsequently change.
+assign arvalid = ar_pending | launch_valid;
+assign arid = ar_pending ? held_arid : {2'b0, curr_arid};
+assign araddr = ar_pending ? held_araddr :
+                active_base_addr + (cl_counter << 6);
+assign aruser = 6'b110000; // used to be Host Bias, now it is Device Bias
+assign ar_fire = arvalid & arready;
+assign write_lut = ar_fire;
 
 always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
         addr_low_limit <= '0;
         addr_up_limit <= '0;
-        start_prefetch <= 1'b0;
     end
     else begin
-        start_prefetch <= enable_prefetch_i & addr_in_range;
         addr_low_limit <= start_address_i;
         addr_up_limit <= start_address_i + address_upper_i;
     end
 end
 
-/* fifo signls */
+/* fifo signals */
 always_comb begin
     enq_ok = enqueue_valid_i & enable_prefetch_i & ~queue_full;
     fifo_in_up = {9'b0, enqueue_num_of_cl_i[13:0], enqueue_address_i[49:0]};
-    push_cl_addr = {14'b0, fifo_out_up[49:0]}; 
-    num_cl = {50'b0, fifo_out_up[63:50]};
-end
-
-/* ar signals */
-always_comb begin
-    arvalid     = ~queue_empty & start_prefetch & ~abort_op & ~lut_in_use;
-    arid        = {2'b0, curr_arid}; // zero extend to 12 bit
-    araddr      = push_cl_addr + (cl_counter << 6); // each cache line is 64 bytes
-    aruser      = 6'b110000; // used to be Host Bias, now it is Device Bias
 end
 
 always_ff @(posedge axi4_mm_clk) begin
     if (!axi4_mm_rst_n) begin
         curr_arid <= '0; /* arid id, up counter */
+        active_valid <= 1'b0;
+        active_num_cl <= '0;
+        active_base_addr <= '0;
         cl_counter <= '0;
+        ar_pending <= 1'b0;
+        held_arid <= '0;
+        held_araddr <= '0;
     end
     else begin
-        if (arvalid & arready) begin
+        if (dequeue_valid) begin
+            active_valid <= 1'b1;
+            active_num_cl <= {50'b0, fifo_out_up[63:50]};
+            active_base_addr <= {14'b0, fifo_out_up[49:0]};
+            cl_counter <= '0;
+        end
+
+        if (~ar_pending & launch_valid & ~arready) begin
+            ar_pending <= 1'b1;
+            held_arid <= {2'b0, curr_arid};
+            held_araddr <= active_base_addr + (cl_counter << 6);
+        end
+        else if (ar_pending & arready) begin
+            ar_pending <= 1'b0;
+        end
+
+        if (ar_fire) begin
             curr_arid <= curr_arid + 10'd1;
-            cl_counter <= cl_counter + 64'd1;
-            if (cl_counter + 1'd1 == num_cl) begin // 
+            if (cl_counter + 64'd1 == active_num_cl) begin
+                active_valid <= 1'b0;
                 cl_counter <= '0;
+            end
+            else begin
+                cl_counter <= cl_counter + 64'd1;
             end
         end
     end
 end
-
-/* state update */
-// always_comb begin
-//     next_ar_state = ar_state;
-//     next_wait_cnt = wait_cnt;
-//     next_arid = curr_arid;
-//     addr_issued = 1'b0;
-//     arid_cnt_overflow = 1'b0; // indicate arid overflow
-    // unique case(ar_state)
-    //     IDLE: begin
-    //         if (start_prefetch & ~abort_op & ~lut_in_use) begin // start prefetching if not abort and LUT entry not in use
-    //             addr_issued = 1'b1;
-    //             next_ar_state = HB_READ_ADDR;
-    //         end
-    //     end
-    //     HB_READ_ADDR: begin
-    //         if (arready & arvalid) begin
-    //             next_ar_state = LUT_WAIT;
-    //         end
-    //     end
-    //     LUT_WAIT: begin
-    //         // update to this because the BRAM is pipelined, we need to wait one cycle
-    //         if (curr_arid == 10'h3FF) begin // arid overflow
-    //             arid_cnt_overflow = 1'b1;
-    //         end
-    //         next_arid = curr_arid + 10'd1;
-    //         next_ar_state = IDLE;
-
-            // wait logic removed for simplification
-            // if (wait_cnt == 2'd2) begin
-            //     next_ar_state = IDLE;
-            //     next_wait_cnt = 2'd0;
-
-            //     if (curr_arid == 12'hFFF) begin // arid overflow
-            //         arid_cnt_overflow = 1'b1;
-            //     end
-            //     next_arid = curr_arid + 12'd1;
-            // end
-            // else begin
-            //     next_wait_cnt = wait_cnt + 2'd1;
-            // end
-//         end
-//         default:;
-//     endcase
-// end
-// /* state output */
-// always_comb begin
-//     arvalid     = 1'b0;
-//     arid        = {2'b0, curr_arid}; // zero extend to 12 bit
-//     araddr      = '0;
-//     aruser      = '0;
-//     write_lut   = 1'b0;
-//     unique case(ar_state)
-//         HB_READ_ADDR: begin
-//             arvalid  = '1;
-//             // arid     = curr_arid;
-//             araddr   = prefetch_page_addr_r;
-//             aruser   = 6'b100000;
-//         end
-//         LUT_WAIT: begin
-//             // arid = curr_arid;
-//             araddr = prefetch_page_addr_r;
-//             write_lut = 1'b1;
-//         end
-//         default:;
-//     endcase
-// end
 endmodule

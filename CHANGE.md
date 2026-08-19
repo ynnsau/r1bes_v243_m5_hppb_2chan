@@ -34,6 +34,33 @@ Issue: AXI-level fake CXL IP / fake MC WPPP integration simulation
 9. Kept `WPPP-AR-DEQUEUE-001` open and its standalone XFAIL intact. The
    integration batch uses two-line entries so an expected-pass workflow does
    not conceal or redefine the known one-line/final-AR defect.
+10. Added integration cases for DB-read backpressure, independently stalled NCP
+    AW/W with BVALID held low through the transfer, reverse-order DB responses
+    on both engines, and sparse multi-line hint sequencing. All changes are
+    confined to the testbench, workflow, and documentation; production RTL is
+    unchanged.
+11. Ran the DB-backpressure case first and stopped on its deterministic failure,
+    as requested. Three reads handshook; the fourth request (`id=3`,
+    `addr=0x00000061800800c0`) was visible before the stall and disappeared one
+    clock later while ARREADY remained low. The integration repro classified
+    this as `XFAIL`; the other three new cases remain unexecuted in this run.
+12. Added a page-filter contract describing bitmap geometry, synchronous lookup
+    latency, update-time hint suppression, address-alias and cross-page
+    assumptions, and the unverified upper-half shift expression.
+13. Completed the remaining integration stress cases: NCP backpressure,
+    reverse-order DB responses, and sparse multi-line hint sequencing all
+    passed with zero checker errors.
+14. Fixed `WPPP-AR-DEQUEUE-001` in production `wppp_hb_req`. FIFO heads now
+    transfer into a stable active-hint context, final retirement is tied to the
+    AR handshake, and a pending-AR hold preserves VALID/ID/address when READY
+    is low even if prefetch enable subsequently drops.
+15. Promoted the standalone one-line/final-AR and full-integration DB
+    backpressure checks from expected-fail characterization to maintained
+    expected-pass regressions. No new BRAM or FIFO IP was required.
+16. Verified the fix with Questa FSE 2025.3: all seven standalone full-tier
+    cases, all five integration full-tier cases, and all four integration
+    stress cases passed. The separate range-head reproducer remained `XFAIL`,
+    and all 16 workflow-tool unit tests passed.
 
 Issue: WPPP workflow migration and baseline characterization
 

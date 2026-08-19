@@ -447,20 +447,50 @@ module wppp_tb;
         finish_test("RUN_ID_WRAP");
     endtask
 
-    // Expected-fail reproducer for the current last-cacheline dequeue logic.
-    task automatic run_ar_last_stall_repro;
+    // Regression for a one-cacheline hint held under AR backpressure. Disabling
+    // new work after VALID is sampled must not withdraw the pending request.
+    task automatic run_ar_last_stall;
         logic [63:0] base = CXL_BASE + 64'h30000;
+        logic [63:0] held_araddr;
+        logic [11:0] held_arid;
+        int cycles = 0;
+
         read_channel.arready = 1'b0;
         enqueue_hint(base, 1);
-        repeat (12) @(posedge clk);
+
+        while (!read_channel.arvalid && cycles < DEFAULT_TIMEOUT) begin
+            @(posedge clk);
+            cycles++;
+        end
+        if (!read_channel.arvalid) begin
+            record_error("one-line ARVALID was not presented under backpressure");
+            finish_test("RUN_AR_LAST_STALL");
+        end
+
+        held_araddr = read_channel.araddr;
+        held_arid = read_channel.arid;
+        repeat (3) begin
+            @(posedge clk);
+            if (!read_channel.arvalid || read_channel.araddr !== held_araddr
+                || read_channel.arid !== held_arid)
+                record_error("one-line AR payload changed while ARREADY was low");
+        end
+
+        @(negedge clk);
+        enable_prefetch = 1'b0;
+        repeat (3) begin
+            @(posedge clk);
+            if (!read_channel.arvalid || read_channel.araddr !== held_araddr
+                || read_channel.arid !== held_arid)
+                record_error("pending AR was withdrawn when prefetch was disabled");
+        end
+
         @(negedge clk);
         read_channel.arready = 1'b1;
-        repeat (20) @(posedge clk);
-        if (accepted_read_count == 0) begin
-            $display("WPPP_REPRODUCED: last-cacheline hint dequeued without AR handshake");
-            $fatal(1, "known WPPP AR dequeue bug reproduced");
-        end
-        finish_test("RUN_AR_LAST_STALL_REPRO");
+        wait_for_reads(1, DEFAULT_TIMEOUT);
+        check_queued_addresses(base, 1);
+        enable_prefetch = 1'b1;
+        finish_test("RUN_AR_LAST_STALL");
     endtask
 
     // Expected-fail reproducer for an invalid head hint permanently blocking
@@ -468,8 +498,8 @@ module wppp_tb;
     task automatic run_range_head_block_repro;
         logic [63:0] invalid = CXL_BASE + {30'b0, CXL_SIZE} + 64'h1000;
         logic [63:0] valid = CXL_BASE + 64'h34000;
-        // Use two cachelines so this specifically exercises head-of-line
-        // blocking rather than the independent one-line dequeue defect.
+        // Use two cachelines so the invalid entry remains active while the
+        // valid hint waits behind it.
         enqueue_hint(invalid, 2);
         enqueue_hint(valid, 1);
         repeat (50) @(posedge clk);
@@ -487,7 +517,7 @@ module wppp_tb;
         $display("RUN_HINT_QUEUE");
         $display("RUN_LUT_FLUSH");
         $display("RUN_ID_WRAP");
-        $display("RUN_AR_LAST_STALL_REPRO (expected fail)");
+        $display("RUN_AR_LAST_STALL");
         $display("RUN_RANGE_HEAD_BLOCK_REPRO (expected fail)");
         $display("WPPP_TEST_PASS: LIST_TESTS");
         $finish;
@@ -509,8 +539,8 @@ module wppp_tb;
             run_lut_flush();
         else if ($test$plusargs("RUN_ID_WRAP"))
             run_id_wrap();
-        else if ($test$plusargs("RUN_AR_LAST_STALL_REPRO"))
-            run_ar_last_stall_repro();
+        else if ($test$plusargs("RUN_AR_LAST_STALL"))
+            run_ar_last_stall();
         else if ($test$plusargs("RUN_RANGE_HEAD_BLOCK_REPRO"))
             run_range_head_block_repro();
         else
