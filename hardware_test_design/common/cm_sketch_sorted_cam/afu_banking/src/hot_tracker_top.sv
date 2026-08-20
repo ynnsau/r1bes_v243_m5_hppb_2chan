@@ -1,12 +1,5 @@
 `timescale 1ns / 1ps
 
-`ifndef XILINX 
-`include "cxl_type2_defines.svh.iv"
-`else
-`include "cxl_type2_defines.svh"
-`endif
-
-import mc_axi_if_pkg::*;
 import m5_pkg::*;
 
 module hot_tracker_top
@@ -54,10 +47,10 @@ localparam STATE_AWADDR = 2'b01;
 localparam STATE_ARADDR = 2'b10;
 localparam EMPTY        = 10'd0;
 
-//logic [mc_axi_if_pkg::MC_AXI_WAC_ADDR_BW-1:0] awaddr;
+//logic [ADDR_SIZE-1:0]                         awaddr;
 //logic                                         awvalid;
 //logic                                         awready;
-logic [mc_axi_if_pkg::MC_AXI_RAC_ADDR_BW-1:0] araddr;
+logic [ADDR_SIZE-1:0]                         araddr;
 logic                                         arvalid;
 logic                                         arready;
 

@@ -22,6 +22,8 @@ competing sources of truth.
   extensions.
 - [`../hardware_test_design/common/prefetch/README.md`](../hardware_test_design/common/prefetch/README.md):
   stable WPPP module contracts, assumptions, and active-versus-legacy map.
+- [`WPPP_ATC_CSR.md`](WPPP_ATC_CSR.md): software-visible WPPP translation-cache
+  controls, status, counters, CDC semantics, and programming sequence.
 - [`../tools/README.md`](../tools/README.md): deterministic compile and ping
   tooling interfaces.
 
@@ -38,6 +40,7 @@ competing sources of truth.
 | `wppp_sim/README.md` | Test intent, interface, and maintained status | Production IP equivalence claim |
 | `wppp_integration_sim/README.md` | AXI integration topology, endpoint contracts, and integration cases | Full CXL-protocol or active-HPPB coverage claim |
 | Prefetch `README.md` | Stable module contracts and integration assumptions | Mutable regression evidence |
+| `docs/WPPP_ATC_CSR.md` | WPPP ATC software-visible register contract | Internal RTL microarchitecture |
 | `logs/*/plan.json` | Exact invocation and source state | Final pass/fail result |
 | `logs/*/result.json` or `summary.json` | Machine-readable run result | Long-term architecture prose |
 

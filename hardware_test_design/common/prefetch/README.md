@@ -151,7 +151,9 @@ The production 64-bit software hint record is:
 
 The existing 96-entry CSR file uses the formerly idle range 66 through 95.
 CSR 67 is a write-one event implemented as a clock-domain-crossing toggle, not
-a sticky reset level.
+a sticky reset level. See [`../../../docs/WPPP_ATC_CSR.md`](../../../docs/WPPP_ATC_CSR.md)
+for the per-register direction, bit fields, counter semantics, and software
+programming sequence.
 
 | Index | Meaning |
 | ---: | --- |
