@@ -12,12 +12,15 @@ RUN_STAMP := $(RUN_STAMP)
 QUICK_LOG_DIR ?= logs/quartus_quick_$(RUN_STAMP)
 FULL_COMPILE_LOG_DIR ?= logs/quartus_full_$(RUN_STAMP)
 
-.PHONY: all sim-smoke sim-focused sim-full sim-repro sim-integration-smoke sim-integration-focused sim-integration-full sim-integration-stress quartus-ip-check quartus-ip-plan quartus-preflight quartus-quick quartus-full test-tools clean-sim help
+.PHONY: all sim-smoke sim-focused sim-full sim-repro sim-integration-atc sim-integration-smoke sim-integration-focused sim-integration-full sim-integration-stress quartus-ip-check quartus-ip-plan quartus-preflight quartus-quick quartus-full test-tools clean-sim help
 
 all: sim-smoke
 
 sim-smoke sim-focused sim-full sim-repro:
 	$(MAKE) -C wppp_sim $@ WORKFLOW_NOTIFY=$(WORKFLOW_NOTIFY) JOBS=$(JOBS)
+
+sim-integration-atc:
+	$(MAKE) -C wppp_integration_sim sim-atc WORKFLOW_NOTIFY=$(WORKFLOW_NOTIFY)
 
 sim-integration-smoke:
 	$(MAKE) -C wppp_integration_sim sim-smoke WORKFLOW_NOTIFY=$(WORKFLOW_NOTIFY) JOBS=$(JOBS)
@@ -99,6 +102,7 @@ help:
 	@echo "  sim-focused     protocol/backpressure regression"
 	@echo "  sim-full        focused tests plus request-ID wrap"
 	@echo "  sim-repro       classify the range-head bug as XFAIL"
+	@echo "  sim-integration-atc      generated-IP ATC cold-miss/fill/hit path"
 	@echo "  sim-integration-smoke    AXI host pass-through plus one full hint"
 	@echo "  sim-integration-focused  smoke plus dual-engine/concurrent traffic"
 	@echo "  sim-integration-full     focused plus inactive-HPPB isolation"

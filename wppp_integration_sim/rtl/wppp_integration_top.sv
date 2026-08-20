@@ -1,4 +1,7 @@
-module wppp_integration_top (
+module wppp_integration_top #(
+    parameter bit LEGACY_HINT_FORMAT = 1'b1,
+    parameter bit LEGACY_DIRECT_MODE = 1'b1
+) (
     input logic clk,
     input logic rst_n,
 
@@ -21,13 +24,18 @@ module wppp_integration_top (
     input logic [33:0] address_span,
     input logic        enable_wppp,
     input logic        flush_lut,
+    input logic [63:0] translation_offset,
+    input logic        flush_translation,
 
     output logic [63:0] prefetch_ok_cnt_0,
     output logic [63:0] prefetch_ok_cnt_1,
     output logic        hppb_activity,
     output logic        hint_enq_sel_debug,
     output logic [63:0] hint_enq_address_debug,
-    output logic [15:0] hint_enq_count_debug
+    output logic [15:0] hint_enq_count_debug,
+    output logic        translation_flush_busy,
+    output logic [63:0] translation_status,
+    output logic [63:0] translation_stats [0:16]
 );
     logic hint_enq_sel_i;
     logic [63:0] hint_enq_address_i;
@@ -42,7 +50,6 @@ module wppp_integration_top (
     logic enqueue_valid_1;
     logic engine0_ready;
     logic engine1_ready;
-    logic [63:0] legacy_stage_stats [0:16];
 
     axi_ports wppp_axi0_ports();
     axi_ports wppp_axi1_ports();
@@ -57,7 +64,7 @@ module wppp_integration_top (
     );
 
     wppp_hint_snoop #(
-        .LEGACY_HINT_FORMAT(1'b1)
+        .LEGACY_HINT_FORMAT(LEGACY_HINT_FORMAT)
     ) hint_snoop (
         .clk(clk),
         .rst_n(rst_n),
@@ -74,33 +81,33 @@ module wppp_integration_top (
         .hint_line_full_episode_count()
     );
 
-    // Existing integration vectors carry the historical {14-bit count,
-    // 50-bit direct PA} format.  Route them through the explicit compatibility
-    // branch; these tests do not claim translation-cache coverage.
+    // The default preserves the historical direct-PA regression.  The ATC
+    // top-level selects the production 16/42 hint decoder and translated path
+    // while retaining the same fake-CXL/fake-MC integration boundary.
     wppp_translation_stage #(
-        .LEGACY_DIRECT_MODE(1'b1),
+        .LEGACY_DIRECT_MODE(LEGACY_DIRECT_MODE),
         .STATS_COUNT(17)
-    ) legacy_translation_stage (
+    ) translation_stage (
         .clk(clk),
         .rst_n(rst_n),
-        .hint_valid_i(hint_enq_address_i != 0),
+        .hint_valid_i((hint_enq_num_of_cl_i != 0) && !hint_invalid_i),
         .hint_invalid_i(hint_invalid_i),
         .hint_sel_i(hint_enq_sel_i),
         .hint_address_i(hint_enq_address_i),
         .hint_count_i(hint_enq_num_of_cl_i),
-        .translation_offset_i('0),
-        .pa_range_start_i('0),
-        .pa_range_span_i('1),
-        .flush_req_i(1'b0),
+        .translation_offset_i(translation_offset),
+        .pa_range_start_i(cxl_start_pa),
+        .pa_range_span_i({30'b0, address_span}),
+        .flush_req_i(flush_translation),
         .engine0_ready_i(engine0_ready),
         .engine1_ready_i(engine1_ready),
         .hint_valid_o(hint_enq_valid_o),
         .hint_sel_o(hint_enq_sel_o),
         .hint_address_o(hint_enq_address_o),
         .hint_count_o(hint_enq_num_of_cl_o),
-        .flush_busy_o(),
-        .status_o(),
-        .stats_o(legacy_stage_stats)
+        .flush_busy_o(translation_flush_busy),
+        .status_o(translation_status),
+        .stats_o(translation_stats)
     );
 
     assign enqueue_valid_0 =

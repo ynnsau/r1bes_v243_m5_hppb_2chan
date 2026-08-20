@@ -1,9 +1,12 @@
 `timescale 1ns/1ps
 
-module wppp_integration_tb;
+module wppp_integration_tb #(
+    parameter bit USE_ATC = 1'b0
+);
     localparam logic [63:0] MEM_BASE = 64'h0000_0061_8000_0000;
     localparam logic [63:0] MEM_END  = 64'h0000_0061_9000_0000;
     localparam logic [63:0] HINT_PAGE = MEM_BASE + 64'h0010_0000;
+    localparam logic [63:0] ATC_OFFSET = 64'h0000_0001_0000_0000;
     localparam logic [33:0] WPPP_SPAN = 34'h0100_0000;
     localparam int TIMEOUT_CYCLES = 50000;
     localparam int MAX_DB_REQUESTS = 64;
@@ -12,6 +15,7 @@ module wppp_integration_tb;
     logic rst_n;
     logic enable_wppp;
     logic flush_lut;
+    logic flush_translation;
 
     logic [63:0] prefetch_ok_cnt_0;
     logic [63:0] prefetch_ok_cnt_1;
@@ -19,6 +23,9 @@ module wppp_integration_tb;
     logic hint_enq_sel_debug;
     logic [63:0] hint_enq_address_debug;
     logic [15:0] hint_enq_count_debug;
+    logic translation_flush_busy;
+    logic [63:0] translation_status;
+    logic [63:0] translation_stats [0:16];
 
     logic [63:0] cpu_write_count_0;
     logic [63:0] cpu_write_count_1;
@@ -30,6 +37,7 @@ module wppp_integration_tb;
     logic [31:0] mc_protocol_errors;
 
     integer check_errors;
+    integer atc_init_cycles;
     string active_test;
     bit trace_enabled;
 
@@ -130,7 +138,10 @@ module wppp_integration_tb;
         .protocol_error_count(cxlip_protocol_errors)
     );
 
-    wppp_integration_top dut (
+    wppp_integration_top #(
+        .LEGACY_HINT_FORMAT(!USE_ATC),
+        .LEGACY_DIRECT_MODE(!USE_ATC)
+    ) dut (
         .clk(clk),
         .rst_n(rst_n),
         .host_cxl_r_ch(cxl_to_dut_ports.ar_resp),
@@ -147,12 +158,17 @@ module wppp_integration_tb;
         .address_span(WPPP_SPAN),
         .enable_wppp(enable_wppp),
         .flush_lut(flush_lut),
+        .translation_offset(USE_ATC ? ATC_OFFSET : 64'b0),
+        .flush_translation(flush_translation),
         .prefetch_ok_cnt_0(prefetch_ok_cnt_0),
         .prefetch_ok_cnt_1(prefetch_ok_cnt_1),
         .hppb_activity(hppb_activity),
         .hint_enq_sel_debug(hint_enq_sel_debug),
         .hint_enq_address_debug(hint_enq_address_debug),
-        .hint_enq_count_debug(hint_enq_count_debug)
+        .hint_enq_count_debug(hint_enq_count_debug),
+        .translation_flush_busy(translation_flush_busy),
+        .translation_status(translation_status),
+        .translation_stats(translation_stats)
     );
 
     fake_mc #(
@@ -191,6 +207,13 @@ module wppp_integration_tb;
         input int unsigned count
     );
         return {14'(count), addr[49:0]};
+    endfunction
+
+    function automatic logic [63:0] packed_atc_hint(
+        input logic [63:0] va,
+        input int unsigned count
+    );
+        return {6'b0, 16'(count), va[47:6]};
     endfunction
 
     task automatic record_error(input string message);
@@ -395,6 +418,27 @@ module wppp_integration_tb;
         end
     endtask
 
+    task automatic wait_for_translation_stat(
+        input int stat_index,
+        input longint unsigned expected_minimum,
+        input int max_cycles
+    );
+        int cycles;
+        cycles = 0;
+        while (translation_stats[stat_index] < expected_minimum) begin
+            @(posedge clk);
+            #1;
+            cycles++;
+            if (cycles >= max_cycles) begin
+                record_error($sformatf(
+                    "translation stat timeout index=%0d expected>=%0d observed=%0d",
+                    stat_index, expected_minimum,
+                    translation_stats[stat_index]));
+                return;
+            end
+        end
+    endtask
+
     task automatic inject_db_response(
         input int channel,
         input logic [11:0] id,
@@ -537,6 +581,67 @@ module wppp_integration_tb;
             check_cpu_line(0, base_addr + (i * 64), expected[i]);
         end
         check_global_contract(4, 0, 4, 0);
+    endtask
+
+    // Exercise the production hint format, generated 81x32 FIFO, delayed
+    // translation fill, generated 512x16K cache RAM, and the complete fake
+    // CXL/fake-MC data path.  The first reference intentionally misses and is
+    // dropped; the second reference hits the newly inserted translation.
+    task automatic run_atc_cold_then_hit();
+        logic [63:0] base_pa;
+        logic [63:0] base_va;
+        logic [511:0] expected [4];
+        logic [511:0] hint_line;
+
+        if (!USE_ATC) begin
+            record_error("ATC test requires wppp_atc_integration_tb");
+            return;
+        end
+
+        base_pa = MEM_BASE + 64'h0000_d000;
+        base_va = base_pa + ATC_OFFSET;
+        for (int i = 0; i < 4; i++) begin
+            expected[i] = line_pattern(base_pa + (i * 64), 16'ha000 + i);
+            host_write(base_pa + (i * 64), expected[i], 12'h500 + i);
+        end
+
+        hint_line = '0;
+        hint_line[0 +: 64] = packed_atc_hint(base_va, 4);
+        host_write(HINT_PAGE + 64'h280, hint_line, 12'h520);
+
+        wait_for_translation_stat(1, 1, 1000);
+        if ((db_read_count_0 != 0) || (db_read_count_1 != 0)) begin
+            record_error("cold ATC miss incorrectly emitted WPPP work");
+        end
+
+        wait_for_translation_stat(4, 1, 1000);
+        repeat (4) @(posedge clk);
+        if ((translation_stats[0] != 0) ||
+            (translation_stats[1] != 1) ||
+            (translation_stats[3] != 1) ||
+            (translation_stats[4] != 1)) begin
+            record_error($sformatf(
+                "unexpected cold-fill stats hit=%0d miss=%0d unique=%0d insert=%0d",
+                translation_stats[0], translation_stats[1],
+                translation_stats[3], translation_stats[4]));
+        end
+
+        host_write(HINT_PAGE + 64'h2c0, hint_line, 12'h521);
+        wait_for_cpu_writes(4, 10000);
+        for (int i = 0; i < 4; i++) begin
+            // The eight physical slots in the cold line preserve selector
+            // continuity, so slot zero of the repeated line selects engine 1.
+            check_cpu_line(1, base_pa + (i * 64), expected[i]);
+        end
+        if ((translation_stats[0] != 1) ||
+            (translation_stats[1] != 1) ||
+            (translation_stats[7] != 0)) begin
+            record_error($sformatf(
+                "unexpected ATC hit/drop stats hit=%0d miss=%0d fifo_drop=%0d",
+                translation_stats[0], translation_stats[1],
+                translation_stats[7]));
+        end
+        check_global_contract(0, 4, 0, 4);
     endtask
 
     task automatic run_hint_batch();
@@ -946,6 +1051,7 @@ module wppp_integration_tb;
         rst_n = 1'b0;
         enable_wppp = 1'b0;
         flush_lut = 1'b0;
+        flush_translation = 1'b0;
         check_errors = 0;
         active_test = "";
         initialize_host_agent();
@@ -954,9 +1060,26 @@ module wppp_integration_tb;
         @(negedge clk);
         rst_n = 1'b1;
         enable_wppp = 1'b1;
-        repeat (8) @(posedge clk);
+        if (USE_ATC) begin
+            atc_init_cycles = 0;
+            while ((translation_flush_busy !== 1'b0) &&
+                   (atc_init_cycles < 20000)) begin
+                @(posedge clk);
+                #1;
+                atc_init_cycles++;
+            end
+            if (translation_flush_busy !== 1'b0) begin
+                record_error("ATC power-on cache sweep did not complete");
+            end
+            repeat (4) @(posedge clk);
+        end else begin
+            repeat (8) @(posedge clk);
+        end
 
-        if ($test$plusargs("RUN_INT_HOST_RW")) begin
+        if ($test$plusargs("RUN_INT_ATC_COLD_HIT")) begin
+            active_test = "RUN_INT_ATC_COLD_HIT";
+            run_atc_cold_then_hit();
+        end else if ($test$plusargs("RUN_INT_HOST_RW")) begin
             active_test = "RUN_INT_HOST_RW";
             run_host_rw();
         end else if ($test$plusargs("RUN_INT_SINGLE_HINT")) begin
@@ -995,4 +1118,10 @@ module wppp_integration_tb;
         $display("WPPP_TEST_PASS: %s", active_test);
         $finish;
     end
+endmodule
+
+module wppp_atc_integration_tb;
+    wppp_integration_tb #(
+        .USE_ATC(1'b1)
+    ) tb ();
 endmodule

@@ -1,0 +1,18 @@
+# system info fifo_81b_32d on 2026.08.20.00:44:06
+system_info:
+name,value
+DEVICE,AGIB027R29A1E2VR3
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for fifo_81b_32d on 2026.08.20.00:44:06
+files:
+filepath,kind,attributes,module,is_top
+sim/fifo_81b_32d.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,fifo_81b_32d,true
+fifo_1941/sim/fifo_81b_32d_fifo_1941_xbievyq.v,VERILOG,,fifo_81b_32d_fifo_1941_xbievyq,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+fifo_81b_32d.fifo_0,fifo_81b_32d_fifo_1941_xbievyq

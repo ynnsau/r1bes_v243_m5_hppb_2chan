@@ -1,0 +1,18 @@
+# system info bram_b512_d16384 on 2026.08.19.22:48:57
+system_info:
+name,value
+DEVICE,AGIB027R29A1E2VR3
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for bram_b512_d16384 on 2026.08.19.22:48:57
+files:
+filepath,kind,attributes,module,is_top
+sim/bram_b512_d16384.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,bram_b512_d16384,true
+ram_2port_2060/sim/bram_b512_d16384_ram_2port_2060_ng4xdga.v,VERILOG,,bram_b512_d16384_ram_2port_2060_ng4xdga,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+bram_b512_d16384.ram_2port_0,bram_b512_d16384_ram_2port_2060_ng4xdga

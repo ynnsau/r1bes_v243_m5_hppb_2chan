@@ -12,7 +12,7 @@ file mkdir $SIM_LOG_DIR
 set transcript_path [file normalize [file join $SIM_LOG_DIR "${SIM_RUN_NAME}.vsim.log"]]
 transcript file $transcript_path
 
-set load_args [list -lib work $TOP_LEVEL]
+set load_args [list -lib work -L altera_mf_ver -L altera_lnsim_ver $TOP_LEVEL]
 foreach plusarg $VSIM_PLUSARGS {
     if {$plusarg ne ""} { lappend load_args $plusarg }
 }

@@ -1,5 +1,9 @@
 ../hardware_test_design/common/include/types.sv
 ../wppp_sim/rtl/behavioral_ip.sv
+../hardware_test_design/ip/bram_wppp_atc/bram_b512_d16384/ram_2port_2060/sim/bram_b512_d16384_ram_2port_2060_ng4xdga.v
+../hardware_test_design/ip/bram_wppp_atc/bram_b512_d16384/sim/bram_b512_d16384.v
+../hardware_test_design/ip/fifo_wppp_atc/fifo_81b_32d/fifo_1941/sim/fifo_81b_32d_fifo_1941_xbievyq.v
+../hardware_test_design/ip/fifo_wppp_atc/fifo_81b_32d/sim/fifo_81b_32d.v
 ../hardware_test_design/common/prefetch/wppp_hint_snoop.sv
 ../hardware_test_design/common/prefetch/wppp_translation_cache_bank.sv
 ../hardware_test_design/common/prefetch/wppp_translation_cache.sv

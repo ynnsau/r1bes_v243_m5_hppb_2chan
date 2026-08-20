@@ -4,6 +4,26 @@ Reverse-chronological outcomes for WPPP source, verification, and workflow
 changes. Open issue state belongs in `BUG.md`; detailed test contracts belong
 in the relevant simulation README.
 
+## 2026-08-20
+
+Issue: replace inferred WPPP ATC storage with generated IP
+
+1. Replaced each cache bank's eight inferred 64-bit way memories with one
+   generated 512-bit by 16,384-entry dual-port RAM. Byte enables update one
+   way on insertion or all ways during the row-swept flush.
+2. Aligned lookup tag and valid through two edges to match the RAM's registered
+   read address and output. Mixed-port writes retain `OLD_DATA` behavior.
+3. Replaced the handmade 81-bit decoded-hint queue with the generated 32-entry
+   registered show-ahead FIFO and its synchronous clear. A full FIFO drops a
+   simultaneous incoming hint even when a pop occurs, as permitted by the
+   design contract, and the existing drop counter records it.
+4. Derived exact 0-through-32 flush occupancy from `{full, usedw[4:0]}` without
+   adding a second software-visible counter.
+5. Added a production-format fake-CXL/fake-MC ATC integration top and directed
+   cold-miss, 128-cycle fill, repeated-hit, device-read, and CPU-write case.
+   Simulation compiles the generated wrappers/cores and loads their Quartus
+   26.1 `altera_mf_ver` and `altera_lnsim_ver` primitive libraries.
+
 ## 2026-08-19
 
 Issue: first WPPP translation-cache implementation

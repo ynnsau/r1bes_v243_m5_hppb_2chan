@@ -279,3 +279,5 @@ set_global_assignment -name SIGNALTAP_FILE m5_impl.stp
 set_global_assignment -name IP_FILE ip/bram/w4096_d64.ip
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_32w_73d.ip
 set_global_assignment -name IP_FILE common/ip/fifo/fifo_128w_588d.ip
+set_global_assignment -name IP_FILE ip/bram_wppp_atc/bram_b512_d16384.ip
+set_global_assignment -name IP_FILE ip/fifo_wppp_atc/fifo_81b_32d.ip

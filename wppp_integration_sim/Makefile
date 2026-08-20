@@ -17,6 +17,7 @@ SMOKE_LOG_DIR ?= logs/smoke_$(RUN_STAMP)
 FOCUSED_LOG_DIR ?= logs/focused_$(RUN_STAMP)
 FULL_LOG_DIR ?= logs/full_$(RUN_STAMP)
 STRESS_LOG_DIR ?= logs/stress_$(RUN_STAMP)
+ATC_LOG_DIR ?= logs/atc_$(RUN_STAMP)
 SIM_DURATION_HISTORY ?= logs/.duration_history.json
 SIM_COMPRESS_PASS_LOGS ?= 1
 SIM_RERUN_FAILURES ?= 1
@@ -41,9 +42,12 @@ STRESS_TESTS := \
 	RUN_INT_OUT_OF_ORDER \
 	RUN_INT_HINT_SEQUENCE
 
+ATC_TESTS := \
+	RUN_INT_ATC_COLD_HIT
+
 SIM_COMPILE_DO = $(if $(filter 1,$(SIM_COMPILE)),source $(SIM_DIR)/compile.tcl;,)
 
-.PHONY: all compile sim sim-fast sim-smoke sim-focused sim-full sim-stress list-sim-tiers clean help
+.PHONY: all compile sim sim-fast sim-atc sim-smoke sim-focused sim-full sim-stress list-sim-tiers clean help
 
 all: sim-smoke
 
@@ -56,6 +60,21 @@ sim:
 
 sim-fast: SIM_COMPILE=0
 sim-fast: sim
+
+sim-atc: compile
+	@$(REGRESSION_RUNNER) \
+		--suite-name wppp-atc-integration \
+		--profile focused \
+		--jobs 1 \
+		--log-dir $(ATC_LOG_DIR) \
+		--history-file $(SIM_DURATION_HISTORY) \
+		--make-command "make TOP_LEVEL=wppp_atc_integration_tb" \
+		--compress-pass-logs $(SIM_COMPRESS_PASS_LOGS) \
+		--rerun-failures $(SIM_RERUN_FAILURES) \
+		--failure-wlf $(SIM_FAILURE_WLF) \
+		--notify $(WORKFLOW_NOTIFY) \
+		--notify-tool $(WORKFLOW_NOTIFY_CMD) \
+		$(ATC_TESTS)
 
 sim-smoke: compile
 	@$(REGRESSION_RUNNER) \
@@ -114,6 +133,7 @@ sim-stress: compile
 		$(STRESS_TESTS)
 
 list-sim-tiers:
+	@echo "sim-atc     : production-format cold miss, delayed fill, and BRAM hit"
 	@echo "sim-smoke   : host pass-through and one end-to-end hint"
 	@echo "sim-focused : smoke plus eight-hint dual-engine and concurrent host traffic"
 	@echo "sim-full    : focused plus explicit inactive-HPPB isolation check"

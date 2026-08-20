@@ -59,6 +59,12 @@ comes from device memory, while the final NCP write goes to host memory.
 
 The behavioral FIFO and LUT models are reused from `wppp_sim`.
 
+The production translated-path top compiles the generated simulation wrappers
+and cores for `fifo_81b_32d` and `bram_b512_d16384`. The load step uses the
+`altera_mf_ver` and `altera_lnsim_ver` libraries supplied by the required
+Quartus 26.1 module, so the tested FIFO latency, byte enables, `OLD_DATA`
+collision behavior, and two-cycle RAM read come from the vendor models.
+
 ## Legacy Compatibility Boundary
 
 The maintained vectors were written before the translation-cache format and
@@ -105,6 +111,7 @@ directed test set.
 | `RUN_INT_NCP_BACKPRESSURE` | Stress | Independently holds NCP AW and W, checks stable payloads, holds BVALID low through the transfer while checking BREADY, and verifies exact CPU writes. |
 | `RUN_INT_OUT_OF_ORDER` | Stress | Captures four requests from each engine, returns each channel in reverse ID order, and checks LUT-based address/data restoration. |
 | `RUN_INT_HINT_SEQUENCE` | Stress | Checks an off-page write, sparse/zero slots, two safely separated hint lines, selector continuity, both engines, and exact copied data. |
+| `RUN_INT_ATC_COLD_HIT` | ATC | Uses the production 16/42 record: the first reference misses and is dropped, the 128-cycle service inserts one translation, and a repeated reference hits and completes exact fake-MC-to-CPU copies. |
 
 The request stage now transfers each FIFO head into an active-hint register.
 One-cacheline hints and final cachelines therefore remain owned by the request
@@ -118,6 +125,7 @@ Load Questa through the Quartus 26.1 module and run from the repository root:
 ```bash
 module load quartus/26.1
 make sim-integration-smoke
+make sim-integration-atc
 make sim-integration-focused
 make sim-integration-full
 make sim-integration-stress

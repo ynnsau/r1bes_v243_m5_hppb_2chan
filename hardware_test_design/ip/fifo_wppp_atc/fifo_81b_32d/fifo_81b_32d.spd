@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="fifo_1941/sim/fifo_81b_32d_fifo_1941_xbievyq.v"
+   type="VERILOG"
+   library="fifo_1941" />
+ <file
+   path="sim/fifo_81b_32d.v"
+   type="VERILOG"
+   library="fifo_81b_32d"
+   hasInlineConfiguration="true" />
+ <topLevel name="fifo_81b_32d.fifo_81b_32d" />
+ <deviceFamily name="agilex7" />
+ <device name="AGIB027R29A1E2VR3" />
+</simPackage>

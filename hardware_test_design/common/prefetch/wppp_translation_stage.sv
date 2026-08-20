@@ -53,8 +53,6 @@ module wppp_translation_stage #(
         end else begin : TRANSLATED
             localparam int VPN_WIDTH = 36;
             localparam int PPN_WIDTH = 40;
-            localparam int HINT_PTR_W = $clog2(HINT_FIFO_DEPTH);
-            localparam int HINT_COUNT_W = $clog2(HINT_FIFO_DEPTH + 1);
             localparam int MSHR_SET_W = $clog2(MSHR_SETS);
             localparam int MSHR_WAY_W = $clog2(MSHR_WAYS);
             localparam int MSHR_COUNT_W = $clog2(MSHR_SETS * MSHR_WAYS + 1);
@@ -67,18 +65,13 @@ module wppp_translation_stage #(
                 HINT_EMIT
             } hint_state_t;
 
-            typedef struct packed {
-                logic        sel;
-                logic [63:0] address;
-                logic [15:0] count;
-            } hint_fifo_entry_t;
-
-            (* ramstyle = "MLAB" *) hint_fifo_entry_t
-                hint_fifo_mem [HINT_FIFO_DEPTH];
-            logic [HINT_PTR_W-1:0] hint_wr_ptr;
-            logic [HINT_PTR_W-1:0] hint_rd_ptr;
-            logic [HINT_COUNT_W-1:0] hint_fifo_count;
+            logic [80:0] hint_fifo_data;
+            logic [80:0] hint_fifo_q;
+            logic [4:0] hint_fifo_usedw;
+            logic [5:0] hint_fifo_occupancy;
             logic hint_fifo_full;
+            logic hint_fifo_empty;
+            logic hint_fifo_sclr;
             logic hint_fifo_full_d;
             logic hint_format_invalid;
             logic hint_push_req;
@@ -181,17 +174,37 @@ module wppp_translation_stage #(
                 return hash;
             endfunction
 
-            assign hint_fifo_full =
-                hint_fifo_count == HINT_COUNT_W'(HINT_FIFO_DEPTH);
+            assign hint_fifo_data = {
+                hint_sel_i, hint_address_i, hint_count_i
+            };
+            assign hint_fifo_occupancy = hint_fifo_full ?
+                6'(HINT_FIFO_DEPTH) : {1'b0, hint_fifo_usedw};
+            assign hint_fifo_sclr = !rst_n || cache_flush_busy || flush_req_i;
             assign hint_format_invalid = hint_invalid_i ||
                 (hint_valid_i &&
                  (hint_count_i > 16'(MAX_HINT_CACHELINES)));
             assign hint_push_req = hint_valid_i && (hint_count_i != 0);
             assign hint_pop = (hint_state == HINT_IDLE) &&
-                (hint_fifo_count != 0) && !cache_flush_busy && !flush_req_i;
+                !hint_fifo_empty && !cache_flush_busy && !flush_req_i;
             assign hint_push = hint_push_req && !hint_format_invalid &&
                 !cache_flush_busy && !flush_req_i &&
-                (!hint_fifo_full || hint_pop);
+                !hint_fifo_full;
+
+            // The IP is registered show-ahead: q is valid whenever empty is
+            // low.  Its default full behavior rejects a write even when a
+            // simultaneous read occurs, matching the specified drop-on-full
+            // policy and its CSR accounting.
+            fifo_81b_32d hint_fifo (
+                .data(hint_fifo_data),
+                .wrreq(hint_push),
+                .rdreq(hint_pop),
+                .clock(clk),
+                .sclr(hint_fifo_sclr),
+                .q(hint_fifo_q),
+                .usedw(hint_fifo_usedw),
+                .full(hint_fifo_full),
+                .empty(hint_fifo_empty)
+            );
 
             assign lines_to_page_end = 7'd64 - {1'b0, current_va[11:6]};
             assign fragment_count =
@@ -331,9 +344,6 @@ module wppp_translation_stage #(
 
             always_ff @(posedge clk) begin
                 if (!rst_n) begin
-                    hint_wr_ptr <= '0;
-                    hint_rd_ptr <= '0;
-                    hint_fifo_count <= '0;
                     hint_fifo_full_d <= 1'b0;
                     hint_state <= HINT_IDLE;
                     current_sel <= 1'b0;
@@ -392,9 +402,6 @@ module wppp_translation_stage #(
                     end
 
                     if (cache_flush_busy || flush_req_i) begin
-                        hint_wr_ptr <= '0;
-                        hint_rd_ptr <= '0;
-                        hint_fifo_count <= '0;
                         hint_state <= HINT_IDLE;
                         hint_fifo_full_d <= 1'b0;
                         timer_full_d <= 1'b0;
@@ -402,7 +409,7 @@ module wppp_translation_stage #(
 
                         if (flush_req_i && !cache_flush_busy) begin
                             flush_hint_drop_count <= flush_hint_drop_count +
-                                64'(hint_fifo_count) +
+                                64'(hint_fifo_occupancy) +
                                 ((hint_state == HINT_IDLE) ? 64'd0 : 64'd1) +
                                 ((hint_push_req && !hint_format_invalid) ?
                                     64'd1 : 64'd0);
@@ -449,31 +456,18 @@ module wppp_translation_stage #(
                                 timer_full_episode_count + 1'b1;
                         end
 
-                        if (hint_push) begin
-                            hint_fifo_mem[hint_wr_ptr] <= '{
-                                sel: hint_sel_i,
-                                address: hint_address_i,
-                                count: hint_count_i
-                            };
-                            hint_wr_ptr <= hint_wr_ptr + 1'b1;
-                        end else if (hint_push_req && !hint_format_invalid) begin
+                        if (!hint_push && hint_push_req &&
+                            !hint_format_invalid) begin
                             hint_fifo_drop_count <=
                                 hint_fifo_drop_count + 1'b1;
                         end
 
                         if (hint_pop) begin
-                            current_sel <= hint_fifo_mem[hint_rd_ptr].sel;
-                            current_va <= hint_fifo_mem[hint_rd_ptr].address;
-                            current_count <= hint_fifo_mem[hint_rd_ptr].count;
-                            hint_rd_ptr <= hint_rd_ptr + 1'b1;
+                            current_sel <= hint_fifo_q[80];
+                            current_va <= hint_fifo_q[79:16];
+                            current_count <= hint_fifo_q[15:0];
                             hint_state <= HINT_LOOKUP_REQ;
                         end
-
-                        case ({hint_push, hint_pop})
-                            2'b10: hint_fifo_count <= hint_fifo_count + 1'b1;
-                            2'b01: hint_fifo_count <= hint_fifo_count - 1'b1;
-                            default: begin end
-                        endcase
 
                         if ((hint_state == HINT_LOOKUP_REQ) &&
                             cache_lookup_ready) begin
@@ -567,8 +561,8 @@ module wppp_translation_stage #(
 
             // synthesis translate_off
             initial begin
-                if ((1 << HINT_PTR_W) != HINT_FIFO_DEPTH) begin
-                    $fatal(1, "WPPP HINT_FIFO_DEPTH must be a power of two");
+                if (HINT_FIFO_DEPTH != 32) begin
+                    $fatal(1, "WPPP generated hint FIFO depth is fixed at 32");
                 end
                 if ((1 << TIMER_PTR_W) != TRANSLATION_LATENCY) begin
                     $fatal(1, "WPPP TRANSLATION_LATENCY must be a power of two");

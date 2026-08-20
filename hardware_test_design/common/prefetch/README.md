@@ -9,8 +9,10 @@ v2 WPPP read/push pipeline.
 ```text
 wppp_hint_snoop                 (16/42 hint decode and one-line ingress buffer)
 wppp_translation_stage         (FIFO, page splitter, MSHR, delay, PA guard)
+  +-- fifo_81b_32d             (81-bit decoded-hint FIFO, depth 32)
   +-- wppp_translation_cache   (4 banks x 16K sets x 8 ways)
         +-- 4 x wppp_translation_cache_bank
+              +-- bram_b512_d16384 (one 512-bit x 16K RAM per bank)
   |
   +-- page-local translated fragments to two instances of:
 wppprefetch_rw_pipeline_v2
@@ -39,13 +41,16 @@ migration state has no connection to WPPP hint lookup or cache insertion.
   emits its eight packed 64-bit slots on consecutive cycles. Its production
   decoder implements the 16/42 format below. The buffer is one line deep; a
   matching host write while occupied is dropped and counted.
-- `wppp_translation_stage.sv`: queues decoded records, splits them at 4 KiB
-  boundaries, looks up each VPN, models miss service with a 32-set/8-way MSHR
-  and 128-cycle timing wheel, applies the translated-PA range guard, and holds
-  each accepted fragment until its selected engine FIFO is ready.
-- `wppp_translation_cache*.sv`: infer the banked 2 GiB-coverage cache. A row
-  sweep clears one set in every bank per cycle at POR and CSR flush; there is
-  no reset loop over cache RAM.
+- `wppp_translation_stage.sv`: queues decoded records in the generated
+  registered show-ahead `fifo_81b_32d`, splits them at 4 KiB boundaries, looks
+  up each VPN, models miss service with a 32-set/8-way MSHR and 128-cycle
+  timing wheel, applies the translated-PA range guard, and holds each accepted
+  fragment until its selected engine FIFO is ready.
+- `wppp_translation_cache*.sv`: implement the banked 2 GiB-coverage cache.
+  Each bank uses one generated 512-bit by 16,384-entry RAM, with eight 64-bit
+  ways packed into a row and byte enables selecting one way per insertion. A
+  row sweep clears one set in every bank per cycle at POR and CSR flush; there
+  is no reset port or reset loop over cache RAM.
 - `wppp_stats_cdc.sv`: snapshots all 26 64-bit statistics together every 64
   fast-clock cycles and transfers the held snapshot to the CSR clock with a
   request/acknowledge toggle.
@@ -133,6 +138,9 @@ The production 64-bit software hint record is:
 - VA `[13:12]` selects the bank, VA `[27:14]` selects the set, and VA `[47:28]`
   is the 20-bit tag. Entries contain a 40-bit PPN for 52-bit PA reconstruction.
   Replacement is round-robin independently for every bank/set.
+- The cache RAM registers both read address and output. Lookup tag and valid
+  travel through a matching two-edge pipeline; the translation stage remains
+  in `HINT_LOOKUP_WAIT` until that aligned response arrives.
 - Every absent lookup increments the miss counter. The first miss for a VPN
   allocates one of 256 MSHR entries and one 128-cycle timer-wheel slot. Further
   misses matching that in-flight VPN increment the coalesced counter. Every
@@ -178,16 +186,20 @@ limit already bounds one hint to three page lookups.
 
 ## Regression Compatibility and Coverage Gap
 
-`wppp_integration_sim` deliberately instantiates `wppp_hint_snoop` with
-`LEGACY_HINT_FORMAT=1` and `wppp_translation_stage` with
-`LEGACY_DIRECT_MODE=1`. Its maintained cases still verify fake-CXL/fake-MC,
+The maintained `wppp_integration_sim` cases deliberately instantiate
+`wppp_hint_snoop` with `LEGACY_HINT_FORMAT=1` and
+`wppp_translation_stage` with `LEGACY_DIRECT_MODE=1`. They still verify fake-CXL/fake-MC,
 dual-engine WPPP, arbitration, backpressure, response ordering, and inactive
 HPPB behavior using the historical direct-PA records. They do not demonstrate
-translation-cache correctness.
+translation-cache correctness. The separate `sim-integration-atc` target uses
+the production hint format and translated path. Its first directed case proves
+POR sweep completion, decoded-FIFO transport, an intentional cold miss,
+128-cycle fill, a later RAM hit, translated-PA device reads, and CPU-side push
+writes.
 
-New directed cache-mode cases are still required for cold miss and delayed
-fill, later hit, same-VPN coalescing, all MSHR/timer capacity drops, one/two/
-three-page splitting, PA-range rejection after both hit and fill, per-set RR
+Additional directed cache-mode cases are still required for same-VPN
+coalescing, all MSHR/timer capacity drops, one/two/three-page splitting,
+PA-range rejection after both hit and fill, per-set RR
 replacement, POR readiness, CSR flush cancellation, and coherent CSR snapshots.
 
 ## Legacy Source

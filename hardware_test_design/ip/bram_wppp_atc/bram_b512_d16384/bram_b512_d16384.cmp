@@ -1,0 +1,12 @@
+	component bram_b512_d16384 is
+		port (
+			data      : in  std_logic_vector(511 downto 0) := (others => 'X'); -- datain
+			q         : out std_logic_vector(511 downto 0);                    -- dataout
+			wraddress : in  std_logic_vector(13 downto 0)  := (others => 'X'); -- wraddress
+			rdaddress : in  std_logic_vector(13 downto 0)  := (others => 'X'); -- rdaddress
+			wren      : in  std_logic                      := 'X';             -- wren
+			clock     : in  std_logic                      := 'X';             -- clk
+			byteena_a : in  std_logic_vector(63 downto 0)  := (others => 'X')  -- byte_enable_a
+		);
+	end component bram_b512_d16384;
+

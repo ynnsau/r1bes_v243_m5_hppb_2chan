@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="ram_2port_2060/sim/bram_b512_d16384_ram_2port_2060_ng4xdga.v"
+   type="VERILOG"
+   library="ram_2port_2060" />
+ <file
+   path="sim/bram_b512_d16384.v"
+   type="VERILOG"
+   library="bram_b512_d16384"
+   hasInlineConfiguration="true" />
+ <topLevel name="bram_b512_d16384.bram_b512_d16384" />
+ <deviceFamily name="agilex7" />
+ <device name="AGIB027R29A1E2VR3" />
+</simPackage>
